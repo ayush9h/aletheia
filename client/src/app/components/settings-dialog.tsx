@@ -11,10 +11,8 @@ import { FaceIcon } from "@radix-ui/react-icons";
 import { UserPrefProps } from "../types/userPref";
 import { Button } from "@/components/ui/button";
 import { useSession } from "next-auth/react";
-import { saveUserPref } from "../lib/api/userData";
+import { useSaveUserPreferences } from "../hooks/userUserPref";
 
-
-import { useCallback } from "react";
 type SettingsDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -32,16 +30,11 @@ export function SettingsDialog({
   const { data: session } = useSession();
   const userId = session?.user?.id;
 
-  const handleSave = useCallback( async () => {
-    if (!userId) return;
-
-    await saveUserPref({
-      userId,
-      ...userPref,
-    });
-
-    onOpenChange(false);
-  },[userId, onOpenChange, userPref]);
+  const {savePreferences} = useSaveUserPreferences()
+  const handleSave = async () => {
+   await savePreferences(userId as string, userPref)
+   onOpenChange(false)
+}
 
 
   return (

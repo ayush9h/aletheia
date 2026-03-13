@@ -1,6 +1,8 @@
-import { useEffect } from "react";
+import { useEffect, useCallback } from "react";
+import { saveUserPref } from "../lib/api/userData";
 import { getUserPref } from "../lib/api/userData";
 import { ChatAction } from "../types/userChat";
+import { UserPrefProps } from "../types/userPref";
 
 export function useUserPreferences(
   userId: string | undefined,
@@ -24,4 +26,18 @@ export function useUserPreferences(
         });
       });
   }, [userId, dispatch]);
+}
+
+export function useSaveUserPreferences(){
+    const savePreferences =  useCallback(async (userId: string, userPref: UserPrefProps) => {
+    if (!userId) return;
+
+    await saveUserPref({
+      userId,
+      ...userPref,
+    });
+
+  },[]);
+
+  return {savePreferences}
 }
