@@ -7,10 +7,11 @@ from sentence_transformers import SentenceTransformer
 
 
 class PineconeRetriever:
+
     def __init__(
         self,
         api_key: str,
-        index_name: str = "aletheia_memories",
+        index_name: str = "aletheiamemories",
         model_name: str = "all-MiniLM-L6-v2",
         dimension: int = 384,
     ):

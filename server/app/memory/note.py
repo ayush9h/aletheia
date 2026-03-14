@@ -4,10 +4,11 @@ from typing import Dict, List, Optional
 
 
 class MemoryNote:
+
     def __init__(
         self,
         content: str,
-        id: Optional[str],
+        id: Optional[str] = None,
         keywords: Optional[List[str]] = None,
         links: Optional[Dict] = None,
         retrieval_count: Optional[int] = None,
@@ -24,7 +25,7 @@ class MemoryNote:
         current_time = datetime.now().strftime("%Y%m%d%H%M")
         self.timestamp = timestamp or current_time
         self.last_accessed = last_accessed or current_time
-        
+
         self.keywords = keywords or []
         self.links = links or []
         self.context = context or "General"

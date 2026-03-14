@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Any, Dict, List
 
 from app.db_service.retriever import PineconeRetriever
 from app.memory.note import MemoryNote
@@ -23,10 +23,13 @@ class MemoryManager:
         try:
             content_with_prompt = ANALYSE_PROMPT + content
 
-            structured_llm = self.llm_client.with_structured_output(NoteSchema)
-            resp_schema = await structured_llm.ainvoke(content_with_prompt)
+            resp = await self.llm_client.ainvoke(
+                content_with_prompt, response_format={"type": "json_object"}
+            )
 
-            return resp_schema.model_dump()  # type:ignore
+            parsed = NoteSchema.model_validate_json(resp.content)  # type:ignore
+
+            return parsed.model_dump()  # type:ignore
 
         except Exception as e:
             print(f"Error occured during analyzing content:{e}")
@@ -42,18 +45,18 @@ class MemoryManager:
 
         note = MemoryNote(content=content, **kwargs)
 
-        needs_analysis = (
-            not note.keywords or note.context == "General" or not note.tags,
-        )
+        needs_analysis = not note.keywords or note.context == "General" or not note.tags
 
         if needs_analysis:
             analysis = await self.analyze_content(content)
+
+            print(f"Got the analysis:{analysis}")
 
             # Update if not present
             if not note.keywords:
                 note.keywords = analysis.get("keywords", [])
 
-            if not note.context:
+            if note.context == "General":
                 note.context = analysis.get("context", "")
 
             if not note.tags:
@@ -84,6 +87,37 @@ class MemoryManager:
                 self.consolidate_memories()
 
         return note.id
+
+    def search(self, query: str, k: int = 5) -> List[Dict[str, Any]]:
+        """Search memories using Pinecone hybrid retrieval."""
+
+        try:
+            results = self.retriever.search(query, k)
+
+            memories = []
+
+            for match in results["matches"]:
+                meta = match["metadata"]
+                doc_id = meta["id"]
+
+                memory = self.memories.get(doc_id)
+
+                if memory:
+                    memories.append(
+                        {
+                            "id": doc_id,
+                            "content": memory.content,
+                            "context": memory.context,
+                            "keywords": memory.keywords,
+                            "tags": memory.tags,
+                            "score": match["score"],
+                        }
+                    )
+            return memories[:k]
+
+        except Exception as e:
+            print(f"Error in memory search: {str(e)}")
+            return []
 
     def consolidate_memories(self):
         for memory in self.memories.values():
@@ -153,10 +187,12 @@ class MemoryManager:
             )
 
             try:
-                structured_llm = self.llm_client.with_structured_output(EvolveSchema)
 
-                resp_schema = await structured_llm.ainvoke(prompt)
-                resp_json = resp_schema.model_dump()  # type:ignore
+                resp = await self.llm_client.ainvoke(
+                    prompt, response_format={"type": "json_object"}
+                )
+
+                resp_json = EvolveSchema.model_validate_json(resp.content).model_dump()  # type: ignore
                 should_evolve = resp_json["should_evolve"]
 
                 if should_evolve:
