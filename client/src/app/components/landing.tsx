@@ -7,6 +7,17 @@ export default function Landing() {
     <div className="flex min-h-screen flex-col px-4 py-8">
       <div className="flex flex-1 flex-col items-center justify-center">
 
+        <div className="mb-8">
+          <div className="relative gap-2 inline-flex items-center rounded-md px-4 py-1.5 text-xs font-medium font-paragraphbg-white/70 backdrop-blur-md border border-stone-200 shadow-[0_6px_20px_rgba(0,0,0,0.06)] text-stone-600 overflow-hidden">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse" />
+
+            <span className="relative z-10">
+              Currently in development
+            </span>
+
+          </div>
+        </div>
+
         {/* Title */}
         <div className="mb-6 text-center">
           <h1 className="font-header text-5xl font-extrabold text-blue-500 md:text-8xl">
