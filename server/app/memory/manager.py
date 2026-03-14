@@ -39,7 +39,9 @@ class MemoryManager:
                 "tags": [],
             }
 
-    async def add_note(self, content: str, time: str, **kwargs) -> str:
+    async def add_note(
+        self, content: str, time: str, user_id: str, session_id: str, **kwargs
+    ) -> str:
         if time is not None:
             kwargs["timestamp"] = time
 
@@ -49,8 +51,6 @@ class MemoryManager:
 
         if needs_analysis:
             analysis = await self.analyze_content(content)
-
-            print(f"Got the analysis:{analysis}")
 
             # Update if not present
             if not note.keywords:
@@ -62,11 +62,17 @@ class MemoryManager:
             if not note.tags:
                 note.tags = analysis.get("tags", [])
 
-        evo_label, note = await self.process_memory(note)
+        evo_label, note = await self.process_memory(
+            note,
+            user_id=user_id,
+            session_id=session_id,
+        )
         self.memories[note.id] = note
 
         metadata = {
             "id": note.id,
+            "user_id": user_id,
+            "session_id": session_id,
             "content": note.content,
             "keywords": note.keywords,
             "links": note.links,
@@ -78,25 +84,45 @@ class MemoryManager:
             "tags": note.tags,
         }
 
-        self.retriever.add_document(note.content, metadata, note.id)
+        self.retriever.add_document(
+            document=note.content,
+            metadata=metadata,
+            doc_id=note.id,
+            user_id=user_id,
+            session_id=session_id,
+        )
 
         if evo_label == True:
             self.evo_cnt += 1
             if self.evo_cnt % self.evo_threshold == 0:
                 # Consolidate memories when threshold is reached
-                self.consolidate_memories()
+                self.consolidate_memories(
+                    user_id=user_id,
+                    session_id=session_id,
+                )
 
         return note.id
 
-    def search(self, query: str, k: int = 5) -> List[Dict[str, Any]]:
+    def search(
+        self,
+        query: str,
+        user_id: str,
+        session_id: str,
+        k: int = 5,
+    ) -> List[Dict[str, Any]]:
         """Search memories using Pinecone hybrid retrieval."""
 
         try:
-            results = self.retriever.search(query, k)
+            results = self.retriever.search(
+                query,
+                user_id=user_id,
+                session_id=session_id,
+                k=k,
+            )
 
             memories = []
 
-            for match in results["matches"]:
+            for match in results["matches"]:  # type:ignore
                 meta = match["metadata"]
                 # doc_id = meta["id"]
 
@@ -116,7 +142,7 @@ class MemoryManager:
             print(f"Error in memory search: {str(e)}")
             return []
 
-    def consolidate_memories(self):
+    def consolidate_memories(self, user_id: str, session_id: str):
         for memory in self.memories.values():
             metadata = {
                 "id": memory.id,
@@ -131,17 +157,26 @@ class MemoryManager:
                 "category": memory.category,
                 "tags": memory.tags,
             }
-            self.retriever.add_document(memory.content, metadata, memory.id)
+            self.retriever.add_document(
+                memory.content, metadata, memory.id, user_id, session_id
+            )
 
-    def find_related_memories(self, query: str, k: int = 5) -> tuple[str, List[str]]:
+    def find_related_memories(
+        self, query: str, user_id: str, session_id: str, k: int = 5
+    ) -> tuple[str, List[str]]:
 
         try:
-            results = self.retriever.search(query, k)
+            results = self.retriever.search(
+                query,
+                user_id=user_id,
+                session_id=session_id,
+                k=k,
+            )
 
             memory_str = ""
             memory_ids = []
 
-            for match in results["matches"]:
+            for match in results["matches"]:  # type:ignore
                 meta = match["metadata"]
                 doc_id = meta["id"]
 
@@ -161,12 +196,15 @@ class MemoryManager:
             print(f"Error in find_related_memories: {str(e)}")
             return "", []
 
-    async def process_memory(self, note: MemoryNote) -> tuple[bool, MemoryNote]:
+    async def process_memory(
+        self, note: MemoryNote, user_id: str, session_id: str
+    ) -> tuple[bool, MemoryNote]:
         """Process a memory note and determine if it should evolve"""
 
         try:
-            neighbors_text, memory_ids = self.find_related_memories(note.content, k=5)
-
+            neighbors_text, memory_ids = self.find_related_memories(
+                note.content, user_id, session_id, k=5
+            )
             if not neighbors_text or not memory_ids:
                 return False, note
 
@@ -191,6 +229,7 @@ class MemoryManager:
                     actions = resp_json["actions"]
                     for action in actions:
                         if action == "strengthen":
+                            print("strengthen")
                             suggest_connections = resp_json["suggested_connections"]
                             new_tags = resp_json["tags_to_update"]
 
@@ -198,6 +237,7 @@ class MemoryManager:
                             note.tags = new_tags
 
                         elif action == "update_neighbor":
+                            print("In update neighbour")
                             new_context_neighborhood = resp_json[
                                 "new_context_neighborhood"
                             ]
@@ -207,12 +247,9 @@ class MemoryManager:
                                 min(len(memory_ids), len(new_tags_neighborhood))
                             ):
                                 memory_id = memory_ids[i]
-                                results = self.retriever.search(memory_id, k=5)
+                                results = self.retriever.fetch(memory_id)
 
-                                if not results["matches"]:
-                                    continue
-
-                                meta = results["matches"][0]["metadata"]
+                                meta = results["vectors"][0]["metadata"]
 
                                 if i < len(new_tags_neighborhood):
                                     meta["tags"] = new_tags_neighborhood[i]
@@ -222,7 +259,11 @@ class MemoryManager:
                                     meta["context"] = new_context_neighborhood[i]
 
                                 self.retriever.add_document(
-                                    meta["content"], meta, memory_id
+                                    meta["content"],
+                                    meta,
+                                    memory_id,
+                                    user_id,
+                                    session_id,
                                 )
                 return should_evolve, note
 

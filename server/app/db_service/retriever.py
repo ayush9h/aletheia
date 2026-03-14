@@ -1,6 +1,6 @@
 import json
 import uuid
-from typing import Dict
+from typing import Dict, Optional
 
 from pinecone import Pinecone, ServerlessSpec
 from sentence_transformers import SentenceTransformer
@@ -31,7 +31,14 @@ class PineconeRetriever:
 
         self.index = self.pc.Index(index_name)
 
-    def add_document(self, document: str, metadata: Dict, doc_id: str):
+    def add_document(
+        self,
+        document: str,
+        metadata: Dict,
+        doc_id: str,
+        user_id: str,
+        session_id: str,
+    ):
 
         enhanced_document = document
 
@@ -56,6 +63,8 @@ class PineconeRetriever:
             k: json.dumps(v) if isinstance(v, (list, dict)) else str(v)
             for k, v in metadata.items()
         }
+        processed_metadata["user_id"] = user_id
+        processed_metadata["session_id"] = session_id
 
         if not doc_id:
             doc_id = str(uuid.uuid4())
@@ -69,13 +78,29 @@ class PineconeRetriever:
     def delete_document(self, doc_id: str):
         self.index.delete(ids=[doc_id])
 
-    def search(self, query: str, k: int = 5):
+    def search(
+        self,
+        query: str,
+        user_id: str,
+        session_id: Optional[str] = None,
+        k: int = 5,
+    ):
 
         vector = self.model.encode(query).tolist()
 
-        results = self.index.query(vector=vector, top_k=k, include_metadata=True)
+        filter_dict = {"user_id": {"$eq": user_id}}
 
-        for match in results["matches"]:
+        if session_id:
+            filter_dict["session_id"] = {"$eq": session_id}
+
+        results = self.index.query(
+            vector=vector,
+            top_k=k,
+            include_metadata=True,
+            filter=filter_dict,  # type:ignore
+        )
+
+        for match in results["matches"]:  # type:ignore
             meta = match.get("metadata", {})
             for key, value in meta.items():
                 try:
@@ -87,3 +112,6 @@ class PineconeRetriever:
                     pass
 
         return results
+
+    def fetch(self, doc_id: str):
+        return self.index.fetch(ids=[doc_id])
