@@ -1,97 +1,135 @@
-<h1 align="center" id="title" style="display:flex; align-items:center; justify-content:center; gap:12px;">
-  ALETHEIAGPT
-</h1>
+<body style="line-height:1.6; max-width:1000px; margin:auto;">
+
+<h1 align="center">Aletheia</h1>
 
 <p align="center">
-ALETHEIAGPT is a modern web-based platform for interacting with an AI-powered conversational system. It provides a responsive, component-driven UI optimized for real-time chat, analytics visualization, and rich, markdown-based AI responses.
+Aletheia is a conversational AI platform designed for modern AI products.
+It combines real-time chat, structured memory, and modular orchestration into a scalable developer-friendly system.
+</p>
+
+<p align="center">
+  <img src="https://www.infralovers.com/images/posts/ai-for-devops-engineers/langchain_logo.png" height="45"/>
+  <img src="https://miro.medium.com/1*b9wiAr_HG6ct7uYtCnf0xA.png" height="28"/>
+  <img src="https://assets.vercel.com/image/upload/v1662130559/nextjs/Icon_light_background.png" height="45"/>
+  <img src="https://fastapi.tiangolo.com/img/logo-margin/logo-teal.png" height="45"/>
+  <img src="https://cdn.worldvectorlogo.com/logos/postgresql.svg" height="45"/>
+  <img src="https://brandlogos.net/wp-content/uploads/2025/10/docker_mark-logo_brandlogos.net_yetav.png" height="45"/>
 </p>
 
 
-<p align="center">
-  <img src="https://www.infralovers.com/images/posts/ai-for-devops-engineers/langchain_logo.png" height="45" alt="LangGraph / LangChain"/>
-  <img src="https://miro.medium.com/1*b9wiAr_HG6ct7uYtCnf0xA.png" height="28" alt="Groq"/>
-  <img src="https://assets.vercel.com/image/upload/v1662130559/nextjs/Icon_light_background.png" height="45" alt="Next.js"/>
-  <img src="https://fastapi.tiangolo.com/img/logo-margin/logo-teal.png" height="45" alt="FastAPI"/>
-  <img src="https://cdn.worldvectorlogo.com/logos/postgresql.svg" height="45" alt="PostgreSQL"/>
-  <img src="https://brandlogos.net/wp-content/uploads/2025/10/docker_mark-logo_brandlogos.net_yetav.png" height="45" alt="Docker"/>
+
+<h2>Memory System</h2>
+<p>
+Aletheia implements a structured conversational memory architecture inspired by modern research in persistent LLM systems.
 </p>
 
+<p>
+Reference:<br/>
+<a href="https://arxiv.org/pdf/2502.12110" target="_blank">
+Persistent Memory for Conversational AI Systems
+</a>
+</p>
 
+<ul>
+<li>Context-aware memory retrieval</li>
+<li>Long-term interaction persistence</li>
+<li>Memory summarization pipelines</li>
+<li>Graph-driven agent orchestration</li>
+</ul>
 
+<h2>Product Interface</h2>
 
+<h3>Model Selection</h3>
+<p align="center">
+<img src="https://lh3.googleusercontent.com/d/1sfIfVvmuJ2UJuvEdxr1S4zRv62r96GFx=w1000?authuser=0" width="1000"/>
+</p>
 
-<figure align="center">
-  <img src="https://lh3.googleusercontent.com/d/1sfIfVvmuJ2UJuvEdxr1S4zRv62r96GFx=w1000?authuser=0" alt="Model Selection Interface" width="1000">
-  <figcaption><b>Figure 1:</b> Model Selection Interface</figcaption>
-</figure>
+<h3>Personalization Controls</h3>
+<p align="center">
+<img src="https://lh3.googleusercontent.com/d/1i1J_b5U3qGiMl_jLAgay3xc7x4mESfOe=w1000?authuser=0" width="1000"/>
+</p>
 
-<figure align="center">
-  <img src="https://lh3.googleusercontent.com/d/1i1J_b5U3qGiMl_jLAgay3xc7x4mESfOe=w1000?authuser=0" alt="Personalization Options" width="1000">
-  <figcaption><b>Figure 2:</b> Personalization Options</figcaption>
-</figure>
+<h3>Conversational Interface</h3>
+<p align="center">
+<img src="https://lh3.googleusercontent.com/d/1pi-U99cqAePW2lhJbvrQFif9JvBlyXak=w1000?authuser=0" width="1000"/>
+</p>
 
-<figure align="center">
-  <img src="https://lh3.googleusercontent.com/d/1pi-U99cqAePW2lhJbvrQFif9JvBlyXak=w1000?authuser=0" alt="Chat Interface" width="1000">
-  <figcaption><b>Figure 3:</b> Chat Interface</figcaption>
-</figure>
+<h2> Architecture Overview</h2>
 
-<h2>Current Issues</h2>
+<h3>Frontend</h3>
+<ul>
+<li>Next.js</li>
+<li>Component-driven UI system</li>
+<li>NextAuth authentication</li>
+</ul>
 
-## 1. NeonDB Free Tier Inactivity
+<h3>Backend</h3>
+<ul>
+<li>FastAPI service layer</li>
+<li>LangGraph / LangChain orchestration</li>
+<li>Groq inference integration</li>
+</ul>
 
-- The application currently uses **NeonDB (Free Tier)** for persistence.
-- NeonDB may **automatically suspend the database after inactivity**, which can result in:
-  - Initial request failures
-- **Cause:** Free-tier sleep behavior enforced by NeonDB.
-- **Workaround:**
-  - Retry the request after a short delay, or
-  - Trigger a warm-up query on application startup.
+<h3>Infrastructure</h3>
+<ul>
+<li>PostgreSQL persistence (NeonDB)</li>
+<li>Docker containerization</li>
+<li>Compose-based local orchestration</li>
+</ul>
 
+<h2>Known Platform Constraint</h2>
 
-<h2>🛠️ Installation Steps:</h2>
+<h3>NeonDB Free Tier Sleep</h3>
+<p>The database may enter idle suspension.</p>
 
-<strong>Follow steps to install client dependencies:</strong>
+<p><strong>Impact:</strong></p>
+<ul>
+<li>First request latency</li>
+<li>Temporary connection failure</li>
+</ul>
 
-<p>1. Navigate to client directory</p>
+<p><strong>Mitigation:</strong></p>
+<ul>
+<li>Warm-up query at startup</li>
+<li>Retry logic in client</li>
+</ul>
 
-<pre><code>cd client</code></pre>
+<h2>🛠️ Local Development</h2>
 
-<p>2. Install dependencies</p>
+<h3>Client</h3>
+<pre>
+cd client
+npm install
+npm run dev
+</pre>
 
-<pre><code>npm install</code></pre>
+<p>Environment:</p>
+<pre>
+GITHUB_CLIENT_ID=
+GITHUB_CLIENT_SECRET=
+NEXTAUTH_SECRET=
+NEXT_PUBLIC_API_URL=
+</pre>
 
-<p>3. Set environment variables</p>
+<h3>Server</h3>
+<pre>
+uv venv .venv
+./.venv/Scripts/activate
+docker build -t server .
+docker run -p 8080:8080 server
+</pre>
 
-<pre><code>GITHUB_CLIENT_ID
-GITHUB_CLIENT_SECRET
-NEXTAUTH_SECRET
-NEXT_PUBLIC_API_URL</code></pre>
+<p>Environment:</p>
+<pre>
+GROQ_API_KEY=
+DB_URL=
+PINECONE_API_KEY=
+VOYAGE_API_KEY=
+</pre>
 
-<p>4. Run client</p>
+<pre>
+docker compose up
+</pre>
 
-<pre><code>npm run dev</code></pre>
-
-<strong>Follow steps to install server dependencies:</strong>
-
-<p>1. Create virtual environment</p>
-
-<pre><code>python -m venv .venv</code></pre>
-
-<p>2. Activate virtual environment</p>
-
-<pre><code>./.venv/Scripts/activate</code></pre>
-
-<p>3. Set environment variables</p>
-
-<pre><code>GROQ_API_KEY=
-DB_URL=</code></pre>
-
-<p>4. Docker Build Command</p>
-
-<pre><code>docker build -t server .</code></pre>
-
-<p>5. Run the Docker Container or use Docker Compose</p>
-
-<pre><code>docker run -p 8080:8080 server</code></pre>
-
-<pre><code>docker compose up</code></pre>
+</body>
+</html>

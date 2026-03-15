@@ -1,6 +1,7 @@
 from app.db_service.db import get_session
 from app.db_service.models import UserPrefs
 from app.schemas.user_pref import UserPref
+from app.utils.logger import logger
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
@@ -18,7 +19,6 @@ async def store_user_pref(
     session: AsyncSession = Depends(get_session),
 ):
 
-
     try:
         stmt = select(UserPrefs).where(UserPrefs.user_id == payload.userId)
         result = await session.execute(stmt)
@@ -28,6 +28,7 @@ async def store_user_pref(
             pref.assistant_behavior = payload.userCustomInstruction
             pref.alias = payload.userPronouns
             pref.user_personal_description = payload.userHobbies
+            logger.info("User preferences updated")
         else:
             pref = UserPrefs(
                 user_id=payload.userId,
@@ -36,6 +37,9 @@ async def store_user_pref(
                 user_personal_description=payload.userHobbies,
             )
             session.add(pref)
+            logger.info("New user preferences created")
+
+        logger.info("User preferences updated successfully")
 
         await session.commit()
 
@@ -63,21 +67,26 @@ async def get_user_pref(
     user_id: str,
     session: AsyncSession = Depends(get_session),
 ):
-    stmt = select(UserPrefs).where(UserPrefs.user_id == user_id)
-    result = await session.execute(stmt)
-    pref = result.scalar_one_or_none()
+    try:
+        stmt = select(UserPrefs).where(UserPrefs.user_id == user_id)
+        result = await session.execute(stmt)
+        pref = result.scalar_one_or_none()
 
-    if not pref:
+        if not pref:
+            return {
+                "userId": user_id,
+                "userCustomInstruction": "",
+                "userPronouns": "",
+                "userHobbies": "",
+            }
+
         return {
-            "userId": user_id,
-            "userCustomInstruction": "",
-            "userPronouns": "",
-            "userHobbies": "",
+            "userId": pref.user_id,
+            "userCustomInstruction": pref.assistant_behavior or "",
+            "userPronouns": pref.alias or "",
+            "userHobbies": pref.user_personal_description or "",
         }
 
-    return {
-        "userId": pref.user_id,
-        "userCustomInstruction": pref.assistant_behavior or "",
-        "userPronouns": pref.alias or "",
-        "userHobbies": pref.user_personal_description or "",
-    }
+    except Exception as e:
+        await session.rollback()
+        logger.error(f"Error occurred due to {e}")

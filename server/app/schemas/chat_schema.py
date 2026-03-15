@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 class ChatRequest(BaseModel):
     model: Literal[
         "openai/gpt-oss-120b",
-        "qwen/qwen3-32b",
+        "openai/gpt-oss-20b",
         "llama-3.1-8b-instant",
     ] = Field(
         ...,

@@ -6,6 +6,7 @@ from app.prompts.mem import ANALYSE_PROMPT, EVOLUTION_PROMPT
 from app.schemas.mem.evolve_schema import EvolveSchema
 from app.schemas.mem.note_schema import NoteSchema
 from app.utils.config import settings
+from app.utils.logger import logger
 from langchain_groq import ChatGroq
 
 
@@ -32,7 +33,7 @@ class MemoryManager:
             return parsed.model_dump()  # type:ignore
 
         except Exception as e:
-            print(f"Error occured during analyzing content:{e}")
+            logger.error(f"Error occurred during analyzing content:{e}")
             return {
                 "keywords": [],
                 "context": "General",
@@ -139,7 +140,7 @@ class MemoryManager:
             return memories[:k]
 
         except Exception as e:
-            print(f"Error in memory search: {str(e)}")
+            logger.error(f"Error in memory search: {str(e)}")
             return []
 
     def consolidate_memories(self, user_id: str, session_id: str):
@@ -193,7 +194,7 @@ class MemoryManager:
 
             return memory_str, memory_ids
         except Exception as e:
-            print(f"Error in find_related_memories: {str(e)}")
+            logger.error(f"Error in find_related_memories: {str(e)}")
             return "", []
 
     async def process_memory(
@@ -268,9 +269,9 @@ class MemoryManager:
                 return should_evolve, note
 
             except Exception as e:
-                print(f"Error occured due to {e}")
+                logger.error(f"Error ocurred in evolving messages:{e}")
                 return False, note
 
         except Exception as e:
-            print(e)
+            logger.error(f"Error occured in processing memory : {e}")
             return False, note

@@ -3,6 +3,7 @@ from typing import List
 
 from app.db_service.db import get_session
 from app.db_service.models import UserSessions
+from app.utils.logger import logger
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
@@ -19,24 +20,31 @@ async def users_session(
     user_id: str,
     session: AsyncSession = Depends(get_session),
 ) -> List[dict]:
-    stmt = (
-        select(UserSessions)
-        .where(UserSessions.user_id == user_id)
-        .order_by(UserSessions.created_at.desc())  # type: ignore
-    )
+    try:
+        stmt = (
+            select(UserSessions)
+            .where(UserSessions.user_id == user_id)
+            .order_by(UserSessions.created_at.desc())  # type: ignore
+        )
 
-    result = await session.execute(stmt)
-    sessions = result.scalars().all()
+        result = await session.execute(stmt)
+        sessions = result.scalars().all()
 
-    return [
-        {
-            "session_id": s.session_id,
-            "session_title": s.session_title,
-            "created_at": s.created_at,
-            "is_pinned": s.is_pinned,
-        }
-        for s in sessions
-    ]
+        logger.info(f"Successfully fetched sessions")
+
+        return [
+            {
+                "session_id": s.session_id,
+                "session_title": s.session_title,
+                "created_at": s.created_at,
+                "is_pinned": s.is_pinned,
+            }
+            for s in sessions
+        ]
+    except Exception as e:
+        await session.rollback()
+        logger.error(f"Error occurred in fetching session due to {e}")
+        return []
 
 
 @session_router.delete(
@@ -49,22 +57,25 @@ async def delete_session(
     user_id: str,
     session: AsyncSession = Depends(get_session),
 ):
-    stmt = select(UserSessions).where(
-        UserSessions.session_id == session_id,
-        UserSessions.user_id == user_id,
-    )
-    result = await session.execute(stmt)
-    db_session = result.scalar_one_or_none()
+    try:
+        stmt = select(UserSessions).where(
+            UserSessions.session_id == session_id,
+            UserSessions.user_id == user_id,
+        )
+        result = await session.execute(stmt)
+        db_session = result.scalar_one_or_none()
 
-    if not db_session:
-        return {
-            "status": "Exception",
-            "message": f"Exception occurred : Session not found",
-            "code": 404,
-        }
-    await session.delete(db_session)
-    await session.commit()
-
+        if not db_session:
+            return {
+                "status": "Exception",
+                "message": f"Exception occurred : Session not found",
+                "code": 404,
+            }
+        await session.delete(db_session)
+        await session.commit()
+    except Exception as e:
+        await session.rollback()
+        logger.error(f"Error occurred while deleting a session: {e}")
 
 @session_router.post("/sessions/{session_id}/toggle-pin-session")
 async def pin_session(
@@ -72,24 +83,29 @@ async def pin_session(
     user_id: str,
     session: AsyncSession = Depends(get_session),
 ):
-    stmt = select(UserSessions).where(
-        UserSessions.session_id == session_id,
-        UserSessions.user_id == user_id,
-    )
+    try:
+        stmt = select(UserSessions).where(
+            UserSessions.session_id == session_id,
+            UserSessions.user_id == user_id,
+        )
 
-    result = await session.execute(stmt)
-    db_session = result.scalar_one_or_none()
+        result = await session.execute(stmt)
+        db_session = result.scalar_one_or_none()
 
-    if not db_session:
-        return []
+        if not db_session:
+            return []
 
-    if db_session.is_pinned:
-        db_session.is_pinned = False
-        db_session.pinned_at = None
-    else:
-        db_session.is_pinned = True
-        db_session.pinned_at = datetime.utcnow()
+        if db_session.is_pinned:
+            db_session.is_pinned = False
+            db_session.pinned_at = None
+        else:
+            db_session.is_pinned = True
+            db_session.pinned_at = datetime.utcnow()
 
-    await session.commit()
+        await session.commit()
 
-    return await users_session(user_id, session)
+        return await users_session(user_id, session)
+
+    except Exception as e:
+        await session.rollback()
+        logger.error(f"Pinning chat failed due to {e}")

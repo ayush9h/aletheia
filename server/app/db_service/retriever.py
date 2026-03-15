@@ -6,6 +6,7 @@ from typing import Dict, Optional
 from app.utils.config import settings
 from pinecone import Pinecone, ServerlessSpec
 from voyageai.client import Client
+from app.utils.logger import logger
 
 
 class PineconeRetriever:
@@ -126,5 +127,4 @@ class PineconeRetriever:
         return results
 
     def fetch(self, doc_id: str):
-        return self.index.fetch(ids=[doc_id])
         return self.index.fetch(ids=[doc_id])
