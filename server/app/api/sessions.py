@@ -2,11 +2,11 @@ from datetime import datetime
 from typing import List
 
 from app.db_service.db import get_session
-from app.db_service.models import UserSessions
+from app.db_service.models import UserChats, UserSessions
 from app.utils.logger import logger
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlmodel import select
+from sqlmodel import delete, select
 
 session_router = APIRouter(prefix="/v1")
 
@@ -109,3 +109,41 @@ async def pin_session(
     except Exception as e:
         await session.rollback()
         logger.error(f"Pinning chat failed due to {e}")
+
+
+@session_router.delete(
+    "/sessions/all-chats/{user_id}",
+    tags=["user_delete_chats_all"],
+    description="Delete all chats and sessions for a user",
+)
+async def all_chats(
+    user_id: str,
+    session: AsyncSession = Depends(get_session),
+):
+
+    try:
+
+        result = await session.execute(
+            select(UserSessions.session_id).where(UserSessions.user_id == user_id)
+        )
+        session_ids = result.scalars().all()
+
+        if not session_ids:
+            return {"message": "No sessions found"}
+
+        session_ids = [sid for sid in session_ids]
+
+        await session.execute(
+            delete(UserChats).where(UserChats.session_id.in_(session_ids))
+        )
+
+        await session.execute(
+            delete(UserSessions).where(UserSessions.user_id == user_id)  # type:ignore
+        )
+        await session.commit()
+
+        return {"message": "All chats deleted successfully"}
+
+    except Exception as e:
+        await session.rollback()
+        logger.error(f"Error deleting chats: {e}")
