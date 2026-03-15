@@ -31,6 +31,7 @@ export default function ChatWindow({
     <div className="flex h-screen flex-col shadow-xl">
       <Navbar
         selectedModel={selectedModel}
+        dispatch={dispatch}
         setSelectedModel={(m) => dispatch({ type: "SET_MODEL", payload: m })}
         userPref={userPref}
         setUserPref={(v) => dispatch({ type: "SET_USER_PREF", payload: v })}

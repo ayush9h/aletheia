@@ -13,19 +13,21 @@ import { SETTING_SECTIONS } from "../config/userSettings";
 import { useState } from "react";
 import PersonalizationSettings from "./settings/personalization";
 import DataControls from "./settings/data-controls";
-
+import { ChatAction } from "../types/userChat";
 type SettingsDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   userPref:UserPrefProps;
-  setUserPref: (userPref:UserPrefProps)=>void
+  setUserPref: (userPref:UserPrefProps)=>void,
+  dispatch: React.Dispatch<ChatAction>;
 };
 
 export function SettingsDialog({
   open,
   onOpenChange,
   userPref,
-  setUserPref
+  setUserPref,
+  dispatch,
 }: SettingsDialogProps) {
 
   const { data: session } = useSession();
@@ -47,7 +49,7 @@ export function SettingsDialog({
         )
 
       case 'data-controls':
-        return (<DataControls userId={userId as string}/>)
+        return (<DataControls userId={userId as string} dispatch={dispatch}/>)
     }
   }
 

@@ -22,13 +22,14 @@ import {
 import { SettingsDialog } from "./settings-dialog";
 import { UserPrefProps } from "../types/userPref";
 import { MODEL_GROUPS } from "../config/models";
-
+import { ChatAction } from "../types/userChat";
 
 type NavbarProps = {
   selectedModel: string;
   setSelectedModel: (model: string) => void;
   userPref: UserPrefProps;
   setUserPref:(userPref:UserPrefProps) => void;
+  dispatch: React.Dispatch<ChatAction>;
 };
 
 
@@ -37,6 +38,7 @@ export default function Navbar({
   setSelectedModel,
   userPref,
   setUserPref,
+  dispatch,
 }: NavbarProps) {
   
   const { data: session } = useSession();
@@ -120,7 +122,7 @@ export default function Navbar({
           </DropdownMenuContent>
         </DropdownMenu>
 
-       <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} userPref={userPref} setUserPref={setUserPref}/>
+       <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} userPref={userPref} setUserPref={setUserPref} dispatch={dispatch}/>
       </div>
     </nav>
   );

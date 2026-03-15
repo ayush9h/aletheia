@@ -48,3 +48,8 @@ export async function deleteUserSession(sessionId: number, userId: string) {
     },
   });
 }
+
+
+export async function deleteUserChatsAll(userId: string) {
+  return api.delete(`/sessions/all-chats/${userId}`,);
+}
