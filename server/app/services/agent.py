@@ -61,7 +61,8 @@ Relevant past memories:
     pref_block = f"""
 User Custom Instruction: {state["user_preference"].userCustomInstruction}
 User Hobbies: {state["user_preference"].userHobbies}
-User Pronouns: {state["user_preference"].userPronouns}
+User Nickname: {state["user_preference"].nickname}
+User occupation: {state["user_preference"].occupation}
 """
     agent = agent = create_agent(
         model=ChatGroq(
@@ -76,6 +77,9 @@ User Pronouns: {state["user_preference"].userPronouns}
         + [
             SystemMessage(content=memory_block),
             SystemMessage(content=pref_block),
+            SystemMessage(
+                content=f"Respond back in {state['user_preference'].baseTone} fashion manner."
+            ),
         ]
     }
     result = await agent.ainvoke(agent_input)  # type:ignore

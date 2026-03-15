@@ -8,9 +8,12 @@ class UserPrefs(SQLModel, table=True):
     __tablename__ = "user_prefs"  # type: ignore
 
     user_id: str | None = Field(primary_key=True, index=True)
-    alias: str
+    nickname: str
     assistant_behavior: str
     user_personal_description: str
+    occupation: str
+    baseTone: str
+
 
 
 # ==================User Chats================

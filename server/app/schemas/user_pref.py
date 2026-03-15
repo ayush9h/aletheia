@@ -9,9 +9,17 @@ class UserPref(BaseModel):
         "",
         description="Custom system instructions provided by the user",
     )
-    userPronouns: str = Field(
+    nickname: str = Field(
         "",
         description="User nickname or pronouns",
+    )
+    occupation: str = Field(
+        "",
+        description="User's occupation",
+    )
+    baseTone: str = Field(
+        "",
+        description="Assistant tone to be responded back",
     )
     userHobbies: str = Field(
         "",

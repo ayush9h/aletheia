@@ -26,15 +26,17 @@ async def store_user_pref(
 
         if pref:
             pref.assistant_behavior = payload.userCustomInstruction
-            pref.alias = payload.userPronouns
+            pref.alias = payload.nickname
             pref.user_personal_description = payload.userHobbies
             logger.info("User preferences updated")
         else:
             pref = UserPrefs(
                 user_id=payload.userId,
-                alias=payload.userPronouns,
+                nickname=payload.nickname,
                 assistant_behavior=payload.userCustomInstruction,
                 user_personal_description=payload.userHobbies,
+                occupation=payload.occupation,
+                baseTone=payload.baseTone,
             )
             session.add(pref)
             logger.info("New user preferences created")
@@ -76,15 +78,19 @@ async def get_user_pref(
             return {
                 "userId": user_id,
                 "userCustomInstruction": "",
-                "userPronouns": "",
+                "nickname": "",
                 "userHobbies": "",
+                "occupation": "",
+                "baseTone": "",
             }
 
         return {
             "userId": pref.user_id,
             "userCustomInstruction": pref.assistant_behavior or "",
-            "userPronouns": pref.alias or "",
+            "nickname": pref.nickname or "",
             "userHobbies": pref.user_personal_description or "",
+            "occupation": pref.occupation,
+            "baseTone": pref.baseTone,
         }
 
     except Exception as e:
