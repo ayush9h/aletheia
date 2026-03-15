@@ -5,7 +5,7 @@ ANALYSE_PROMPT = """Generate a structured analysis of the following content by:
 2. Extracting core themes and contextual elements
 3. Creating relevant categorical tags
 
-Format the response as a JSON object:
+Format the response strictly as a JSON object:
 {
     "keywords": [
         // several specific, distinct keywords that capture key concepts and terminology
@@ -51,7 +51,7 @@ Based on this information, determine:
 Tags should be determined by the content of these characteristic of these memories, which can be used to retrieve them later and categorize them.
 Note that the length of new_tags_neighborhood must equal the number of input neighbors, and the length of new_context_neighborhood must equal the number of input neighbors.
 The number of neighbors is {neighbor_number}.
-Return your decision in JSON format with the following structure:
+Return your decision strictly in JSON format with the following structure:
 {{
     "should_evolve": True or False,
     "actions": ["strengthen", "update_neighbor"],

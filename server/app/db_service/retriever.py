@@ -1,9 +1,11 @@
 import json
+import os
 import uuid
 from typing import Dict, Optional
 
+from app.utils.config import settings
 from pinecone import Pinecone, ServerlessSpec
-from sentence_transformers import SentenceTransformer
+from voyageai.client import Client
 
 
 class PineconeRetriever:
@@ -12,11 +14,14 @@ class PineconeRetriever:
         self,
         api_key: str,
         index_name: str = "aletheiamemories",
-        model_name: str = "all-MiniLM-L6-v2",
-        dimension: int = 384,
+        model_name: str = "voyage-4-lite",
+        dimension: int = 1024,
     ):
         self.pc = Pinecone(api_key=api_key)
-        self.model = SentenceTransformer(model_name)
+        self.voyage = Client(
+            api_key=settings.VOYAGE_API_KEY,
+        )
+        self.model_name = model_name
 
         if index_name not in [i["name"] for i in self.pc.list_indexes()]:
             self.pc.create_index(
@@ -30,6 +35,13 @@ class PineconeRetriever:
             )
 
         self.index = self.pc.Index(index_name)
+
+    def _embed(self, text: str):
+        emb = self.voyage.embed(
+            texts=[text],
+            model=self.model_name,
+        )
+        return emb.embeddings[0]
 
     def add_document(
         self,
@@ -57,7 +69,7 @@ class PineconeRetriever:
                 tags = json.loads(tags)
             enhanced_document += f" tags: {', '.join(tags)}"
 
-        vector = self.model.encode(enhanced_document).tolist()
+        vector = self._embed(enhanced_document)
 
         processed_metadata = {
             k: json.dumps(v) if isinstance(v, (list, dict)) else str(v)
@@ -70,8 +82,8 @@ class PineconeRetriever:
             doc_id = str(uuid.uuid4())
 
         self.index.upsert(
-            [
-                {"id": doc_id, "values": vector, "metadata": processed_metadata},
+            vectors=[
+                (doc_id, vector, processed_metadata),  # type: ignore
             ]
         )
 
@@ -86,7 +98,7 @@ class PineconeRetriever:
         k: int = 5,
     ):
 
-        vector = self.model.encode(query).tolist()
+        vector = self._embed(query)
 
         filter_dict = {"user_id": {"$eq": user_id}}
 
@@ -114,4 +126,5 @@ class PineconeRetriever:
         return results
 
     def fetch(self, doc_id: str):
+        return self.index.fetch(ids=[doc_id])
         return self.index.fetch(ids=[doc_id])
