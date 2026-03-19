@@ -1,5 +1,5 @@
-import { Session, Message } from "../userMessage";
-import { UserPrefProps } from "../userPref";
+import { Session, Message } from "../user-message";
+import { UserPrefProps } from "../user-pref";
 
 {
   /**

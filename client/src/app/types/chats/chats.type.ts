@@ -1,6 +1,6 @@
-import { Message } from "@/app/types/userMessage";
+import { Message } from "@/app/types/user-message";
 import { ChatAction } from "@/app/types/chats/chat-action";
-import { UserPrefProps } from "@/app/types/userPref";
+import { UserPrefProps } from "@/app/types/user-pref";
 /**
  * Chat Input Props
  */
