@@ -2,7 +2,7 @@
  *
  * List of MessageBubbles
  */
-import { Message } from "@/app/types/userMessage";
+import { Message } from "@/app/types/user-message";
 import MessageBubble from "./message-bubble";
 import { memo } from "react";
 

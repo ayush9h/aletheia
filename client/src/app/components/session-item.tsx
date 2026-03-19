@@ -9,7 +9,7 @@ import {
   TrashIcon,
   DrawingPinIcon,
 } from "@radix-ui/react-icons";
-import { SessionItemProps } from "../types/userSession";
+import { SessionItemProps } from "../types/user-session";
 
 export function SessionItem(SessionItemProps: SessionItemProps) {
   return (

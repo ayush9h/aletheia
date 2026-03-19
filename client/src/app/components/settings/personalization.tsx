@@ -12,7 +12,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/app/components/ui/dialog";
-import { UserPrefProps } from "@/app/types/userPref";
+import { UserPrefProps } from "@/app/types/user-pref";
 import { PersonalizedSettingProps } from "@/app/types/settings/preferences.type";
 import {
   Select,

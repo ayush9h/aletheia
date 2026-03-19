@@ -1,7 +1,7 @@
 import { useEffect, useCallback, Dispatch } from "react";
 import { saveUserPref, getUserPref } from "../lib/api/userData";
 import { ChatAction } from "../types/chats/chat-action";
-import { UserPrefProps } from "../types/userPref";
+import { UserPrefProps } from "../types/user-pref";
 
 /** Fetch user AI preferences into chat state */
 export function useUserPreferences(

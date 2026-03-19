@@ -1,5 +1,5 @@
 import { api } from "./axiosRoute";
-import { UserPrefProps } from "@/app/types/userPref";
+import { UserPrefProps } from "@/app/types/user-pref";
 
 /** Send a chat query with model selection, session context, and user personalization */
 export async function sendChatMessage(

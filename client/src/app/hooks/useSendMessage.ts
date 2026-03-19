@@ -8,8 +8,8 @@
 import { useCallback } from "react";
 import { sendChatMessage } from "../lib/api/chatService";
 import { ChatAction } from "../types/chats/chat-action";
-import { UserPrefProps } from "../types/userPref";
-import { Session } from "../types/userMessage";
+import { UserPrefProps } from "../types/user-pref";
+import { Session } from "../types/user-message";
 
 type Params = {
   input: string;

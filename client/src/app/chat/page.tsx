@@ -5,13 +5,7 @@
  * - Initialize reducer-driven chat state
  * - Coordinate session hydration and preference loading
  * - Bridge domain hooks to layout components
- * - Manage sidebar layout state
- *
- * Architecture notes:
- * - Business logic delegated to domain hooks
- * - Page remains thin orchestration layer
- * - Reducer acts as single source of truth
- */
+ * - Manage sidebar layout state */
 "use client";
 
 import { useReducer, useState } from "react";

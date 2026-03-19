@@ -10,7 +10,7 @@ import {
   LightningBoltIcon,
   CheckIcon,
 } from "@radix-ui/react-icons";
-import { Message } from "@/app/types/userMessage";
+import { Message } from "@/app/types/user-message";
 import {
   Accordion,
   AccordionItem,

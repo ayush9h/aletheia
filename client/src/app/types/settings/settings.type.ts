@@ -1,5 +1,5 @@
 import { ChatAction } from "../chats/chat-action";
-import { UserPrefProps } from "../userPref";
+import { UserPrefProps } from "../user-pref";
 
 /** Type for user preferences dialog */
 export type SettingsDialogProps = {

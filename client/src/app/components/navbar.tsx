@@ -23,7 +23,7 @@ import {
 import { GearIcon, ExitIcon, CaretDownIcon } from "@radix-ui/react-icons";
 
 import { SettingsDialog } from "./settings-dialog";
-import { UserPrefProps } from "../types/userPref";
+import { UserPrefProps } from "../types/user-pref";
 import { MODEL_GROUPS } from "../config/models";
 import { ChatAction } from "../types/chats/chat-action";
 

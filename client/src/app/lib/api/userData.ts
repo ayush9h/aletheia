@@ -1,4 +1,4 @@
-import { UserPrefProps } from "@/app/types/userPref";
+import { UserPrefProps } from "@/app/types/user-pref";
 import { api } from "./axiosRoute";
 
 /** Fetch messages for a specific chat session */

@@ -1,4 +1,4 @@
-import { Session } from "./userMessage";
+import { Session } from "./user-message"
 /** Session Handling */
 export type SessionItemProps = {
   s: Session;

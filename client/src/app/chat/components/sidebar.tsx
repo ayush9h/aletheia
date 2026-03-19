@@ -11,7 +11,7 @@ import Image from "next/image";
 
 import { PanelLeftIcon } from "lucide-react";
 import { ChatAction } from "@/app/types/chats/chat-action";
-import { Session } from "@/app/types/userMessage";
+import { Session } from "@/app/types/user-message";
 import { useChatSession } from "@/app/hooks/useChatSession";
 import { pinSession } from "@/app/lib/api/userData";
 import { SessionItem } from "@/app/components/session-item";

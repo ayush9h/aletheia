@@ -1,4 +1,4 @@
-import { UserPrefProps } from "../userPref";
+import { UserPrefProps } from "../user-pref";
 export type PersonalizedSettingProps = {
   userPref: UserPrefProps;
   setUserPref: (pref: UserPrefProps) => void;

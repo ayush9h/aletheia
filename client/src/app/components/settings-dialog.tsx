@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Dialog, DialogContent } from "@/app/components/ui/dialog";
 import { useSession } from "next-auth/react";
 import { useSaveUserPreferences } from "../hooks/useUserPref";
-import { SETTING_SECTIONS } from "../config/userSettings";
+import { SETTING_SECTIONS } from "../config/user-settings";
 import PersonalizationSettings from "./settings/personalization";
 import DataControls from "./settings/data-controls";
 import { SettingsDialogProps } from "../types/settings/settings.type";
