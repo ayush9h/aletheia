@@ -1,3 +1,10 @@
+/**
+ * Application Navbar responsible for:
+ * - Model selection
+ * - Account controls
+ * - Settings dialog access
+ */
+
 "use client";
 
 import { useSession, signOut } from "next-auth/react";
@@ -13,25 +20,20 @@ import {
   DropdownMenuTrigger,
   DropdownMenuShortcut,
 } from "@/app/components/ui/dropdown-menu";
-import {
-  GearIcon,
-  ExitIcon,
-  CaretDownIcon,
-} from "@radix-ui/react-icons";
+import { GearIcon, ExitIcon, CaretDownIcon } from "@radix-ui/react-icons";
 
 import { SettingsDialog } from "./settings-dialog";
 import { UserPrefProps } from "../types/userPref";
 import { MODEL_GROUPS } from "../config/models";
-import { ChatAction } from "../types/userChat";
+import { ChatAction } from "../types/chats/chat-action";
 
 type NavbarProps = {
   selectedModel: string;
   setSelectedModel: (model: string) => void;
   userPref: UserPrefProps;
-  setUserPref:(userPref:UserPrefProps) => void;
+  setUserPref: (userPref: UserPrefProps) => void;
   dispatch: React.Dispatch<ChatAction>;
 };
-
 
 export default function Navbar({
   selectedModel,
@@ -40,13 +42,16 @@ export default function Navbar({
   setUserPref,
   dispatch,
 }: NavbarProps) {
-  
   const { data: session } = useSession();
   const [settingsOpen, setSettingsOpen] = useState(false);
-  
-  const currentModel = useMemo(()=>{
-    return MODEL_GROUPS.flatMap((g) => g.models).find((m) => m.value === selectedModel)?.label ?? "Select model";
-    },[selectedModel])
+
+  const currentModel = useMemo(() => {
+    return (
+      MODEL_GROUPS.flatMap((g) => g.models).find(
+        (m) => m.value === selectedModel
+      )?.label ?? "Select model"
+    );
+  }, [selectedModel]);
 
   if (!session?.user) return null;
 
@@ -60,28 +65,26 @@ export default function Navbar({
             </button>
           </DropdownMenuTrigger>
 
-         <DropdownMenuContent align="start" className="font-paragraph w-56">
-          {MODEL_GROUPS.map((group) => (
-            <div key={group.provider}>
-              <DropdownMenuLabel className="flex items-center gap-2 text-xs text-stone-500">
-                <img src={group.url} className="h-3 w-3" />
-                {group.provider}
-              </DropdownMenuLabel>
-          
-              {group.models.map((model) => (
-                <DropdownMenuItem
-                  key={model.value}
-                  onSelect={() => setSelectedModel(model.value)}
-                  className="pl-8 cursor-pointer"
-                >
-                  {model.label}
-                </DropdownMenuItem>
-              ))}
-            </div>
+          <DropdownMenuContent align="start" className="font-paragraph w-56">
+            {MODEL_GROUPS.map((group) => (
+              <div key={group.provider}>
+                <DropdownMenuLabel className="flex items-center gap-2 text-xs text-stone-500">
+                  <img src={group.url} className="h-3 w-3" />
+                  {group.provider}
+                </DropdownMenuLabel>
 
-          ))}
-        </DropdownMenuContent>
-
+                {group.models.map((model) => (
+                  <DropdownMenuItem
+                    key={model.value}
+                    onSelect={() => setSelectedModel(model.value)}
+                    className="cursor-pointer pl-8"
+                  >
+                    {model.label}
+                  </DropdownMenuItem>
+                ))}
+              </div>
+            ))}
+          </DropdownMenuContent>
         </DropdownMenu>
 
         <DropdownMenu>
@@ -98,7 +101,6 @@ export default function Navbar({
           <DropdownMenuContent align="end" className="font-paragraph">
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
-           
 
             <DropdownMenuItem
               onSelect={(e) => {
@@ -122,7 +124,13 @@ export default function Navbar({
           </DropdownMenuContent>
         </DropdownMenu>
 
-       <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} userPref={userPref} setUserPref={setUserPref} dispatch={dispatch}/>
+        <SettingsDialog
+          open={settingsOpen}
+          onOpenChange={setSettingsOpen}
+          userPref={userPref}
+          setUserPref={setUserPref}
+          dispatch={dispatch}
+        />
       </div>
     </nav>
   );

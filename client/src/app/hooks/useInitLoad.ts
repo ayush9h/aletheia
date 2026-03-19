@@ -1,6 +1,14 @@
+/**
+ * Hook responsible for initial chat state hydration.
+ *
+ * Loads user sessions on mount and initializes the first session’s messages.
+ *
+ * @param userId - Authenticated user identifier required for data fetch
+ * @param dispatch - Chat reducer dispatch reference
+ */
 import { useEffect } from "react";
 import { userChats, userSessions } from "../lib/api/userData";
-import { ChatAction } from "../types/userChat";
+import { ChatAction } from "../types/chats/chat-action";
 
 export function useInitLoad(
   userId: string,

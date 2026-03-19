@@ -1,11 +1,25 @@
+/**
+ * ChatPage is the orchestration root for the chat application.
+ *
+ * Responsibilities:
+ * - Initialize reducer-driven chat state
+ * - Coordinate session hydration and preference loading
+ * - Bridge domain hooks to layout components
+ * - Manage sidebar layout state
+ *
+ * Architecture notes:
+ * - Business logic delegated to domain hooks
+ * - Page remains thin orchestration layer
+ * - Reducer acts as single source of truth
+ */
 "use client";
 
 import { useReducer, useState } from "react";
 import { useSession } from "next-auth/react";
-import Sidebar from "./Sidebar";
-import ChatWindow from "./ChatWindow";
-import { ChatReducer } from "../reducers/reducerChat";
-import { InitialState } from "../types/userChat";
+import Sidebar from "./components/sidebar";
+import ChatWindow from "./components/chat-window";
+import { ChatReducer } from "../reducers/chat-reducer";
+import { InitialState } from "../types/chats/chat-state";
 
 import { useInitLoad } from "../hooks/useInitLoad";
 import { useSendMessage } from "../hooks/useSendMessage";
@@ -16,13 +30,29 @@ export default function ChatPage() {
   const { data: session } = useSession();
   const userId = session?.user?.id;
 
+  /**
+   * Global chat state container.
+   */
   const [state, dispatch] = useReducer(ChatReducer, InitialState);
+
+  /**
+   * Sidebar layout state.
+   */
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  
+  /**
+   * Initial data hydration.
+   */
   useInitLoad(userId as string, dispatch);
+
+  /**
+   * User personalization hydration.
+   */
   useUserPreferences(userId, dispatch);
 
+  /**
+   * Message send.
+   */
   const handleSend = useSendMessage({
     input: state.input,
     selectedModel: state.selectedModel,
@@ -33,6 +63,9 @@ export default function ChatPage() {
     dispatch,
   });
 
+  /**
+   * Session selection flow with message hydration.
+   */
   const handleSessionSelect = async (sessionId: number) => {
     dispatch({ type: "SET_SELECTED_SESSION", payload: sessionId });
     dispatch({ type: "SET_MESSAGES", payload: [] });
@@ -51,6 +84,7 @@ export default function ChatPage() {
         sidebarOpen ? "grid-cols-[15rem_1fr]" : "grid-cols-[4rem_1fr]"
       }`}
     >
+      {/* Session navigation rail */}
       <Sidebar
         open={sidebarOpen}
         onToggle={setSidebarOpen}
@@ -60,6 +94,7 @@ export default function ChatPage() {
         dispatch={dispatch}
       />
 
+      {/* Primary chat surface */}
       <ChatWindow
         messages={state.messages}
         input={state.input}

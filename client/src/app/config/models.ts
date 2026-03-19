@@ -1,4 +1,3 @@
-
 export const MODEL_GROUPS = [
   {
     provider: "OpenAI",
@@ -9,9 +8,9 @@ export const MODEL_GROUPS = [
         value: "openai/gpt-oss-120b",
       },
       {
-        label:"GPT-OSS-20B",
-        value: "openai/gpt-oss-20b"
-      }
+        label: "GPT-OSS-20B",
+        value: "openai/gpt-oss-20b",
+      },
     ],
   },
   {

@@ -1,9 +1,9 @@
 import { useEffect, useCallback, Dispatch } from "react";
-import { saveUserPref } from "../lib/api/userData";
-import { getUserPref } from "../lib/api/userData";
-import { ChatAction } from "../types/userChat";
+import { saveUserPref, getUserPref } from "../lib/api/userData";
+import { ChatAction } from "../types/chats/chat-action";
 import { UserPrefProps } from "../types/userPref";
 
+/** Fetch user AI preferences into chat state */
 export function useUserPreferences(
   userId: string | undefined,
   dispatch: Dispatch<ChatAction>
@@ -12,15 +12,15 @@ export function useUserPreferences(
     if (!userId) return;
 
     getUserPref(userId)
-    .then((res) => {
-      dispatch({ type: "SET_USER_PREF", payload: res.data });
+      .then((res) => {
+        dispatch({ type: "SET_USER_PREF", payload: res.data });
       })
       .catch(() => {
         dispatch({
           type: "SET_USER_PREF",
           payload: {
             userCustomInstruction: "",
-            nickname:"",
+            nickname: "",
             occupation: "",
             baseTone: "",
             userHobbies: "",
@@ -30,16 +30,19 @@ export function useUserPreferences(
   }, [userId, dispatch]);
 }
 
-export function useSaveUserPreferences(){
-    const savePreferences =  useCallback(async (userId: string, userPref: UserPrefProps) => {
-    if (!userId) return;
+/** Persist updated user AI preferences to backend */
+export function useSaveUserPreferences() {
+  const savePreferences = useCallback(
+    async (userId: string, userPref: UserPrefProps) => {
+      if (!userId) return;
 
-    await saveUserPref({
-      userId,
-      ...userPref,
-    });
+      await saveUserPref({
+        userId,
+        ...userPref,
+      });
+    },
+    []
+  );
 
-  },[]);
-
-  return {savePreferences}
+  return { savePreferences };
 }

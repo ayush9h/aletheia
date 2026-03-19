@@ -1,6 +1,13 @@
+/**
+ * Hook responsible for sending chat messages and reconciling chat state.
+ *
+ * @param params - Aggregated chat execution context and reducer references
+ *
+ * @returns sendMessage mutation handler
+ */
 import { useCallback } from "react";
 import { sendChatMessage } from "../lib/api/chatService";
-import { ChatAction } from "../types/userChat";
+import { ChatAction } from "../types/chats/chat-action";
 import { UserPrefProps } from "../types/userPref";
 import { Session } from "../types/userMessage";
 
@@ -25,6 +32,15 @@ export function useSendMessage(params: Params) {
     dispatch,
   } = params;
 
+  /**
+   * Sends user message to backend and updates reducer state.
+   *
+   * Ensures:
+   * - Optimistic UI update for user message
+   * - Session bootstrap if none exists
+   * - Assistant response normalization
+   * - Graceful error fallback
+   */
   return useCallback(async () => {
     const trimmed = input.trim();
     if (!trimmed || !userId) return;
@@ -72,8 +88,7 @@ export function useSendMessage(params: Params) {
           text: String(res.data.service_output.response_content ?? "..."),
           reasoning: String(res.data.service_output.reasoning_content ?? "..."),
           duration: res.data.service_output.duration ?? 0,
-          tokens_consumed:
-            res.data.service_output.tokens_consumed ?? 0,
+          tokens_consumed: res.data.service_output.tokens_consumed ?? 0,
         },
       });
     } catch {
