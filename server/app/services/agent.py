@@ -3,6 +3,7 @@ from datetime import datetime
 from app.memory.manager import MemoryManager
 from app.prompts.orchestrator_prompt import ORCHESTRATOR_BASE_PROMPT
 from app.services.agent_state import AgentState
+from app.services.tools.web_search import web_search
 from app.utils.config import settings
 from langchain.agents import create_agent
 from langchain_core.messages import SystemMessage
@@ -64,12 +65,14 @@ User Hobbies: {state["user_preference"].userHobbies}
 User Nickname: {state["user_preference"].nickname}
 User occupation: {state["user_preference"].occupation}
 """
+    available_tools = [web_search]
     agent = agent = create_agent(
         model=ChatGroq(
             api_key=settings.GROQ_API_KEY,
             model=state["user_model"],
         ),
         system_prompt=SystemMessage(content=ORCHESTRATOR_BASE_PROMPT),
+        tools=available_tools,
     )
 
     agent_input = {
@@ -79,6 +82,9 @@ User occupation: {state["user_preference"].occupation}
             SystemMessage(content=pref_block),
             SystemMessage(
                 content=f"Respond back in {state['user_preference'].baseTone} fashion manner."
+            ),
+            SystemMessage(
+                content=f"Available tools for this request: {available_tools if available_tools else 'None'}"
             ),
         ]
     }
@@ -132,9 +138,7 @@ builder.add_node("orchestrator", orchestrator)
 builder.add_node("memory_store", memory_store)
 
 builder.add_edge(START, "generate_session_title")
-builder.add_edge("generate_session_title", "memory_retrieve")
-builder.add_edge("memory_retrieve", "orchestrator")
-builder.add_edge("orchestrator", "memory_store")
-builder.add_edge("memory_store", END)
+builder.add_edge("generate_session_title", "orchestrator")
+builder.add_edge("orchestrator", END)
 
 graph = builder.compile()

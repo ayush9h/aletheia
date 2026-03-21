@@ -1,4 +1,4 @@
-from typing import Literal, Optional
+from typing import List, Literal, Optional
 
 from app.schemas.user_pref import UserPref
 from pydantic import BaseModel, Field
@@ -28,4 +28,7 @@ class ChatRequest(BaseModel):
     )
     userId: Optional[str] = Field(
         ..., description="The id of the user asking the question"
+    )
+    tools: Optional[List[str]] = Field(
+        ..., description="List of tools selected by the user"
     )

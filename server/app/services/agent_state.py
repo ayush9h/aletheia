@@ -16,3 +16,4 @@ class AgentState(TypedDict):
     tokens_consumed: Optional[int]
     duration: Optional[float]
     memory_context: Optional[str]
+    tools: Optional[List[str]]

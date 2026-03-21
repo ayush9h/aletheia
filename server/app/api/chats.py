@@ -45,6 +45,7 @@ async def chat(payload: ChatRequest, session: AsyncSession = Depends(get_session
             "user_preference": payload.userPref,
             "user_id": payload.userId,
             "session_id": chat_session.session_id,
+            "tools": payload.tools,
         }
 
         response = await graph.ainvoke(input=input_state)  # type: ignore
