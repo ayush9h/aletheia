@@ -1,3 +1,4 @@
+'use client'
 /**
  * ChatInput renders the primary message composer.
  *
@@ -7,11 +8,16 @@
  * - Expose send + future attachment entry points
  */
 
-import { ArrowUpIcon, PlusIcon } from "@radix-ui/react-icons";
+import { ArrowUpIcon, Cross2Icon} from "@radix-ui/react-icons";
 import TextareaAutosize from "react-textarea-autosize";
 import { inputProps } from "@/app/types/chats/chats.type";
+import InputOptions from "@/app/components/input-options";
+import { useState } from "react";
 
 export default function ChatInput(inputProps: inputProps) {
+
+  const [optionList, setOptionList] = useState<string[]>([])
+
   return (
     <div className="font-paragraph mx-auto w-full max-w-3xl rounded-2xl pb-2">
       <div className="flex flex-col gap-2 rounded-2xl border p-3">
@@ -31,8 +37,28 @@ export default function ChatInput(inputProps: inputProps) {
           placeholder="Ask anything"
         />
         <div className="flex items-center justify-between">
-          {/* Options Button - TODO */}
-          <PlusIcon className="h-4 w-4 cursor-not-allowed" />
+          {/* Options Button */}
+          <div className="flex items-center gap-3">
+          <InputOptions setOptionList = {setOptionList}/>
+
+          {optionList.map((item)=>(
+              <div
+                key={item}
+                className="flex items-center gap-1 text-xs bg-blue-200 px-2 py-1 rounded-md text-blue-600"
+              >
+                <span>{item}</span>
+
+                <button
+                  onClick={() =>
+                    setOptionList(prev => prev.filter(i => i !== item))
+                  }
+                  className="ml-1 hover:text-blue-800 cursor-pointer"
+                >
+                  <Cross2Icon className="h-4 w-4" />
+                </button>
+              </div>
+          ))}
+          </div>
 
           {/* Send */}
           <button
