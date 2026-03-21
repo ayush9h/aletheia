@@ -29,4 +29,6 @@ class ChatRequest(BaseModel):
     userId: Optional[str] = Field(
         ..., description="The id of the user asking the question"
     )
-    tools: Optional[List[str]] = Field(description="List of tools selected by the user")
+    tools: Optional[List[str]] = Field(
+        None, description="List of tools selected by the user"
+    )
