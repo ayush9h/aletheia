@@ -112,7 +112,7 @@ export default function Sidebar({
             ${open ? "max-w-[8rem] opacity-100" : "max-w-0 opacity-0"}
           `}
         >
-          New Thread
+          New Chat
         </span>
       </button>
 
