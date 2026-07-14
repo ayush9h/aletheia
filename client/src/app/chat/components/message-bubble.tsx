@@ -51,7 +51,7 @@ const MessageBubble = memo(function MessageBubble({
         <div
           className={`rounded-md text-sm  ${
             isUser
-              ? "max-w-[60%] bg-blue-500 px-4 py-2 text-white"
+              ? "max-w-[60%] break-all max-h-64 whitespace-pre-wrap overflow-y-auto  bg-blue-500 px-4 py-2 text-stone-100"
               : "w-full   text-stone-800"
           }`}
         >

@@ -63,8 +63,6 @@ export default function ChatPage() {
    */
   const handleSessionSelect = async (sessionId: number) => {
     dispatch({ type: "SET_SELECTED_SESSION", payload: sessionId });
-    dispatch({ type: "SET_MESSAGES", payload: [] });
-
     try {
       const res = await userChats(sessionId);
       dispatch({ type: "SET_MESSAGES", payload: res.data });
