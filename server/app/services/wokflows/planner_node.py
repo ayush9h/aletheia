@@ -4,10 +4,9 @@ Implementation of the planner agent node
 
 from langchain_core.messages import SystemMessage
 
-from config.llm import planner_llm
 from prompts.planner import planner_prompt_parser
 from schemas.agent_schema import AgentState
-
+from app.utils.config import settings
 from langchain_groq import ChatGroq
 
 planner_llm = MemoryManager(
