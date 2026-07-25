@@ -59,7 +59,7 @@ dependencies = [
     "orjson==3.11.5",
     "ormsgpack==1.12.1",
     "packaging==24.2",
-    "pillow==12.1.1",
+    "pillow==12.3.0",
     "pinecone==8.1.0",
     "pinecone-plugin-assistant==3.0.2",
     "pinecone-plugin-interface==0.0.7",
