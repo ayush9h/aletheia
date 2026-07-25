@@ -23,6 +23,7 @@ export type Message = {
   plan?: Plan;
   duration: number;
   tokens_consumed: number;
+  isStreaming?:boolean
 };
 
 /**

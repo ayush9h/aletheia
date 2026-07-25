@@ -9,7 +9,7 @@ import { useCallback } from "react";
 import { streamChatMessage } from "../lib/api/chatService";
 import { ChatAction } from "../types/chats/chat-action";
 import { UserPrefProps } from "../types/user-pref";
-import { Session } from "../types/user-message";
+import { Plan, Session } from "../types/user-message";
 
 type Params = {
   input: string;
@@ -36,12 +36,6 @@ export function useSendMessage(params: Params) {
 
   /**
    * Sends user message to backend and updates reducer state via SSE stream.
-   *
-   * Ensures:
-   * - Optimistic UI update for user message
-   * - Session bootstrap if none exists
-   * - Progressive plan + token streaming into the last assistant message
-   * - Graceful error fallback
    */
   return useCallback(async () => {
     const trimmed = input.trim();
@@ -67,6 +61,7 @@ export function useSendMessage(params: Params) {
         text: "",
         duration: 0,
         tokens_consumed: 0,
+        isStreaming:true,
       },
     });
 
@@ -81,16 +76,20 @@ export function useSendMessage(params: Params) {
         userId,
         tools,
         {
+
           onPlan: (plan) => {
-            dispatch({ type: "SET_CURRENT_PLAN", payload: plan });
+            dispatch({ type: "SET_CURRENT_PLAN", payload: plan as Plan });
           },
+
+
           onToken: (token) => {
             streamedText += token;
             dispatch({
               type: "UPDATE_LAST_ASSISTANT_MESSAGE",
-              payload: { text: streamedText },
+              payload: { text: streamedText, isStreaming:true, },
             });
           },
+
           onFinal: (payload) => {
             const newSession = payload.session;
             if (!selectedSessionId && newSession) {
@@ -111,13 +110,15 @@ export function useSendMessage(params: Params) {
                 reasoning: payload.service_output.reasoning_content,
                 duration: payload.service_output.duration,
                 tokens_consumed: payload.service_output.tokens_consumed,
+                isStreaming: false,
               },
             });
           },
+
           onError: () => {
             dispatch({
               type: "UPDATE_LAST_ASSISTANT_MESSAGE",
-              payload: { text: "Error getting response from API" },
+              payload: { text: "Oops something went wrong. Try Again Later.", isStreaming:false },
             });
           },
         }
@@ -125,7 +126,7 @@ export function useSendMessage(params: Params) {
     } catch {
       dispatch({
         type: "UPDATE_LAST_ASSISTANT_MESSAGE",
-        payload: { text: "Error getting response from API" },
+        payload: { text: "Oops something went wrong. Try Again Later.", isStreaming:false },
       });
     }
   }, [

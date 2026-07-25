@@ -71,6 +71,7 @@ export type ChatAction =
       reasoning: string;
       duration: number;
       tokens_consumed: number;
+      isStreaming: boolean;
     }>
   }
 

@@ -1,56 +1,63 @@
 "use client";
 
+import { useState } from "react";
 import { Plan } from "@/app/types/user-message";
-import {
-  Accordion,
-  AccordionItem,
-  AccordionContent,
-  AccordionTrigger,
-} from "@/app/components/ui/accordion";
+import { ChevronDownIcon } from "@radix-ui/react-icons";
 
 type PlanPanelProps = {
   plan: Plan;
 };
 
 export default function PlanPanel({ plan }: PlanPanelProps) {
+  const [isOpen, setIsOpen] = useState(false);
+
   if (!plan?.steps?.length) return null;
 
+  const totalSteps = plan.steps.length;
+
   return (
-    <Accordion
-      type="single"
-      collapsible
-      className="mb-4 flex flex-col rounded-md border border-stone-100 bg-stone-100 p-2"
-    >
-      <AccordionItem value="reasoning">
-        <AccordionTrigger
-          className="
-            data-[state=open]:text-stone-700 py-1 px-0 text-xs
-            text-stone-500 cursor-pointer
-            hover:no-underline
-          "
-        >
-          Show reasoning
-        </AccordionTrigger>
-        <AccordionContent className="px-0 pb-2 pt-1 text-xs leading-relaxed text-stone-600">
-          <ol className="space-y-2">
-            {plan.steps.map((step) => (
-              <li key={step.step_id} className="flex items-center gap-2">
-                <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-stone-200 text-[10px] font-medium text-stone-600">
-                  {step.step_id}
+    <div className="font-paragraph mb-2 text-xs select-none">
+      {/* Minimalist Trigger */}
+      <button
+        type="button"
+        onClick={() => setIsOpen((prev) => !prev)}
+        className="
+          inline-flex items-center gap-1.5 py-1 px-1.5 rounded-md
+          text-stone-500 hover:text-stone-900 dark:hover:text-stone-200
+          hover:bg-stone-100 dark:hover:bg-stone-800/50
+          transition-colors cursor-pointer text-[12px] font-normal
+        "
+      >
+        <span>
+          Thought for {totalSteps} step{totalSteps > 1 ? "s" : ""}
+        </span>
+        <ChevronDownIcon
+          className={`h-3.5 w-3.5 text-stone-400 transition-transform duration-200 ease-out ${
+            isOpen ? "rotate-180" : ""
+          }`}
+        />
+      </button>
+
+      {/* Clean Step List */}
+      {isOpen && (
+        <div className="mt-1 pl-2.5 ml-1.5 border-l border-stone-200 dark:border-stone-800 space-y-2 py-1">
+          {plan.steps.map((step) => (
+            <div
+              key={step.step_id}
+              className="text-stone-600 dark:text-stone-400 text-[12px] leading-relaxed"
+            >
+              <p>{step.plan}</p>
+
+              {/* Tool Pill */}
+              {step.evidence?.tool_name && (
+                <span className="mt-1 inline-block font-mono text-[10px] text-stone-500 bg-stone-100 dark:bg-stone-800/80 px-1.5 py-0.5 rounded">
+                  {step.evidence.tool_name}
                 </span>
-                <div className="flex-1">
-                  <p className="text-stone-600">{step.plan}</p>
-                  {step.evidence?.tool_name && (
-                    <span className="mt-1 inline-block rounded bg-stone-200 px-1.5 py-0.5 text-[10px] font-medium text-stone-700">
-                      {step.evidence.tool_name}
-                    </span>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ol>
-        </AccordionContent>
-      </AccordionItem>
-    </Accordion>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

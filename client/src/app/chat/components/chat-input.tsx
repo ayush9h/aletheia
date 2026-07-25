@@ -44,7 +44,7 @@ export default function ChatInput(inputProps: inputProps) {
   }, [inputProps.selectedModel]);
 
   return (
-    <div className="font-paragraph mx-auto w-full max-w-3xl pb-2">
+    <div className="font-paragraph mx-auto w-full max-w-3xl">
       <div className="flex flex-col rounded-xl border">
         {/* User Input */}
         <TextareaAutosize
@@ -104,7 +104,7 @@ export default function ChatInput(inputProps: inputProps) {
             <DropdownMenu>
               <AppTooltip label="Choose model">
                 <DropdownMenuTrigger asChild>
-                  <button className="font-paragraph flex h-8 items-center gap-1 rounded-md px-2.5 text-sm text-stone-600 transition-colors hover:bg-stone-100">
+                  <button className="font-paragraph flex h-8 items-center gap-1 rounded-md px-2.5 text-sm text-stone-600 transition-colors hover:bg-stone-100 cursor-pointer">
                     {currentModel} <CaretDownIcon className="h-3.5 w-3.5 text-stone-400" />
                   </button>
                 </DropdownMenuTrigger>

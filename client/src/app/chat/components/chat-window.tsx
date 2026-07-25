@@ -1,20 +1,3 @@
-/**
- * ChatWindow composes the primary chat layout.
- *
- * Responsibilities:
- * - Orchestrate navbar, message timeline, and input composer
- * - Maintain scroll anchoring behavior
- * - When empty: center the greeting + composer in the middle of the screen
- * - Once messages exist: composer moves to the bottom, messages scroll above it
- *
- * Animation approach (kept deliberately simple):
- * - ChatInput is the ONLY animated element (motion.div + `layout`).
- * - It is never unmounted, never wrapped in AnimatePresence, and has no
- *   layoutId. It just sits in the same spot in the tree the whole time.
- * - Everything else (greeting vs message list) swaps instantly, with no
- *   competing enter/exit animation, so there's nothing left to fight with
- *   ChatInput's own layout transition. This is what removes the glitch.
- * */
 import Navbar from "@/app/components/navbar";
 import MessageList from "./message-list";
 import GreetingWindow from "./greeting-window";
@@ -32,7 +15,7 @@ export default function ChatWindow(ChatWindowProps: ChatWindowProps) {
   const isEmpty = ChatWindowProps.messages.length === 0;
 
   return (
-    <div className="flex h-screen flex-col shadow-xl">
+    <div className="flex h-screen flex-col shadow-xl overflow-hidden">
       {/* Application navigation + model controls */}
       <Navbar
         dispatch={ChatWindowProps.dispatch}
@@ -42,46 +25,52 @@ export default function ChatWindow(ChatWindowProps: ChatWindowProps) {
         }
       />
 
-      <div
-        className={[
-          "flex min-h-0 flex-1 flex-col",
-          isEmpty ? "items-center justify-center gap-8 p-4" : "",
-        ].join(" ")}
-      >
-        {isEmpty ? (
-          <GreetingWindow userName={ChatWindowProps.userName} />
-        ) : (
-          <div
-            ref={containerRef}
-            className="flex min-h-0 w-full flex-1 flex-col overflow-y-auto"
-          >
-            <MessageList messages={ChatWindowProps.messages} />
-            <div ref={bottomRef} />
+
+      <div className="flex min-h-0 flex-1 flex-col justify-center items-center">
+        <div
+          className={`w-full transition-all duration-300 ease-in-out ${
+            isEmpty ? "h-0 flex-0 overflow-hidden" : "flex-1 min-h-0"
+          }`}
+        >
+          {!isEmpty && (
+            <div
+              ref={containerRef}
+              className="flex h-full w-full flex-col overflow-y-auto"
+            >
+              <MessageList messages={ChatWindowProps.messages} />
+              <div ref={bottomRef} />
+            </div>
+          )}
+        </div>
+
+        {isEmpty && (
+          <div className="mb-6 text-center">
+            <GreetingWindow userName={ChatWindowProps.userName} />
           </div>
         )}
 
-        {/* The only animated element. `layout` alone (no layoutId, no
-            AnimatePresence) makes motion smoothly interpolate its position
-            whenever the sibling above it appears/disappears and the parent's
-            justify-content shifts it from center to bottom. */}
         <motion.div
-          layout
-          transition={{ duration: 0.35, ease: "easeInOut" }}
-          className={isEmpty ? "w-full max-w-3xl" : "w-full"}
+          layout="position"
+          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+          className="w-full flex justify-center px-4 pb-4"
         >
-          <ChatInput
-            value={ChatWindowProps.input}
-            onChange={(v) =>
-              ChatWindowProps.dispatch({ type: "SET_INPUT", payload: v })
-            }
-            dispatch={ChatWindowProps.dispatch}
-            tools={ChatWindowProps.tools}
-            onSend={ChatWindowProps.onSend}
-            setSelectedModel={(m) =>
-              ChatWindowProps.dispatch({ type: "SET_MODEL", payload: m })
-            }
-            selectedModel={ChatWindowProps.selectedModel}
-          />
+          <div
+            className="w-full transition-[max-width] duration-300 ease-in-out max-w-4xl"
+          >
+            <ChatInput
+              value={ChatWindowProps.input}
+              onChange={(v) =>
+                ChatWindowProps.dispatch({ type: "SET_INPUT", payload: v })
+              }
+              dispatch={ChatWindowProps.dispatch}
+              tools={ChatWindowProps.tools}
+              onSend={ChatWindowProps.onSend}
+              setSelectedModel={(m) =>
+                ChatWindowProps.dispatch({ type: "SET_MODEL", payload: m })
+              }
+              selectedModel={ChatWindowProps.selectedModel}
+            />
+          </div>
         </motion.div>
       </div>
     </div>

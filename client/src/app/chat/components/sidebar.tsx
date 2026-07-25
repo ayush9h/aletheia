@@ -71,7 +71,6 @@ export default function Sidebar({
   const handleNewChat = () => {
     dispatch({ type: "SET_SELECTED_SESSION", payload: null });
     dispatch({ type: "SET_MESSAGES", payload: [] });
-    dispatch({ type: "CLEAR_INPUT" });
   };
 
   return (
@@ -102,7 +101,7 @@ export default function Sidebar({
 
       {/* New thread */}
       <button
-        className="mt-4 flex w-full items-center gap-2 rounded-md p-2 hover:bg-stone-200/50"
+        className="mt-4 flex w-full items-center gap-2 rounded-md p-2 hover:bg-stone-200/50 cursor-pointer"
         onClick={handleNewChat}
       >
         <Pencil2Icon className="shrink-0" />
