@@ -8,18 +8,25 @@ from fastapi.responses import StreamingResponse
 from langchain_core.messages import HumanMessage
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
+from starlette import status
+from starlette.status import HTTP_503_SERVICE_UNAVAILABLE
 
 from app.db_service.db import get_session
 from app.db_service.models import UserChats, UserSessions
 from app.schemas.chat_schema import ChatRequest
 from app.services.agent import graph
+from app.utils.config import settings
+from app.utils.core.dependencies import get_rate_limiter
 from app.utils.logger import logger
+from app.utils.rate_limiters.core import (RateLimitPolicy,
+                                          RedisSlidingWindowLimiter)
 
 chat_router = APIRouter(prefix="/v1")
 
 
 def sse_event(event: str, data: dict) -> str:
     return f"event: {event}\ndata: {json.dumps(data)}\n\n"
+
 
 def serialize_plan(plan) -> str | None:
     """Render the Plan object as a JSON string for DB storage."""
@@ -35,8 +42,73 @@ def serialize_plan(plan) -> str | None:
     description="Streams the agent's plan and final answer via SSE",
 )
 async def chat_stream(
-    payload: ChatRequest, session: AsyncSession = Depends(get_session)
+    payload: ChatRequest,
+    session: AsyncSession = Depends(get_session),
+    rate_limiter: RedisSlidingWindowLimiter = Depends(get_rate_limiter),
 ):
+    user_id = str(payload.userId)
+    # Check for rate limit
+    try:
+        rate_limit = await rate_limiter.acquire(
+            group=f"user:{user_id}:chat-stream",
+            policies=[
+                RateLimitPolicy(
+                    name="rpm",
+                    limit=settings.CHAT_STREAM_REQUESTS_PER_MINUTE,
+                    window_seconds=60,
+                ),
+                RateLimitPolicy(
+                    name="rph",
+                    limit=settings.CHAT_STREAM_REQUESTS_PER_HOUR,
+                    window_seconds=3600,
+                ),
+            ],
+        )
+    except Exception as exc:
+        logger.exception(
+            "Redis rate limiter is unavailable",
+            extra={
+                "user_id": user_id,
+                "route": "/chat/stream",
+            },
+        )
+
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="The chat service is temporarily unavailable",
+            headers={
+                "Retry-After": "1",
+            },
+        ) from exc
+
+    if not rate_limit.allowed:
+        retry_after = max(
+            1,
+            rate_limit.retry_after_seconds,
+        )
+
+        logger.warning(
+            "Chat stream rate limit exceeded",
+            extra={
+                "user_id": user_id,
+                "retry_after_seconds": retry_after,
+                "rpm_used": rate_limit.used["rpm"],
+                "rph_used": rate_limit.used["rph"],
+            },
+        )
+
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail={
+                "message": "Chat rate limit exceeded",
+                "retry_after_seconds": retry_after,
+            },
+            headers={
+                "Retry-After": str(retry_after),
+                "X-RateLimit-Limit": str(rate_limit.limits["rpm"]),
+                "X-RateLimit-Remaining": str(rate_limit.remaining["rpm"]),
+            },
+        )
 
     if payload.selectedSessionId:
         stmt = select(UserSessions).where(
@@ -75,8 +147,9 @@ async def chat_stream(
             async for event in graph.astream_events(input_state, version="v2"):
                 kind = event["event"]
                 node_name = event.get("metadata", {}).get("langgraph_node")
-                checkpoint_ns = event.get("metadata", {}).get("langgraph_checkpoint_ns", "")
-
+                checkpoint_ns = event.get("metadata", {}).get(
+                    "langgraph_checkpoint_ns", ""
+                )
 
                 if kind == "on_chain_end" and node_name == "planner_node":
                     output = event["data"].get("output", {})
@@ -87,8 +160,10 @@ async def chat_stream(
                         )
                         yield sse_event("plan", {"plan": plan_payload})
 
-                elif kind == "on_chat_model_stream" and checkpoint_ns.startswith("orchestrator:"):
-                    chunk = event["data"]["chunk"] # type:ignore
+                elif kind == "on_chat_model_stream" and checkpoint_ns.startswith(
+                    "orchestrator:"
+                ):
+                    chunk = event["data"]["chunk"]  # type:ignore
                     token = getattr(chunk, "content", "")
                     if token:
                         yield sse_event("token", {"token": token})
@@ -132,7 +207,9 @@ async def chat_stream(
 
         except (DatabaseError, HTTPException) as e:
             logger.error(f"Error occurred in chat streaming due to {e}")
-            yield sse_event("error", {"message": "Error getting response from API"})
+            yield sse_event(
+                "error", {"message": "Oops something went wrong. Try Again Later."}
+            )
 
     return StreamingResponse(
         event_generator(),

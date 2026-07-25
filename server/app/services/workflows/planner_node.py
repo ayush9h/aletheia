@@ -1,17 +1,25 @@
 import json
 
-from langchain_core.messages import SystemMessage
+from langchain_core.messages import BaseMessage, SystemMessage
 from langchain_groq import ChatGroq
 
 from app.prompts.workflows.planner_prompt import planner_prompt_parser
 from app.services.agent_state import AgentState
 from app.services.tools import TOOL_REGISTRY
 from app.utils.config import settings
+from app.utils.rate_limiters.llm import get_groq_guard
 
 planner_llm = ChatGroq(
-    api_key=settings.GROQ_API_KEY,
-    model="llama-3.3-70b-versatile",
+    api_key=settings.GROQ_API_KEY, model="llama-3.3-70b-versatile", max_tokens=1024
 )
+
+
+def est_tokens(
+    messages: list[BaseMessage],
+) -> int:
+    total_characters = sum(len(str(message.content)) for message in messages)
+
+    return max(1, total_characters // 3) + 128
 
 
 async def planner_node(state: AgentState) -> AgentState:
@@ -54,6 +62,14 @@ async def planner_node(state: AgentState) -> AgentState:
         SystemMessage(content=planner_prompt),
         *state.get("user_input", ""),
     ]
+
+    groq_guard = get_groq_guard()
+
+    await groq_guard.acquire(
+        model="llama-3.3-70b-versatile",
+        input_tokens=est_tokens(messages),
+        max_output_tokens=1024,
+    )
 
     output = await planner_llm.ainvoke(messages)
     generated_plan = planner_parser.parse(output.content)  # type:ignore

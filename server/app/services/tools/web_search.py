@@ -2,9 +2,11 @@ from typing import Literal
 
 from langchain.tools import tool
 from pydantic import BaseModel, Field
-from tavily import TavilyClient
+from tavily import AsyncTavilyClient
 
 from app.utils.config import settings
+from app.utils.rate_limiters.tavily import (TavilyLimitExceeded,
+                                            get_tavily_guard)
 
 
 class WebSearchSchema(BaseModel):
@@ -29,9 +31,14 @@ async def web_search(
     query: str,
     topic: Literal["general", "news", "finance"],
 ):
-    tavily_client = TavilyClient(api_key=settings.TAVILY_API_KEY)
+    guard = get_tavily_guard()
+    try:
+        await guard.acquire(tavily_exec_type="search", credit_usage_by_type=1)
+    except TavilyLimitExceeded:
+        return "Error: Web search rate limit exceeded. Please try again in a minute."
 
-    response = tavily_client.search(
+    tavily_client = AsyncTavilyClient(api_key=settings.TAVILY_API_KEY)
+    response = await tavily_client.search(
         query,
         include_domains=domains or [],
         topic=topic,
