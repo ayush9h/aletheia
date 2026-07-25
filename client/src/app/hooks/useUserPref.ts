@@ -24,6 +24,7 @@ export function useUserPreferences(
             occupation: "",
             baseTone: "",
             userHobbies: "",
+            memoryEnabled:false,
           },
         });
       });
