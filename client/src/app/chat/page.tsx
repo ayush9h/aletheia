@@ -19,6 +19,8 @@ import { useInitLoad } from "../hooks/useInitLoad";
 import { useSendMessage } from "../hooks/useSendMessage";
 import { useUserPreferences } from "../hooks/useUserPref";
 import { userChats } from "../lib/api/userData";
+import Navbar from "@/app/components/navbar";
+
 
 export default function ChatPage() {
   const { data: session } = useSession();
@@ -32,8 +34,7 @@ export default function ChatPage() {
   /**
    * Sidebar layout state.
    */
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   /**
    * Initial data hydration.
    */
@@ -73,11 +74,12 @@ export default function ChatPage() {
 
   return (
     <div
-      className={`grid min-h-screen transition-all duration-300 ${
-        sidebarOpen ? "grid-cols-[15rem_1fr]" : "grid-cols-[4rem_1fr]"
+      className={`grid h-dvh overflow-hidden transition-all duration-300 ${
+        sidebarOpen
+          ? "grid-cols-[15rem_minmax(0,1fr)]"
+          : "grid-cols-[4rem_minmax(0,1fr)]"
       }`}
     >
-      {/* Session navigation rail */}
       <Sidebar
         open={sidebarOpen}
         onToggle={setSidebarOpen}
@@ -87,17 +89,33 @@ export default function ChatPage() {
         dispatch={dispatch}
       />
 
-      {/* Primary chat surface */}
-      <ChatWindow
-        messages={state.messages}
-        input={state.input}
-        userPref={state.userPref}
-        selectedModel={state.selectedModel}
-        dispatch={dispatch}
-        onSend={handleSend}
-        userName={session?.user?.name as string}
-        tools={state.selectedTools}
-      />
+      <div className="flex min-h-0 min-w-0 flex-col overflow-hidden">
+        <div className="shrink-0">
+          <Navbar
+            dispatch={dispatch}
+            userPref={state.userPref}
+            setUserPref={(value) =>
+              dispatch({
+                type: "SET_USER_PREF",
+                payload: value,
+              })
+            }
+          />
+        </div>
+
+        <div className="min-h-0 flex-1 overflow-hidden">
+          <ChatWindow
+            messages={state.messages}
+            input={state.input}
+            userPref={state.userPref}
+            selectedModel={state.selectedModel}
+            dispatch={dispatch}
+            onSend={handleSend}
+            userName={session?.user?.name ?? ""}
+            tools={state.selectedTools}
+          />
+        </div>
+      </div>
     </div>
   );
 }

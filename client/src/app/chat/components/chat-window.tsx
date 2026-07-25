@@ -1,74 +1,76 @@
-import Navbar from "@/app/components/navbar";
+import { motion } from "motion/react";
+
 import MessageList from "./message-list";
 import GreetingWindow from "./greeting-window";
 import ChatInput from "./chat-input";
-import { AutoScroll } from "@/app/reducers/auto-scroll";
-import { ChatWindowProps } from "@/app/types/chats/chats.type";
-import { motion } from "motion/react";
 
-export default function ChatWindow(ChatWindowProps: ChatWindowProps) {
-  // AutoScroll
+import { AutoScroll } from "@/app/reducers/auto-scroll";
+import type { ChatWindowProps } from "@/app/types/chats/chats.type";
+
+export default function ChatWindow(props: ChatWindowProps) {
   const { containerRef, bottomRef } = AutoScroll<HTMLDivElement>([
-    ChatWindowProps.messages.length,
+    props.messages.length,
   ]);
 
-  const isEmpty = ChatWindowProps.messages.length === 0;
+  const isEmpty = props.messages.length === 0;
 
   return (
-    <div className="flex h-screen flex-col shadow-xl overflow-hidden">
-      {/* Application navigation + model controls */}
-      <Navbar
-        dispatch={ChatWindowProps.dispatch}
-        userPref={ChatWindowProps.userPref}
-        setUserPref={(v) =>
-          ChatWindowProps.dispatch({ type: "SET_USER_PREF", payload: v })
-        }
-      />
-
-
-      <div className="flex min-h-0 flex-1 flex-col justify-center items-center">
-        <div
-          className={`w-full transition-all duration-300 ease-in-out ${
-            isEmpty ? "h-0 flex-0 overflow-hidden" : "flex-1 min-h-0"
-          }`}
-        >
-          {!isEmpty && (
+    <div className="flex h-full min-h-0 flex-col overflow-hidden shadow-xl">
+      <div
+        className={`flex min-h-0 flex-1 flex-col items-center overflow-hidden ${
+          isEmpty ? "justify-center" : ""
+        }`}
+      >
+        {/* Message area takes remaining height only when messages exist */}
+        {!isEmpty && (
+          <div className="min-h-0 w-full flex-1 overflow-hidden">
             <div
               ref={containerRef}
-              className="flex h-full w-full flex-col overflow-y-auto"
+              className="h-full w-full overflow-y-auto overscroll-contain"
             >
-              <MessageList messages={ChatWindowProps.messages} />
+              <MessageList messages={props.messages} />
               <div ref={bottomRef} />
             </div>
-          )}
-        </div>
-
-        {isEmpty && (
-          <div className="mb-6 text-center">
-            <GreetingWindow userName={ChatWindowProps.userName} />
           </div>
         )}
 
+        {/* Empty-state greeting */}
+        {isEmpty && (
+          <div className="mb-6 shrink-0 text-center">
+            <GreetingWindow userName={props.userName} />
+          </div>
+        )}
+
+        {/* Centered when empty, bottom-positioned when messages exist */}
         <motion.div
           layout="position"
-          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-          className="w-full flex justify-center px-4 pb-4"
+          transition={{
+            duration: 0.4,
+            ease: [0.16, 1, 0.3, 1],
+          }}
+          className={`flex w-full shrink-0 justify-center px-4 ${
+            isEmpty ? "" : "pb-4"
+          }`}
         >
-          <div
-            className="w-full transition-[max-width] duration-300 ease-in-out max-w-4xl"
-          >
+          <div className="w-full max-w-4xl transition-[max-width] duration-300 ease-in-out">
             <ChatInput
-              value={ChatWindowProps.input}
-              onChange={(v) =>
-                ChatWindowProps.dispatch({ type: "SET_INPUT", payload: v })
+              value={props.input}
+              onChange={(value) =>
+                props.dispatch({
+                  type: "SET_INPUT",
+                  payload: value,
+                })
               }
-              dispatch={ChatWindowProps.dispatch}
-              tools={ChatWindowProps.tools}
-              onSend={ChatWindowProps.onSend}
-              setSelectedModel={(m) =>
-                ChatWindowProps.dispatch({ type: "SET_MODEL", payload: m })
+              dispatch={props.dispatch}
+              tools={props.tools}
+              onSend={props.onSend}
+              setSelectedModel={(model) =>
+                props.dispatch({
+                  type: "SET_MODEL",
+                  payload: model,
+                })
               }
-              selectedModel={ChatWindowProps.selectedModel}
+              selectedModel={props.selectedModel}
             />
           </div>
         </motion.div>

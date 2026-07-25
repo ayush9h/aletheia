@@ -1,25 +1,5 @@
-// import { api } from "./axiosRoute";
 import { UserPrefProps } from "@/app/types/user-pref";
 
-/** Send a chat query with model selection, session context, and user personalization */
-// export async function sendChatMessage(
-//   selectedModel: string,
-//   question: string,
-//   userPref: UserPrefProps,
-//   selectedSessionId: number | null,
-//   userId: string,
-//   tools: string[]
-// ) {
-//   return api.post("/chat", {
-//     model: selectedModel,
-//     query: question,
-//     userPref: userPref,
-//     selectedSessionId: selectedSessionId,
-//     userId: userId,
-//     tools: tools,
-//   });
-// }
-//
 
 type StreamHandlers = {
   onPlan?: (plan: unknown) => void;
@@ -77,9 +57,8 @@ export async function streamChatMessage(
 
     buffer += decoder.decode(value, { stream: true });
 
-    // SSE events are separated by a blank line
     const blocks = buffer.split("\n\n");
-    buffer = blocks.pop() ?? ""; // keep last partial block for next chunk
+    buffer = blocks.pop() ?? "";
 
     for (const block of blocks) {
       if (!block.trim()) continue;

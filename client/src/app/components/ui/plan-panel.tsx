@@ -29,7 +29,7 @@ export default function PlanPanel({ plan }: PlanPanelProps) {
         "
       >
         <span>
-          Thought for {totalSteps} step{totalSteps > 1 ? "s" : ""}
+          Planned {totalSteps} step{totalSteps > 1 ? "s" : ""}
         </span>
         <ChevronDownIcon
           className={`h-3.5 w-3.5 text-stone-400 transition-transform duration-200 ease-out ${

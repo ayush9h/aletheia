@@ -74,6 +74,7 @@ export const ChatReducer = (state: ChatState, action: ChatAction) => {
           baseTone: action.payload?.baseTone ?? "",
           occupation: action.payload?.occupation ?? "",
           userHobbies: action.payload?.userHobbies ?? "",
+          memoryEnabled: action.payload?.memoryEnabled ?? false
         },
       };
 
