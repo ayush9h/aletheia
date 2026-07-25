@@ -28,4 +28,9 @@ export type UserPrefProps = {
    * Interest signals used for recommendation.
    */
   userHobbies: string;
+
+  /**
+   * Store memory on the basis of user permission
+   */
+  memoryEnabled: boolean;
 };

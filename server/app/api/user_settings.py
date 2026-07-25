@@ -1,10 +1,12 @@
+from fastapi import APIRouter, Depends
+from sqlalchemy.exc import DatabaseError
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlmodel import select
+
 from app.db_service.db import get_session
 from app.db_service.models import UserPrefs
 from app.schemas.user_pref import UserPref
 from app.utils.logger import logger
-from fastapi import APIRouter, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlmodel import select
 
 user_router = APIRouter(prefix="/v1/users")
 
@@ -26,7 +28,7 @@ async def store_user_pref(
 
         if pref:
             pref.assistant_behavior = payload.userCustomInstruction
-            pref.alias = payload.nickname
+            pref.nickname = payload.nickname
             pref.user_personal_description = payload.userHobbies
             logger.info("User preferences updated")
         else:
@@ -37,6 +39,7 @@ async def store_user_pref(
                 user_personal_description=payload.userHobbies,
                 occupation=payload.occupation,
                 baseTone=payload.baseTone,
+                memory_enabled=payload.memoryEnabled,
             )
             session.add(pref)
             logger.info("New user preferences created")
@@ -51,7 +54,7 @@ async def store_user_pref(
             "code": 200,
         }
 
-    except Exception as e:
+    except DatabaseError as e:
         await session.rollback()
         return {
             "status": "failure",
@@ -82,6 +85,7 @@ async def get_user_pref(
                 "userHobbies": "",
                 "occupation": "",
                 "baseTone": "",
+                "memoryEnabled":False,
             }
 
         return {
@@ -91,8 +95,9 @@ async def get_user_pref(
             "userHobbies": pref.user_personal_description or "",
             "occupation": pref.occupation,
             "baseTone": pref.baseTone,
+            "memoryEnabled": pref.memory_enabled,
         }
 
-    except Exception as e:
+    except DatabaseError as e:
         await session.rollback()
         logger.error(f"Error occurred due to {e}")

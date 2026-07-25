@@ -8,22 +8,44 @@
  * - Expose send + future attachment entry points
  */
 
-import { ArrowUpIcon, Cross2Icon} from "@radix-ui/react-icons";
+import { ArrowRightIcon, Cross2Icon} from "@radix-ui/react-icons";
 import TextareaAutosize from "react-textarea-autosize";
 import { inputProps } from "@/app/types/chats/chats.type";
 
 import { options} from "@/app/components/input-options";
 import InputOptions from "@/app/components/input-options";
+import { useMemo } from "react";
+import { MODEL_GROUPS } from "@/app/config/models";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  // DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  // DropdownMenuShortcut,
+} from "@/app/components/ui/dropdown-menu";
+import AppTooltip from "@/app/components/ui/app-tooltip";
+import {CaretDownIcon} from "@radix-ui/react-icons";
+import Image from "next/image";
+
 export default function ChatInput(inputProps: inputProps) {
   const optionList = inputProps.tools
 
   const setOptionList = (tools: string[]) =>
       inputProps.dispatch({ type: "SET_TOOLS", payload: tools })
 
+  const currentModel = useMemo(() => {
+    return (
+      MODEL_GROUPS.flatMap((g) => g.models).find(
+        (m) => m.value === inputProps.selectedModel
+      )?.label ?? "Select model"
+    );
+  }, [inputProps.selectedModel]);
 
   return (
-    <div className="font-paragraph mx-auto w-full max-w-3xl rounded-2xl pb-2">
-      <div className="flex flex-col gap-2 rounded-2xl border p-3">
+    <div className="font-paragraph mx-auto w-full max-w-3xl">
+      <div className="flex flex-col rounded-xl border">
         {/* User Input */}
         <TextareaAutosize
           value={inputProps.value}
@@ -34,50 +56,93 @@ export default function ChatInput(inputProps: inputProps) {
               inputProps.onSend();
             }
           }}
-          className="max-h-[10rem] w-full resize-none overflow-y-auto bg-transparent text-sm outline-none"
+          className="max-h-[10rem] w-full resize-none overflow-y-auto bg-transparent text-sm outline-none p-3"
           minRows={1}
           maxRows={6}
           placeholder="Ask anything"
         />
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between border-t p-2">
           {/* Options Button */}
           <div className="flex items-center gap-3">
-          <InputOptions
-            tools={optionList}
-            setTools={setOptionList}
-          />
-
-          {/* Show the tool label from the tools key */}
-          {optionList.map((item) => {
-            const tool = options.find(o => o.key === item)
-
-            return (
-              <div
-                key={item}
-                className="flex items-center gap-1 text-xs bg-blue-200 px-2 py-1 rounded-md text-blue-600"
-              >
-                <span>{tool?.toolLabel}</span>
-
-                <button
-                  onClick={() =>
-                    setOptionList(optionList.filter(i => i !== item))
-                  }
-                  className="ml-1 hover:text-blue-800 cursor-pointer"
-                >
-                  <Cross2Icon className="h-4 w-4" />
-                </button>
+            <AppTooltip label="Tools and more">
+              <div>
+                <InputOptions
+                  tools={optionList}
+                  setTools={setOptionList}
+                />
               </div>
-            )
-          })}
+            </AppTooltip>
+
+            {/* Show the tool label from the tools key */}
+            {optionList.map((item) => {
+              const tool = options.find(o => o.key === item)
+
+              return (
+                <div
+                  key={item}
+                  className="flex items-center gap-1 text-xs bg-blue-200 px-2 py-1 rounded-md text-blue-600"
+                >
+                  <span>{tool?.toolLabel}</span>
+
+                  <AppTooltip label={`Remove ${tool?.toolLabel}`}>
+                    <button
+                      onClick={() =>
+                        setOptionList(optionList.filter(i => i !== item))
+                      }
+                      className="ml-1 hover:text-blue-800 cursor-pointer"
+                    >
+                      <Cross2Icon className="h-4 w-4" />
+                    </button>
+                  </AppTooltip>
+                </div>
+              )
+            })}
           </div>
 
-          {/* Send */}
-          <button
-            onClick={() => inputProps.onSend()}
-            className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-blue-600 hover:bg-blue-700"
-          >
-            <ArrowUpIcon className="h-4 w-4 text-stone-100" />
-          </button>
+          {/* Model selector + Send, grouped so the selector sits right before send */}
+          <div className="flex items-center gap-1.5">
+            <DropdownMenu>
+              <AppTooltip label="Choose model">
+                <DropdownMenuTrigger asChild>
+                  <button className="font-paragraph flex h-8 items-center gap-1 rounded-md px-2.5 text-sm text-stone-600 transition-colors hover:bg-stone-100 cursor-pointer">
+                    {currentModel} <CaretDownIcon className="h-3.5 w-3.5 text-stone-400" />
+                  </button>
+                </DropdownMenuTrigger>
+              </AppTooltip>
+
+              <DropdownMenuContent align="end" className="font-paragraph w-56">
+                {MODEL_GROUPS.map((group) => (
+                  <div key={group.provider}>
+                    <DropdownMenuLabel className="flex items-center gap-2 text-xs text-stone-500">
+                      <Image src={group.url} className="h-3 w-3" alt="Model Image" width={12} height={12}/>
+                      {/*<img src={group.url} className="h-3 w-3" />*/}
+                      {group.provider}
+                    </DropdownMenuLabel>
+
+                    {group.models.map((model) => (
+                      <DropdownMenuItem
+                        key={model.value}
+                        onSelect={() => inputProps.setSelectedModel(model.value)}
+                        className="cursor-pointer pl-8 text-xs"
+                      >
+                        {model.label}
+                      </DropdownMenuItem>
+                    ))}
+                  </div>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Send */}
+            <AppTooltip label="Send message">
+              <button
+                onClick={() => inputProps.onSend()}
+                className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md bg-blue-600 hover:bg-blue-700"
+              >
+                <ArrowRightIcon className="h-4 w-4 text-stone-100" />
+              </button>
+            </AppTooltip>
+          </div>
         </div>
       </div>
 

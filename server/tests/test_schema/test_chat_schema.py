@@ -1,6 +1,4 @@
 from app.schemas.chat_schema import ChatRequest
-
-
 def test_chat_request():
     payload = {
         "model": "openai/gpt-oss-120b",

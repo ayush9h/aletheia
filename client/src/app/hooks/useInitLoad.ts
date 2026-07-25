@@ -7,7 +7,7 @@
  * @param dispatch - Chat reducer dispatch reference
  */
 import { useEffect } from "react";
-import { userChats, userSessions } from "../lib/api/userData";
+import { userSessions } from "../lib/api/userData";
 import { ChatAction } from "../types/chats/chat-action";
 
 export function useInitLoad(
@@ -29,14 +29,6 @@ export function useInitLoad(
 
         if (!sessions.length) return;
 
-        const topSession = sessions[0];
-        dispatch({
-          type: "SET_SELECTED_SESSION",
-          payload: topSession.session_id,
-        });
-
-        const chatsRes = await userChats(topSession.session_id);
-        dispatch({ type: "SET_MESSAGES", payload: chatsRes.data });
       } catch {}
     }
 

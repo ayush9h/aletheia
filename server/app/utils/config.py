@@ -13,6 +13,15 @@ class Settings(BaseSettings):
     PINECONE_API_KEY: str
     VOYAGE_API_KEY: str
     TAVILY_API_KEY: str
+    REDIS_URL: str
+    CHAT_STREAM_REQUESTS_PER_MINUTE: int
+    CHAT_STREAM_REQUESTS_PER_HOUR: int
+    GROQ_ORG_ID: str
+    GROQ_OPENAI_RPM: int
+    GROQ_META_RPM: int
+    GROQ_OPENAI_TPM: int
+    GROQ_META_TPM: int
+    TAVILY_SEARCH_RPM: int
 
     model_config = SettingsConfigDict(
         env_file=ENV_FILE,

@@ -10,6 +10,8 @@ export interface inputProps {
   onSend: () => void;
   tools: string[]
   dispatch: React.Dispatch<ChatAction>;
+  selectedModel: string;
+  setSelectedModel: (model: string) => void;
 }
 
 /* Chat Window Props */

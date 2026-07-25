@@ -38,7 +38,7 @@ export function SessionItem(SessionItemProps: SessionItemProps) {
         </span>
 
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
+          <DropdownMenuTrigger asChild className="cursor-pointer">
             <button
               className={`ml-auto flex h-6 w-6 items-center justify-center rounded
               text-stone-600 transition hover:bg-stone-200 hover:text-stone-800
@@ -73,7 +73,7 @@ export function SessionItem(SessionItemProps: SessionItemProps) {
             </DropdownMenuItem>
 
             <DropdownMenuItem
-              className="flex cursor-pointer items-center gap-2 text-red-500"
+              className="flex cursor-pointer items-center gap-2 text-red-500 data-[highlighted]:bg-red-100 data-[highlighted]:text-red-700 focus:bg-red-100 focus:text-red-600"
               onSelect={(e) => {
                 e.preventDefault();
                 SessionItemProps.handleDeleteSession(
@@ -81,7 +81,7 @@ export function SessionItem(SessionItemProps: SessionItemProps) {
                 );
               }}
             >
-              <TrashIcon className="h-4 w-4" />
+              <TrashIcon className="h-4 w-4 text-red-500 data-[highlighted]:bg-red-100 data-[highlighted]:text-red-700 focus:bg-red-100 focus:text-red-600" />
               Delete
             </DropdownMenuItem>
           </DropdownMenuContent>

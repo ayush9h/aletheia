@@ -39,6 +39,8 @@ export const InitialState: ChatState = {
     userCustomInstruction: "",
     /** User hobbies for personalization response */
     userHobbies: "",
+    /** Memory */
+    memoryEnabled:true,
   },
 
   /**Selected Tools */

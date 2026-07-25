@@ -1,12 +1,10 @@
 import json
-import os
 import uuid
-from typing import Dict, Optional
 
-from app.utils.config import settings
 from pinecone import Pinecone, ServerlessSpec
 from voyageai.client import Client
-from app.utils.logger import logger
+
+from app.utils.config import settings
 
 
 class PineconeRetriever:
@@ -47,7 +45,7 @@ class PineconeRetriever:
     def add_document(
         self,
         document: str,
-        metadata: Dict,
+        metadata: dict,
         doc_id: str,
         user_id: str,
         session_id: str,
@@ -95,7 +93,7 @@ class PineconeRetriever:
         self,
         query: str,
         user_id: str,
-        session_id: Optional[str] = None,
+        session_id: str | None = None,
         k: int = 5,
     ):
 

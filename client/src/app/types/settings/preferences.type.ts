@@ -1,7 +1,7 @@
-import { UserPrefProps } from "../user-pref";
+import type { UserPrefProps } from "../user-pref";
+
 export type PersonalizedSettingProps = {
   userPref: UserPrefProps;
-  setUserPref: (pref: UserPrefProps) => void;
-  handleSave: () => Promise<void> | void;
+  handleSave: (userPref: UserPrefProps) => Promise<void>;
   onOpenChange: (open: boolean) => void;
 };

@@ -1,15 +1,18 @@
+"use client";
+
 /**
- * Application Navbar responsible for:
- * - Model selection
+ * Application navbar responsible for:
  * - Account controls
  * - Settings dialog access
  */
 
-"use client";
-
-import { useSession, signOut } from "next-auth/react";
-import { useState, useMemo } from "react";
 import Image from "next/image";
+import {
+  useState,
+  type Dispatch,
+} from "react";
+import { signOut, useSession } from "next-auth/react";
+import { ExitIcon, GearIcon } from "@radix-ui/react-icons";
 
 import {
   DropdownMenu,
@@ -17,108 +20,130 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
   DropdownMenuShortcut,
+  DropdownMenuTrigger,
 } from "@/app/components/ui/dropdown-menu";
-import { GearIcon, ExitIcon, CaretDownIcon } from "@radix-ui/react-icons";
 
 import { SettingsDialog } from "./settings-dialog";
-import { UserPrefProps } from "../types/user-pref";
-import { MODEL_GROUPS } from "../config/models";
-import { ChatAction } from "../types/chats/chat-action";
+import type { UserPrefProps } from "../types/user-pref";
+import type { ChatAction } from "../types/chats/chat-action";
 
 type NavbarProps = {
-  selectedModel: string;
-  setSelectedModel: (model: string) => void;
   userPref: UserPrefProps;
-  setUserPref: (userPref: UserPrefProps) => void;
-  dispatch: React.Dispatch<ChatAction>;
+  setUserPref: Dispatch<UserPrefProps>;
+  dispatch: Dispatch<ChatAction>;
 };
 
 export default function Navbar({
-  selectedModel,
-  setSelectedModel,
   userPref,
   setUserPref,
   dispatch,
 }: NavbarProps) {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
+
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
 
-  const currentModel = useMemo(() => {
-    return (
-      MODEL_GROUPS.flatMap((g) => g.models).find(
-        (m) => m.value === selectedModel
-      )?.label ?? "Select model"
-    );
-  }, [selectedModel]);
+  if (status === "loading" || !session?.user) {
+    return null;
+  }
 
-  if (!session?.user) return null;
+  const displayName = session.user.name?.trim() || "User";
+  const avatarUrl = session.user.image;
+  const fallbackInitial = displayName.charAt(0).toUpperCase();
+
+  const handleSignOut = async (): Promise<void> => {
+    if (isSigningOut) {
+      return;
+    }
+
+    setIsSigningOut(true);
+
+    try {
+      await signOut({
+        redirectTo: "/",
+      });
+    } catch (error) {
+      console.error("Failed to sign out", error);
+      setIsSigningOut(false);
+    }
+  };
 
   return (
-    <nav>
-      <div className="flex items-center justify-between px-6 py-3">
+    <nav aria-label="Account navigation">
+      <div className="flex items-center justify-end px-6 py-3">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="font-paragraph flex items-center rounded-md border border-stone-300 bg-white px-3 py-2 text-sm text-stone-700 hover:bg-stone-50">
-              {currentModel} <CaretDownIcon className="ml-2" />
+            <button
+              type="button"
+              aria-label={`Open account menu for ${displayName}`}
+              className="flex size-8 items-center justify-center overflow-hidden rounded-full bg-stone-200 cursor-pointer"
+            >
+              {avatarUrl ? (
+                <Image
+                  src={avatarUrl}
+                  alt=""
+                  width={30}
+                  height={30}
+                  className="size-8 object-cover"
+                />
+              ) : (
+                <span
+                  aria-hidden="true"
+                  className="text-sm font-medium text-stone-700"
+                >
+                  {fallbackInitial}
+                </span>
+              )}
             </button>
           </DropdownMenuTrigger>
 
-          <DropdownMenuContent align="start" className="font-paragraph w-56">
-            {MODEL_GROUPS.map((group) => (
-              <div key={group.provider}>
-                <DropdownMenuLabel className="flex items-center gap-2 text-xs text-stone-500">
-                  <img src={group.url} className="h-3 w-3" />
-                  {group.provider}
-                </DropdownMenuLabel>
+          <DropdownMenuContent
+            align="end"
+            sideOffset={8}
+            className="font-paragraph"
+          >
+            <DropdownMenuLabel>
+              <div className="flex flex-col">
+                <span>{displayName}</span>
 
-                {group.models.map((model) => (
-                  <DropdownMenuItem
-                    key={model.value}
-                    onSelect={() => setSelectedModel(model.value)}
-                    className="cursor-pointer pl-8"
-                  >
-                    {model.label}
-                  </DropdownMenuItem>
-                ))}
+                {session.user.email && (
+                  <span className="max-w-56 truncate text-xs font-normal text-muted-foreground">
+                    {session.user.email}
+                  </span>
+                )}
               </div>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+            </DropdownMenuLabel>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Image
-              src={session.user.image as string}
-              alt="User avatar"
-              width={40}
-              height={40}
-              className="cursor-pointer rounded-full bg-stone-200 p-1 hover:bg-stone-300"
-            />
-          </DropdownMenuTrigger>
-
-          <DropdownMenuContent align="end" className="font-paragraph">
-            <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
 
-            <DropdownMenuItem
-              onSelect={(e) => {
-                e.preventDefault();
-                setSettingsOpen(true);
-              }}
-            >
+            <DropdownMenuItem className="cursor-pointer" onSelect={() => setSettingsOpen(true)}>
               Settings
+
               <DropdownMenuShortcut>
-                <GearIcon className="h-4 w-4" />
+                <GearIcon aria-hidden="true" className="size-4" />
               </DropdownMenuShortcut>
             </DropdownMenuItem>
 
             <DropdownMenuSeparator />
-            <DropdownMenuItem onSelect={() => signOut({ redirectTo: "/" })}>
-              Log out
-              <DropdownMenuShortcut>
-                <ExitIcon className="h-4 w-4 shrink-0" />
+
+            <DropdownMenuItem
+              disabled={isSigningOut}
+              onSelect={() => {
+                void handleSignOut();
+              }}
+              className="
+                text-red-500 focus:bg-red-50 focus:text-red-600 data-[highlighted]:bg-red-50 data-[highlighted]:text-red-600 dark:focus:bg-red-950/30 dark:data-[highlighted]:bg-red-950/30
+                cursor-pointer
+              "
+            >
+              {isSigningOut ? "Logging out..." : "Log out"}
+
+              <DropdownMenuShortcut className="text-inherit opacity-100">
+                <ExitIcon
+                  aria-hidden="true"
+                  className="size-4 shrink-0 text-inherit"
+                />
               </DropdownMenuShortcut>
             </DropdownMenuItem>
           </DropdownMenuContent>

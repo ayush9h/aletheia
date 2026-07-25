@@ -6,10 +6,10 @@
  * @returns sendMessage mutation handler
  */
 import { useCallback } from "react";
-import { sendChatMessage } from "../lib/api/chatService";
+import { streamChatMessage } from "../lib/api/chatService";
 import { ChatAction } from "../types/chats/chat-action";
 import { UserPrefProps } from "../types/user-pref";
-import { Session } from "../types/user-message";
+import { Plan, Session } from "../types/user-message";
 
 type Params = {
   input: string;
@@ -18,7 +18,7 @@ type Params = {
   selectedSessionId: number | null;
   sessions: Session[];
   userId?: string;
-  tools:string[],
+  tools: string[];
   dispatch: React.Dispatch<ChatAction>;
 };
 
@@ -35,13 +35,7 @@ export function useSendMessage(params: Params) {
   } = params;
 
   /**
-   * Sends user message to backend and updates reducer state.
-   *
-   * Ensures:
-   * - Optimistic UI update for user message
-   * - Session bootstrap if none exists
-   * - Assistant response normalization
-   * - Graceful error fallback
+   * Sends user message to backend and updates reducer state via SSE stream.
    */
   return useCallback(async () => {
     const trimmed = input.trim();
@@ -52,58 +46,87 @@ export function useSendMessage(params: Params) {
       payload: {
         role: "user",
         text: trimmed,
-        reasoning: "",
         duration: 0,
         tokens_consumed: 0,
       },
     });
-
     dispatch({ type: "CLEAR_INPUT" });
-    dispatch({type:'SET_TOOLS', payload: []})
+    dispatch({ type: "SET_TOOLS", payload: [] });
+
+    // Placeholder assistant message, progressively filled in as events arrive
+    dispatch({
+      type: "ADD_MESSAGE",
+      payload: {
+        role: "assistant",
+        text: "",
+        duration: 0,
+        tokens_consumed: 0,
+        isStreaming:true,
+      },
+    });
+
+    let streamedText = "";
+
     try {
-      const res = await sendChatMessage(
+      await streamChatMessage(
         selectedModel,
         trimmed,
         userPref,
         selectedSessionId,
         userId,
         tools,
+        {
+
+          onPlan: (plan) => {
+            dispatch({ type: "SET_CURRENT_PLAN", payload: plan as Plan });
+          },
+
+
+          onToken: (token) => {
+            streamedText += token;
+            dispatch({
+              type: "UPDATE_LAST_ASSISTANT_MESSAGE",
+              payload: { text: streamedText, isStreaming:true, },
+            });
+          },
+
+          onFinal: (payload) => {
+            const newSession = payload.session;
+            if (!selectedSessionId && newSession) {
+              dispatch({
+                type: "SET_SELECTED_SESSION",
+                payload: newSession.session_id,
+              });
+              dispatch({
+                type: "SET_SESSIONS",
+                payload: [newSession, ...sessions],
+              });
+            }
+
+            dispatch({
+              type: "UPDATE_LAST_ASSISTANT_MESSAGE",
+              payload: {
+                text: payload.service_output.response_content,
+                reasoning: payload.service_output.reasoning_content,
+                duration: payload.service_output.duration,
+                tokens_consumed: payload.service_output.tokens_consumed,
+                isStreaming: false,
+              },
+            });
+          },
+
+          onError: () => {
+            dispatch({
+              type: "UPDATE_LAST_ASSISTANT_MESSAGE",
+              payload: { text: "Oops something went wrong. Try Again Later.", isStreaming:false },
+            });
+          },
+        }
       );
-
-      const newSession = res.data.session;
-
-      if (!selectedSessionId && newSession) {
-        dispatch({
-          type: "SET_SELECTED_SESSION",
-          payload: newSession.session_id,
-        });
-
-        dispatch({
-          type: "SET_SESSIONS",
-          payload: [newSession, ...sessions],
-        });
-      }
-
-      dispatch({
-        type: "ADD_MESSAGE",
-        payload: {
-          role: "assistant",
-          text: String(res.data.service_output.response_content ?? "..."),
-          reasoning: String(res.data.service_output.reasoning_content ?? "..."),
-          duration: res.data.service_output.duration ?? 0,
-          tokens_consumed: res.data.service_output.tokens_consumed ?? 0,
-        },
-      });
     } catch {
       dispatch({
-        type: "ADD_MESSAGE",
-        payload: {
-          role: "assistant",
-          text: "Error getting response from API",
-          reasoning: "",
-          duration: 0,
-          tokens_consumed: 0,
-        },
+        type: "UPDATE_LAST_ASSISTANT_MESSAGE",
+        payload: { text: "Oops something went wrong. Try Again Later.", isStreaming:false },
       });
     }
   }, [

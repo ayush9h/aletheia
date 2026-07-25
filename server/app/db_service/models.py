@@ -13,7 +13,7 @@ class UserPrefs(SQLModel, table=True):
     user_personal_description: str
     occupation: str
     baseTone: str
-
+    memory_enabled: bool = Field(default=True)
 
 
 # ==================User Chats================

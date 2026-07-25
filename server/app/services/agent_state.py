@@ -1,11 +1,13 @@
-from typing import Annotated, List, Optional, TypedDict
+from typing import Annotated, TypedDict
+
+from langgraph.graph.message import BaseMessage, add_messages
 
 from app.schemas.chat_schema import UserPref
-from langgraph.graph.message import BaseMessage, add_messages
+from app.schemas.workflows.planner_schema import Plan
 
 
 class AgentState(TypedDict):
-    user_input: Annotated[List[BaseMessage], add_messages]
+    user_input: Annotated[list[BaseMessage], add_messages]
     session_title: str
     user_model: str
     user_id: str
@@ -13,7 +15,9 @@ class AgentState(TypedDict):
     reasoning_kwargs: str
     response_content: str
     user_preference: UserPref
-    tokens_consumed: Optional[int]
-    duration: Optional[float]
-    memory_context: Optional[str]
-    tools: Optional[List[str]]
+    tokens_consumed: int | None
+    duration: float | None
+    memory_context: str | None
+    tools: list[str] | None
+    plan: Plan
+    use_memory: bool

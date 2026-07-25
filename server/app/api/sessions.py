@@ -1,12 +1,13 @@
 from datetime import datetime
 from typing import List
 
-from app.db_service.db import get_session
-from app.db_service.models import UserChats, UserSessions
-from app.utils.logger import logger
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import delete, select
+
+from app.db_service.db import get_session
+from app.db_service.models import UserChats, UserSessions
+from app.utils.logger import logger
 
 session_router = APIRouter(prefix="/v1")
 
@@ -76,6 +77,7 @@ async def delete_session(
     except Exception as e:
         await session.rollback()
         logger.error(f"Error occurred while deleting a session: {e}")
+
 
 @session_router.post("/sessions/{session_id}/toggle-pin-session")
 async def pin_session(

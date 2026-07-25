@@ -1,15 +1,18 @@
-from typing import List, Literal, Optional
+from typing import Literal
 
-from app.utils.config import settings
 from langchain.tools import tool
 from pydantic import BaseModel, Field
-from tavily import TavilyClient
+from tavily import AsyncTavilyClient
+
+from app.utils.config import settings
+from app.utils.rate_limiters.tavily import (TavilyLimitExceeded,
+                                            get_tavily_guard)
 
 
 class WebSearchSchema(BaseModel):
     """Input for the web search"""
 
-    domains: Optional[List[str]] = Field(
+    domains: list[str] | None = Field(
         description="User's requested domains mentioned in the query to be included in the domains fetching",
     )
     query: str = Field(description="Original query of the user for the web search")
@@ -24,13 +27,18 @@ class WebSearchSchema(BaseModel):
     args_schema=WebSearchSchema,
 )
 async def web_search(
-    domains: Optional[List[str]],
+    domains: list[str] | None,
     query: str,
     topic: Literal["general", "news", "finance"],
 ):
-    tavily_client = TavilyClient(api_key=settings.TAVILY_API_KEY)
+    guard = get_tavily_guard()
+    try:
+        await guard.acquire(tavily_exec_type="search", credit_usage_by_type=1)
+    except TavilyLimitExceeded:
+        return "Error: Web search rate limit exceeded. Please try again in a minute."
 
-    response = tavily_client.search(
+    tavily_client = AsyncTavilyClient(api_key=settings.TAVILY_API_KEY)
+    response = await tavily_client.search(
         query,
         include_domains=domains or [],
         topic=topic,

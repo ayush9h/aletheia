@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
-import { Poiret_One, Quicksand } from "next/font/google";
+import { Poiret_One, Geist } from "next/font/google";
 import "./globals.css";
 import { SessionProvider } from "next-auth/react";
 import { auth } from "./auth";
+import { TooltipProvider } from "./components/ui/tooltip";
 
 const headerFont = Poiret_One({
   subsets: ["latin"],
@@ -11,11 +12,11 @@ const headerFont = Poiret_One({
   display: "swap",
 });
 
-const paragraphFont = Quicksand({
+const paragraphFont = Geist({
   subsets: ["latin"],
   variable: "--font-paragraph",
   display: "swap",
-  weight: "500",
+  weight: "400",
 });
 
 export const metadata: Metadata = {
@@ -34,7 +35,10 @@ export default async function RootLayout({
       <body
         className={`${headerFont.variable} ${paragraphFont.variable} antialiased`}
       >
-        <SessionProvider session={session}>{children}</SessionProvider>
+        <TooltipProvider>
+          <SessionProvider session={session}>{children}</SessionProvider>
+        </TooltipProvider>
+
       </body>
     </html>
   );
