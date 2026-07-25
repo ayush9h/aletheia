@@ -1,9 +1,9 @@
 import { Session, Message } from "../user-message";
 import { UserPrefProps } from "../user-pref";
-
+import { Plan } from "../user-message";
 {
   /**
-    Valid actions performed on the chat page 
+    Valid actions performed on the chat page
     */
 }
 export type ChatAction =
@@ -63,4 +63,15 @@ export type ChatAction =
      */
     type: "SET_TOOLS"
     payload: string[]
-  };
+  }
+
+  | {
+    type: "UPDATE_LAST_ASSISTANT_MESSAGE"; payload: Partial<{
+      text: string;
+      reasoning: string;
+      duration: number;
+      tokens_consumed: number;
+    }>
+  }
+
+  | { type: "SET_CURRENT_PLAN"; payload: Plan };

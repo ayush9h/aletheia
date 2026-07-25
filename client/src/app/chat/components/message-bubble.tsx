@@ -2,7 +2,6 @@
  * MessageBubble renders a single chat message with optional reasoning,
  * markdown formatting, copy interaction, and execution telemetry.
  **/
-
 import ReactMarkdown from "react-markdown";
 import {
   CopyIcon,
@@ -11,12 +10,7 @@ import {
   CheckIcon,
 } from "@radix-ui/react-icons";
 import { Message } from "@/app/types/user-message";
-import {
-  Accordion,
-  AccordionItem,
-  AccordionContent,
-  AccordionTrigger,
-} from "@/app/components/ui/accordion";
+import PlanPanel from "@/app/components/ui/plan-panel";
 import remarkGfm from "remark-gfm";
 import { memo, useCallback, useState } from "react";
 
@@ -27,7 +21,6 @@ const MessageBubble = memo(function MessageBubble({
 }) {
   const isUser = message.role === "user";
   const [copied, setCopied] = useState(false);
-
   const handleCopy = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(String(message.text));
@@ -55,37 +48,15 @@ const MessageBubble = memo(function MessageBubble({
               : "w-full   text-stone-800"
           }`}
         >
-          {/* Accordion on the basis of reasoning available */}
-          {!isUser && message.reasoning && (
-            <Accordion
-              type="single"
-              collapsible
-              className="mb-4 flex flex-col rounded-md border border-stone-100 bg-stone-100 p-2"
-            >
-              <AccordionItem value="reasoning">
-                <AccordionTrigger
-                  className="
-                    data-[state=open]:text-stone-700 py-1 px-0 text-xs
-                    text-stone-500
-                    hover:no-underline
-                  "
-                >
-                  Show reasoning
-                </AccordionTrigger>
+          {/* Plan panel, shown only for assistant messages that have a plan */}
+          {!isUser && message.plan && <PlanPanel plan={message.plan} />}
 
-                <AccordionContent className="px-0 pb-2 pt-1 text-xs leading-relaxed text-stone-600">
-                  {String(message.reasoning)}
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
-          )}
           {/* Markdown rendering of the response */}
           <ReactMarkdown remarkPlugins={[remarkGfm]}>
             {String(message.text)}
           </ReactMarkdown>
         </div>
       </div>
-
       {/* User actions and metrics for the particular message
        * Copy
        * Tokens consumed
@@ -106,14 +77,12 @@ const MessageBubble = memo(function MessageBubble({
               </>
             )}
           </div>
-
           {/* Time taken */}
           <div className="font-paragraph flex items-center gap-2 text-xs text-stone-500">
             <div title="Time taken" className="flex items-center gap-1">
               <ClockIcon className="h-3.5 w-3.5" />
               <span>{message.duration}s</span>
             </div>
-
             {/* Tokens consumed */}
             <div title="Tokens consumed" className="flex items-center gap-1">
               <LightningBoltIcon className="h-3.5 w-3.5" />
@@ -125,4 +94,5 @@ const MessageBubble = memo(function MessageBubble({
     </div>
   );
 });
+
 export default MessageBubble;
