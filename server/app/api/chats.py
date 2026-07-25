@@ -137,7 +137,7 @@ async def chat_stream(
         "user_id": payload.userId,
         "session_id": chat_session.session_id,
         "tools": payload.tools,
-        "use_memory": False,
+        "use_memory": payload.userPref.memoryEnabled if payload.userPref else False,
     }
 
     async def event_generator() -> AsyncGenerator[str, None]:

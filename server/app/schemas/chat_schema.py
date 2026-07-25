@@ -1,4 +1,4 @@
-from typing import List, Literal, Optional
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
@@ -18,18 +18,18 @@ class ChatRequest(BaseModel):
         ...,
         description="The user's query",
     )
-    selectedSessionId: Optional[int] = Field(
+    selectedSessionId: int | None = Field(
         None,
         description="Existing session ID. Null means create new session.",
     )
 
-    userPref: Optional[UserPref] = Field(
+    userPref: UserPref | None = Field(
         None,
         description="User preferences that influence assistant responses",
     )
-    userId: Optional[str] = Field(
+    userId: str | None = Field(
         ..., description="The id of the user asking the question"
     )
-    tools: Optional[List[str]] = Field(
+    tools: list[str] | None = Field(
         None, description="List of tools selected by the user"
     )

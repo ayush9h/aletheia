@@ -9,6 +9,7 @@ dependencies = [
     "aiohttp==3.13.3",
     "aiolimiter==1.2.1",
     "aiosignal==1.4.0",
+    "alembic>=1.18.5",
     "annotated-doc==0.0.4",
     "annotated-types==0.7.0",
     "anyio==4.12.0",
