@@ -48,6 +48,16 @@ def route_memory(state: AgentState) -> str:
     return "planner_node"
 
 
+def route_memory_store(state: AgentState) -> str:
+    """
+    Decide whether to persist this turn to memory based on the use_memory flag.
+    """
+
+    if state.get("use_memory", False):
+        return "memory_store"
+    return "__end__"
+
+
 async def generate_session_title(state: AgentState) -> AgentState:
 
     client = ChatGroq(
@@ -88,6 +98,8 @@ Plan to follow for fulfilling the user query:
         model=ChatGroq(
             api_key=settings.GROQ_API_KEY,
             model=state["user_model"],
+            reasoning_effort=None,
+            streaming=True,
         ),
         system_prompt=SystemMessage(content=ORCHESTRATOR_BASE_PROMPT),
         tools=available_tools,
@@ -169,7 +181,16 @@ builder.add_conditional_edges(
 builder.add_edge("memory_retrieve", "planner_node")
 builder.add_edge("planner_node", "orchestrator")
 builder.add_edge("orchestrator", "generate_session_title")
-builder.add_edge("generate_session_title", "memory_store")
+
+builder.add_conditional_edges(
+    "generate_session_title",
+    route_memory_store,
+    {
+        "memory_store": "memory_store",
+        "__end__": END,
+    },
+)
+
 builder.add_edge("memory_store", END)
 
 graph = builder.compile()

@@ -1,7 +1,9 @@
+import json
+
 from langchain_core.messages import SystemMessage
 from langchain_groq import ChatGroq
-from prompts.workflows.planner_prompt import planner_prompt_parser
 
+from app.prompts.workflows.planner_prompt import planner_prompt_parser
 from app.services.agent_state import AgentState
 from app.services.tools import TOOL_REGISTRY
 from app.utils.config import settings
@@ -44,7 +46,7 @@ async def planner_node(state: AgentState) -> AgentState:
             if isinstance(state.get("user_input"), list)
             else ""
         ),
-        tools=tools_for_prompt,
+        tools=json.dumps(tools_for_prompt, indent=2),
     )
 
     # list of messages
