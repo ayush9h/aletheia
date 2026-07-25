@@ -1,33 +1,34 @@
-#=======================================
 FROM python:3.13-slim AS builder
+COPY --from=ghcr.io/astral-sh/uv:0.11.32 /uv /uvx /bin/
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN curl -Ls https://astral.sh/uv/install.sh | sh
-ENV PATH="/root/.local/bin:${PATH}"
-
-WORKDIR /app
-COPY requirements.txt .
-
-RUN uv venv /venv
-
-ENV VIRTUAL_ENV=/venv
-ENV PATH="/venv/bin:${PATH}"
-
-RUN uv pip install -r requirements.txt
-
-#=======================================
-FROM python:3.13-slim
+ENV UV_PYTHON_DOWNLOADS=0 \
+    UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy
 
 WORKDIR /app
 
-COPY --from=builder /venv /venv
+
+COPY pyproject.toml uv.lock ./
+
+
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync \
+        --locked \
+        --no-dev \
+        --no-install-project
+
+# =======================================
+FROM python:3.13-slim AS runtime
+
+ENV PATH="/app/.venv/bin:${PATH}" \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
+
+WORKDIR /app
+
+COPY --from=builder /app/.venv /app/.venv
 COPY . .
 
-ENV PATH="/venv/bin:${PATH}"
-
 EXPOSE 8080
+
 CMD ["uvicorn", "wsgi:app", "--host", "0.0.0.0", "--port", "8080"]
