@@ -106,3 +106,7 @@ dependencies = [
     "yarl==1.23.0",
     "zstandard==0.25.0",
 ]
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+addopts = "-ra"
