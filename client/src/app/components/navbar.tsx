@@ -10,7 +10,6 @@ import Image from "next/image";
 import {
   useState,
   type Dispatch,
-  type SetStateAction,
 } from "react";
 import { signOut, useSession } from "next-auth/react";
 import { ExitIcon, GearIcon } from "@radix-ui/react-icons";
@@ -31,7 +30,7 @@ import type { ChatAction } from "../types/chats/chat-action";
 
 type NavbarProps = {
   userPref: UserPrefProps;
-  setUserPref: Dispatch<SetStateAction<UserPrefProps>>;
+  setUserPref: Dispatch<UserPrefProps>;
   dispatch: Dispatch<ChatAction>;
 };
 
