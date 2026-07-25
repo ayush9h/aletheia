@@ -1,14 +1,16 @@
-from typing import List
+from sqlite3 import DatabaseError
+
+from fastapi import APIRouter, Depends
+from fastapi.exceptions import HTTPException
+from langchain_core.messages import HumanMessage
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlmodel import select
 
 from app.db_service.db import get_session
 from app.db_service.models import UserChats, UserSessions
 from app.schemas.chat_schema import ChatRequest
 from app.services.agent import graph
 from app.utils.logger import logger
-from fastapi import APIRouter, Depends
-from langchain_core.messages import HumanMessage
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlmodel import select
 
 chat_router = APIRouter(prefix="/v1")
 
@@ -37,7 +39,7 @@ async def chat(payload: ChatRequest, session: AsyncSession = Depends(get_session
             await session.commit()
             await session.refresh(chat_session)
 
-        logger.info(f"Verified session generation")
+        logger.info("Verified session generation")
 
         input_state = {
             "user_input": [HumanMessage(content=payload.query)],
@@ -46,11 +48,12 @@ async def chat(payload: ChatRequest, session: AsyncSession = Depends(get_session
             "user_id": payload.userId,
             "session_id": chat_session.session_id,
             "tools": payload.tools,
+            "use_memory": False,
         }
 
         response = await graph.ainvoke(input=input_state)  # type: ignore
 
-        logger.info(f"Received agent response")
+        logger.info("Received agent response")
 
         # Update the session title after the request complete
         if not payload.selectedSessionId:
@@ -70,7 +73,7 @@ async def chat(payload: ChatRequest, session: AsyncSession = Depends(get_session
         session.add(chat)
         await session.commit()
 
-        logger.info(f"Stored the details in DB")
+        logger.info("Stored the details in DB")
 
         return {
             "service_output": {
@@ -84,9 +87,10 @@ async def chat(payload: ChatRequest, session: AsyncSession = Depends(get_session
                 "session_title": chat_session.session_title,
             },
         }
-    except Exception as e:
+    except (DatabaseError, HTTPException) as e:
         await session.rollback()
         logger.error(f"Error occurred in chat processing due to {e}")
+
 
 @chat_router.get(
     "/chats",
@@ -96,7 +100,7 @@ async def chat(payload: ChatRequest, session: AsyncSession = Depends(get_session
 async def chats(
     session_id: int,
     session: AsyncSession = Depends(get_session),
-) -> List[dict]:
+) -> list[dict]:
     try:
         stmt = (
             select(UserChats)
@@ -107,9 +111,9 @@ async def chats(
         result = await session.execute(stmt)
         chats = result.scalars().all()
 
-        logger.info(f"Fetched chats for session")
+        logger.info("Fetched chats for session")
 
-        response: List[dict] = []
+        response: list[dict] = []
 
         for c in chats:
             response.append(
@@ -130,7 +134,7 @@ async def chats(
             )
         return response
 
-    except Exception as e:
+    except (DatabaseError, HTTPException) as e:
         await session.rollback()
-        logger.error(f"Error occured during fetching chats:{e}")
+        logger.error(f"Error occured during fetching chats: {e}")
         return []

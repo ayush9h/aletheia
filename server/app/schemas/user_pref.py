@@ -1,10 +1,8 @@
-from typing import Optional
-
 from pydantic import BaseModel, Field
 
 
 class UserPref(BaseModel):
-    userId: Optional[str] = Field("", description="Unique ID of user")
+    userId: str | None = Field("", description="Unique ID of user")
     userCustomInstruction: str = Field(
         "",
         description="Custom system instructions provided by the user",

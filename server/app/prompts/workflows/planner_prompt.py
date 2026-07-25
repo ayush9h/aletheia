@@ -1,7 +1,6 @@
 from langchain_core.output_parsers import PydanticOutputParser
 from langchain_core.prompts import PromptTemplate
-
-from schemas.plan_schema import Plan
+from schemas.workflows.planner_schema import Plan
 
 
 def planner_prompt_parser():

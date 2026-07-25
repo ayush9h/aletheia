@@ -1,15 +1,16 @@
-from typing import List, Literal, Optional
+from typing import Literal
 
-from app.utils.config import settings
 from langchain.tools import tool
 from pydantic import BaseModel, Field
 from tavily import TavilyClient
+
+from app.utils.config import settings
 
 
 class WebSearchSchema(BaseModel):
     """Input for the web search"""
 
-    domains: Optional[List[str]] = Field(
+    domains: list[str] | None = Field(
         description="User's requested domains mentioned in the query to be included in the domains fetching",
     )
     query: str = Field(description="Original query of the user for the web search")
@@ -24,7 +25,7 @@ class WebSearchSchema(BaseModel):
     args_schema=WebSearchSchema,
 )
 async def web_search(
-    domains: Optional[List[str]],
+    domains: list[str] | None,
     query: str,
     topic: Literal["general", "news", "finance"],
 ):

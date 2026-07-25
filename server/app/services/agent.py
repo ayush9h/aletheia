@@ -1,15 +1,16 @@
 from datetime import datetime
 
-from app.memory.manager import MemoryManager
-from app.prompts.orchestrator_prompt import ORCHESTRATOR_BASE_PROMPT
-from app.services.agent_state import AgentState
-from app.services.tools.web_search import web_search
-from app.utils.config import settings
-from app.utils.logger import logger
 from langchain.agents import create_agent
 from langchain_core.messages import SystemMessage
 from langchain_groq import ChatGroq
 from langgraph.graph import END, START, StateGraph
+
+from app.memory.manager import MemoryManager
+from app.prompts.orchestrator_prompt import ORCHESTRATOR_BASE_PROMPT
+from app.services.agent_state import AgentState
+from app.services.tools.web_search import web_search
+from app.services.workflows.planner_node import planner_node
+from app.utils.config import settings
 
 memory_manager = MemoryManager(
     llm_client=ChatGroq(
@@ -35,6 +36,16 @@ async def memory_retrieve(state: AgentState) -> AgentState:
     )
 
     return state
+
+
+def route_memory(state: AgentState) -> str:
+    """
+    Decide whether to run memory_retrieve based on the use_memory flag.
+    """
+
+    if state.get("use_memory", False):
+        return "memory_retrieve"
+    return "planner_node"
 
 
 async def generate_session_title(state: AgentState) -> AgentState:
@@ -66,8 +77,14 @@ User Hobbies: {state["user_preference"].userHobbies}
 User Nickname: {state["user_preference"].nickname}
 User occupation: {state["user_preference"].occupation}
 """
+
+    plan_block = f"""
+Plan to follow for fulfilling the user query:
+{state.get("plan", "")}
+"""
+
     available_tools = [web_search]
-    agent = agent = create_agent(
+    agent = create_agent(
         model=ChatGroq(
             api_key=settings.GROQ_API_KEY,
             model=state["user_model"],
@@ -81,6 +98,7 @@ User occupation: {state["user_preference"].occupation}
         + [
             SystemMessage(content=memory_block),
             SystemMessage(content=pref_block),
+            SystemMessage(content=plan_block),
             SystemMessage(
                 content=f"Respond back in {state['user_preference'].baseTone} fashion manner."
             ),
@@ -133,15 +151,25 @@ Assistant: {assistant_msg}
 
 builder = StateGraph(AgentState)
 
-builder.add_node("generate_session_title", generate_session_title)
 builder.add_node("memory_retrieve", memory_retrieve)
+builder.add_node("planner_node", planner_node)
 builder.add_node("orchestrator", orchestrator)
+builder.add_node("generate_session_title", generate_session_title)
 builder.add_node("memory_store", memory_store)
 
-builder.add_edge(START, "generate_session_title")
-builder.add_edge("generate_session_title", "memory_retrieve")
-builder.add_edge("memory_retrieve", "orchestrator")
-builder.add_edge("orchestrator", "memory_store")
+builder.add_conditional_edges(
+    START,
+    route_memory,
+    {
+        "memory_retrieve": "memory_retrieve",
+        "planner_node": "planner_node",
+    },
+)
+
+builder.add_edge("memory_retrieve", "planner_node")
+builder.add_edge("planner_node", "orchestrator")
+builder.add_edge("orchestrator", "generate_session_title")
+builder.add_edge("generate_session_title", "memory_store")
 builder.add_edge("memory_store", END)
 
 graph = builder.compile()

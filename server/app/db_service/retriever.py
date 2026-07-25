@@ -3,9 +3,10 @@ import os
 import uuid
 from typing import Dict, Optional
 
-from app.utils.config import settings
 from pinecone import Pinecone, ServerlessSpec
 from voyageai.client import Client
+
+from app.utils.config import settings
 from app.utils.logger import logger
 
 

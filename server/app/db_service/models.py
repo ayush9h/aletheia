@@ -15,7 +15,6 @@ class UserPrefs(SQLModel, table=True):
     baseTone: str
 
 
-
 # ==================User Chats================
 class UserChats(SQLModel, table=True):
     __tablename__ = "user_chats"  # type: ignore

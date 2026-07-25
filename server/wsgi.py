@@ -1,11 +1,12 @@
 from contextlib import asynccontextmanager
 
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
 from app.api.chats import chat_router
 from app.api.sessions import session_router
 from app.api.user_settings import user_router
 from app.db_service.db import engine
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 
 origins = [
     "*",

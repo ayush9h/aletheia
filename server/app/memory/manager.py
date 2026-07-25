@@ -1,5 +1,7 @@
 from typing import Any, Dict, List
 
+from langchain_groq import ChatGroq
+
 from app.db_service.retriever import PineconeRetriever
 from app.memory.note import MemoryNote
 from app.prompts.mem import ANALYSE_PROMPT, EVOLUTION_PROMPT
@@ -7,7 +9,6 @@ from app.schemas.mem.evolve_schema import EvolveSchema
 from app.schemas.mem.note_schema import NoteSchema
 from app.utils.config import settings
 from app.utils.logger import logger
-from langchain_groq import ChatGroq
 
 
 class MemoryManager:

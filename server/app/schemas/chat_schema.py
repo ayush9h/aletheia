@@ -1,7 +1,8 @@
 from typing import List, Literal, Optional
 
-from app.schemas.user_pref import UserPref
 from pydantic import BaseModel, Field
+
+from app.schemas.user_pref import UserPref
 
 
 class ChatRequest(BaseModel):
