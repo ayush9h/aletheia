@@ -1,5 +1,6 @@
 from datetime import datetime
 
+import structlog
 from langchain.agents import create_agent
 from langchain_core.messages import SystemMessage
 from langchain_groq import ChatGroq
@@ -13,6 +14,7 @@ from app.services.workflows.planner_node import planner_node
 from app.utils.config import settings
 from app.utils.rate_limiters.llm import GroqRateLimitExceeded, get_groq_guard
 
+logger = structlog.get_logger(__name__)
 memory_manager = MemoryManager(
     llm_client=ChatGroq(
         api_key=settings.GROQ_API_KEY,
@@ -69,6 +71,7 @@ async def generate_session_title(state: AgentState) -> AgentState:
             max_output_tokens=max_output_tokens,
         )
     except GroqRateLimitExceeded as e:
+        logger.error(f"Rate limit hit for model due to: {e}")
         state["session_title"] = "New Session"
         return state
 
@@ -92,7 +95,7 @@ async def orchestrator(state: AgentState) -> AgentState:
 
     memory_block = f"""
 Relevant past memories:
-{state.get("memory_context","")}
+{state.get("memory_context", "")}
 """
 
     pref_block = f"""
@@ -131,6 +134,9 @@ Plan to follow for fulfilling the user query:
             max_output_tokens=max_output_tokens,
         )
     except GroqRateLimitExceeded as exc:
+        logger.error(
+            f"Rate limit hit for model {exc.model}. Retry in {exc.retry_after_seconds}s"
+        )
         raise RuntimeError(
             f"Rate limit hit for model {exc.model}. Retry in {exc.retry_after_seconds}s"
         ) from exc

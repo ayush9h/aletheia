@@ -1,5 +1,6 @@
 import json
 
+import structlog
 from langchain_core.messages import BaseMessage, SystemMessage
 from langchain_groq import ChatGroq
 
@@ -9,6 +10,7 @@ from app.services.tools import TOOL_REGISTRY
 from app.utils.config import settings
 from app.utils.rate_limiters.llm import get_groq_guard
 
+logger = structlog.get_logger(__name__)
 planner_llm = ChatGroq(
     api_key=settings.GROQ_API_KEY, model="llama-3.3-70b-versatile", max_tokens=1024
 )
@@ -74,6 +76,7 @@ async def planner_node(state: AgentState) -> AgentState:
     output = await planner_llm.ainvoke(messages)
     generated_plan = planner_parser.parse(output.content)  # type:ignore
 
+    logger.info(f"Generated Plan:{generated_plan}")
     # store the generated plan in the global state
     state["plan"] = generated_plan
     return state

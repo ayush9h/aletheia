@@ -3,10 +3,12 @@ from collections.abc import AsyncGenerator
 from sqlite3 import DatabaseError
 
 import structlog
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from fastapi.exceptions import HTTPException
 from fastapi.responses import StreamingResponse
 from langchain_core.messages import HumanMessage
+from langfuse import propagate_attributes
+from langfuse.langchain import CallbackHandler
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 from starlette import status
@@ -41,11 +43,14 @@ def serialize_plan(plan) -> str | None:
     description="Streams the agent's plan and final answer via SSE",
 )
 async def chat_stream(
+    request: Request,
     payload: ChatRequest,
     session: AsyncSession = Depends(get_session),
     rate_limiter: RedisSlidingWindowLimiter = Depends(get_rate_limiter),
 ):
     user_id = str(payload.userId)
+    langfuse = request.app.state.langfuse
+
     # Check for rate limit
     try:
         rate_limit = await rate_limiter.acquire(
@@ -143,72 +148,123 @@ async def chat_stream(
         final_state: dict = {}
 
         try:
-            async for event in graph.astream_events(input_state, version="v2"):
-                kind = event["event"]
-                node_name = event.get("metadata", {}).get("langgraph_node")
-                checkpoint_ns = event.get("metadata", {}).get(
-                    "langgraph_checkpoint_ns", ""
-                )
-
-                if kind == "on_chain_end" and node_name == "planner_node":
-                    output = event["data"].get("output", {})
-                    plan = output.get("plan")
-                    if plan is not None:
-                        plan_payload = (
-                            plan.model_dump() if hasattr(plan, "model_dump") else plan
-                        )
-                        yield sse_event("plan", {"plan": plan_payload})
-
-                elif kind == "on_chat_model_stream" and checkpoint_ns.startswith(
-                    "orchestrator:"
-                ):
-                    chunk = event["data"]["chunk"]  # type:ignore
-                    token = getattr(chunk, "content", "")
-                    if token:
-                        yield sse_event("token", {"token": token})
-
-                elif kind == "on_chain_end" and (
-                    node_name == "orchestrator" or event.get("name") == "LangGraph"
-                ):
-                    output = event["data"].get("output", {})
-                    final_state.update(output)
-
-            if is_new_session:
-                chat_session.session_title = final_state.get("session_title", "")
-                await session.commit()
-
-            chat = UserChats(
-                session_id=chat_session.session_id,
-                user_query=payload.query,
-                assistant_response=final_state.get("response_content", ""),
-                assistant_reasoning=serialize_plan(final_state.get("plan")),
-                tokens_consumed=final_state.get("tokens_consumed", 0),
-                duration=round(final_state.get("duration", 0.0), 2),
-            )
-            session.add(chat)
-            await session.commit()
-            logger.info("Stored the details in DB")
-
-            yield sse_event(
-                "final",
-                {
-                    "service_output": {
-                        "response_content": final_state.get("response_content", ""),
-                        "duration": round(final_state.get("duration", 0.0), 2),
-                        "tokens_consumed": final_state.get("tokens_consumed", 0),
-                    },
-                    "session": {
-                        "session_id": chat_session.session_id,
-                        "session_title": chat_session.session_title,
-                    },
+            with langfuse.start_as_current_observation(
+                as_type="span",
+                name="chat-flow",
+                input={
+                    "query": payload.query,
+                    "model": str(payload.model),
+                    "session_id": str(chat_session.session_id),
                 },
-            )
+            ) as r_span:
+                with propagate_attributes(
+                    trace_name="chat-flow",
+                    user_id=user_id,
+                    session_id=str(chat_session.session_id),
+                    tags=[
+                        "chat",
+                        "sse",
+                        "langgraph",
+                    ],
+                    metadata={
+                        "route": "/chat/stream",
+                        "model": str(payload.model),
+                        "newSession": str(is_new_session),
+                    },
+                ):
+                    langfuse_handler = CallbackHandler()
+
+                    async for event in graph.astream_events(
+                        input_state,
+                        version="v2",
+                        config={
+                            "callbacks": [langfuse_handler],
+                            "run_name": "chat-stream-graph",
+                        },
+                    ):
+                        kind = event["event"]
+                        node_name = event.get("metadata", {}).get("langgraph_node")
+                        checkpoint_ns = event.get("metadata", {}).get(
+                            "langgraph_checkpoint_ns", ""
+                        )
+
+                        if kind == "on_chain_end" and node_name == "planner_node":
+                            output = event["data"].get("output", {})
+                            plan = output.get("plan")
+                            if plan is not None:
+                                plan_payload = (
+                                    plan.model_dump()
+                                    if hasattr(plan, "model_dump")
+                                    else plan
+                                )
+                                yield sse_event("plan", {"plan": plan_payload})
+
+                        elif (
+                            kind == "on_chat_model_stream"
+                            and checkpoint_ns.startswith("orchestrator:")
+                        ):
+                            chunk = event["data"]["chunk"]  # type:ignore
+                            token = getattr(chunk, "content", "")
+                            if token:
+                                yield sse_event("token", {"token": token})
+
+                        elif kind == "on_chain_end" and (
+                            node_name == "orchestrator"
+                            or event.get("name") == "LangGraph"
+                        ):
+                            output = event["data"].get("output", {})
+                            final_state.update(output)
+
+                    if is_new_session:
+                        chat_session.session_title = final_state.get(
+                            "session_title", ""
+                        )
+                        await session.commit()
+
+                    chat = UserChats(
+                        session_id=chat_session.session_id,
+                        user_query=payload.query,
+                        assistant_response=final_state.get("response_content", ""),
+                        assistant_reasoning=serialize_plan(final_state.get("plan")),
+                        tokens_consumed=final_state.get("tokens_consumed", 0),
+                        duration=round(final_state.get("duration", 0.0), 2),
+                    )
+                    session.add(chat)
+                    await session.commit()
+                    logger.info("Stored the details in DB")
+
+                    final_payload = {
+                        "service_output": {
+                            "response_content": final_state.get(
+                                "response_content",
+                                "",
+                            ),
+                            "duration": round(
+                                final_state.get("duration", 0.0),
+                                2,
+                            ),
+                            "tokens_consumed": final_state.get(
+                                "tokens_consumed",
+                                0,
+                            ),
+                        },
+                        "session": {
+                            "session_id": chat_session.session_id,
+                            "session_title": chat_session.session_title,
+                        },
+                    }
+                    r_span.update(output=final_payload)
+
+                    yield sse_event("final", final_payload)
 
         except (DatabaseError, HTTPException) as e:
             logger.error(f"Error occurred in chat streaming due to {e}")
             yield sse_event(
                 "error", {"message": "Oops something went wrong. Try Again Later."}
             )
+        finally:
+            langfuse.flush()
+            logger.info("Langfuse flush called")
 
     return StreamingResponse(
         event_generator(),

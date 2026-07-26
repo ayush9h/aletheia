@@ -24,6 +24,9 @@ class Settings(BaseSettings):
     TAVILY_SEARCH_RPM: int
     PAPERTRAIL_ENDPOINT: str
     PAPERTRAIL_TOKEN: str
+    LANGFUSE_SECRET_KEY: str
+    LANGFUSE_PUBLIC_KEY: str
+    LANGFUSE_BASE_URL: str
 
     model_config = SettingsConfigDict(
         env_file=ENV_FILE,

@@ -1,22 +1,21 @@
 import uuid
 from datetime import datetime
-from typing import Dict, List, Optional
 
 
 class MemoryNote:
     def __init__(
         self,
         content: str,
-        id: Optional[str] = None,
-        keywords: Optional[List[str]] = None,
-        links: Optional[Dict] = None,
-        retrieval_count: Optional[int] = None,
-        timestamp: Optional[str] = None,
-        last_accessed: Optional[str] = None,
-        context: Optional[str] = None,
-        evolution_history: Optional[List] = None,
-        category: Optional[str] = None,
-        tags: Optional[List[str]] = None,
+        id: str | None = None,
+        keywords: list[str] | None = None,
+        links: dict | None = None,
+        retrieval_count: int | None = None,
+        timestamp: str | None = None,
+        last_accessed: str | None = None,
+        context: str | None = None,
+        evolution_history: list | None = None,
+        category: str | None = None,
+        tags: list[str] | None = None,
     ):
         self.content = content
         self.id = id or str(uuid.uuid4())

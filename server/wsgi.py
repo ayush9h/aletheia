@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 import structlog
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from langfuse import Langfuse, get_client
 
 from app.api.chats import chat_router
 from app.api.sessions import session_router
@@ -30,6 +31,16 @@ async def lifespan(app: FastAPI):
     await redis_client.ping()
 
     app.state.redis = redis_client
+    Langfuse(
+        public_key=settings.LANGFUSE_PUBLIC_KEY,
+        secret_key=settings.LANGFUSE_SECRET_KEY,
+        host=settings.LANGFUSE_BASE_URL,
+    )
+    langfuse_client = get_client()
+    auth_ok = langfuse_client.auth_check()
+    logger.info("langfuse auth check", status="startup", auth_ok=auth_ok)
+
+    app.state.langfuse = langfuse_client
     rate_limiter = RedisSlidingWindowLimiter(
         redis=redis_client,  # type:ignore
         key_prefix="agent-api:rate-limit",

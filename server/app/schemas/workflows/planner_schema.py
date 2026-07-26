@@ -4,8 +4,12 @@ from pydantic import BaseModel, Field
 
 
 class Evidence(BaseModel):
-    id: str = Field(
-        description="Identifier of the evidence in the form of #E1, #E2 etc.",
+    id: str | None = Field(
+        default=None,
+        description=(
+            "Identifier of the evidence in the form of #E1, #E2 etc. "
+            "Null if this step does not produce any evidence (e.g. no tool used)."
+        ),
     )
     content: str | None = Field(
         default=None,
@@ -16,7 +20,8 @@ class Evidence(BaseModel):
         description="Name of the tool to execute (must match TOOL_REGISTRY)",
     )
     tool_input: dict[str, Any] = Field(
-        description="Inputs valid for the tool execution"
+        default_factory=dict,
+        description="Inputs valid for the tool execution",
     )
 
 
@@ -28,11 +33,13 @@ class Step(BaseModel):
         description="Instruction for the worker to execute itself",
     )
     evidence: Evidence = Field(description="Placeholder for the result")
-    depends_on: list = Field(
+    depends_on: list[int] = Field(
+        default_factory=list,
         description="List of step_ids that this step is depended on before its execution",
     )
-    next_tool_call: list = Field(
-        description="List of tool names to be called next if the current tool succeeds"
+    next_tool_call: list[str] = Field(
+        default_factory=list,
+        description="List of tool names to be called next if the current tool succeeds",
     )
     status: Literal[
         "pending", "running", "success", "failed", "pending_human_approval"

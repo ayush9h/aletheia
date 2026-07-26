@@ -33,7 +33,7 @@ async def users_session(
         result = await session.execute(stmt)
         sessions = result.scalars().all()
 
-        logger.info(f"Successfully fetched sessions")
+        logger.info("Successfully fetched sessions")
 
         return [
             {
@@ -44,7 +44,7 @@ async def users_session(
             }
             for s in sessions
         ]
-    except Exception as e:
+    except (DatabaseError, HTTPException) as e:
         await session.rollback()
         logger.error(f"Error occurred in fetching session due to {e}")
         return []
@@ -75,6 +75,7 @@ async def delete_session(
                 "code": 404,
             }
         await session.delete(db_session)
+        logger.info("Session deleted")
         await session.commit()
     except (DatabaseError, HTTPException) as e:
         await session.rollback()
@@ -106,6 +107,7 @@ async def pin_session(
             db_session.is_pinned = True
             db_session.pinned_at = datetime.utcnow()
 
+        logger.info("Session pinned")
         await session.commit()
 
         return await users_session(user_id, session)
@@ -143,6 +145,8 @@ async def all_chats(
         await session.execute(
             delete(UserSessions).where(UserSessions.user_id == user_id)  # type:ignore
         )
+
+        logger.info("All Sessions deleted")
         await session.commit()
 
         return {"message": "All chats deleted successfully"}
