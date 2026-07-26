@@ -31,6 +31,9 @@ async def store_user_pref(
             pref.assistant_behavior = payload.userCustomInstruction
             pref.nickname = payload.nickname
             pref.user_personal_description = payload.userHobbies
+            pref.memory_enabled = payload.memoryEnabled
+            pref.occupation = payload.occupation
+            pref.baseTone = payload.baseTone
             logger.info("User preferences updated")
         else:
             pref = UserPrefs(

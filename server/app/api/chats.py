@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, Request
 from fastapi.exceptions import HTTPException
 from fastapi.responses import StreamingResponse
 from langchain_core.messages import HumanMessage
+from langchain_core.tracers.schemas import Run
 from langfuse import propagate_attributes
 from langfuse.langchain import CallbackHandler
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -146,7 +147,15 @@ async def chat_stream(
 
     async def event_generator() -> AsyncGenerator[str, None]:
         final_state: dict = {}
+        duration = 0.0
 
+        async def capture_graph_duration(run: Run) -> None:
+            nonlocal duration
+
+            if run.end_time is not None:
+                duration = (run.end_time - run.start_time).total_seconds()
+
+        instrumented_graph = graph.with_alisteners(on_end=capture_graph_duration)
         try:
             with langfuse.start_as_current_observation(
                 as_type="span",
@@ -174,7 +183,7 @@ async def chat_stream(
                 ):
                     langfuse_handler = CallbackHandler()
 
-                    async for event in graph.astream_events(
+                    async for event in instrumented_graph.astream_events(
                         input_state,
                         version="v2",
                         config={
@@ -214,7 +223,7 @@ async def chat_stream(
                         ):
                             output = event["data"].get("output", {})
                             final_state.update(output)
-
+                    final_state["duration"] = duration
                     if is_new_session:
                         chat_session.session_title = final_state.get(
                             "session_title", ""

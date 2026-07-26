@@ -161,9 +161,7 @@ Plan to follow for fulfilling the user query:
     state["reasoning_kwargs"] = final_msg.additional_kwargs.get("reasoning_content", "")
     state["response_content"] = final_msg.content
 
-    state["tokens_consumed"] = final_msg.response_metadata.get("token_usage", {}).get(
-        "total_tokens", 0
-    )
+    state["tokens_consumed"] = final_msg.usage_metadata.get("total_tokens", {})
 
     state["duration"] = final_msg.response_metadata.get("token_usage", {}).get(
         "total_time", 0.0
