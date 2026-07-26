@@ -1,38 +1,56 @@
 import logging
-import sys
+import queue
+import urllib.request
+from logging.handlers import QueueHandler, QueueListener
+
+import structlog
+from urllib3.connection import HTTPException
+
+from app.utils.config import settings
 
 
-class LoggerFormatter(logging.Formatter):
-    grey = "\x1b[38;20m"
-    green = "\x1b[32;20m"
-    yellow = "\x1b[33;20m"
-    red = "\x1b[31;20m"
-    bold_red = "\x1b[31;1m"
-    reset = "\x1b[0m"
+class PaperTrailHandler(logging.Handler):
+    def emit(self, record):
+        try:
+            payload = self.format(record).encode("utf-8")
+            req = urllib.request.Request(settings.PAPERTRAIL_ENDPOINT, data=payload)
+            req.add_header("Authorization", f"Bearer {settings.PAPERTRAIL_TOKEN}")
+            req.add_header("Content-Type", "application/octet-stream")
 
-    format_str = (
-        "%(asctime)s - %(name)s - %(levelname)s - %(message)s (%(filename)s:%(lineno)d)"
+            with urllib.request.urlopen(req, timeout=10):
+                pass
+        except HTTPException:
+            self.handleError(record)
+
+
+queue_listener = None
+
+
+def setup_logging():
+
+    log_queue = queue.Queue(-1)
+    queue_handler = QueueHandler(log_queue)
+    queue_listener = QueueListener(log_queue, PaperTrailHandler())
+
+    queue_listener.start()
+    root_logger = logging.getLogger()
+    root_logger.addHandler(queue_handler)
+    root_logger.setLevel(logging.INFO)
+
+    structlog.configure(
+        processors=[
+            structlog.stdlib.add_log_level,
+            structlog.stdlib.add_logger_name,
+            structlog.processors.TimeStamper(fmt="iso"),
+            structlog.processors.JSONRenderer(),
+        ],
+        logger_factory=structlog.stdlib.LoggerFactory(),
+        wrapper_class=structlog.stdlib.BoundLogger,
+        cache_logger_on_first_use=True,
     )
 
-    FORMATS = {
-        logging.DEBUG: grey + format_str + reset,
-        logging.INFO: green + format_str + reset,
-        logging.WARNING: yellow + format_str + reset,
-        logging.ERROR: red + format_str + reset,
-        logging.CRITICAL: bold_red + format_str + reset,
-    }
 
-    def format(self, record):
-        log_fmt = self.FORMATS.get(
-            record.levelno, self.grey + self.format_str + self.reset
-        )
-        formatter = logging.Formatter(log_fmt)
-        return formatter.format(record)
-
-
-console_handler = logging.StreamHandler(sys.stdout)
-console_handler.setFormatter(LoggerFormatter())
-
-logger = logging.getLogger("app")
-logger.setLevel(logging.INFO)
-logger.addHandler(console_handler)
+def shutdown_logging():
+    global queue_listener
+    if queue_listener:
+        queue_listener.stop()

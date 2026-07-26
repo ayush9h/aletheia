@@ -22,6 +22,8 @@ class Settings(BaseSettings):
     GROQ_OPENAI_TPM: int
     GROQ_META_TPM: int
     TAVILY_SEARCH_RPM: int
+    PAPERTRAIL_ENDPOINT: str
+    PAPERTRAIL_TOKEN: str
 
     model_config = SettingsConfigDict(
         env_file=ENV_FILE,

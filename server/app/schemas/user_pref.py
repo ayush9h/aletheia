@@ -24,4 +24,6 @@ class UserPref(BaseModel):
         description="Additional personal context about the user",
     )
 
-    memoryEnabled: bool = Field(default=True, description="Usage of memory as required by the user")
+    memoryEnabled: bool = Field(
+        default=True, description="Usage of memory as required by the user"
+    )

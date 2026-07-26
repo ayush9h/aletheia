@@ -1,14 +1,16 @@
 from datetime import datetime
-from typing import List
 
-from fastapi import APIRouter, Depends, Query
+import structlog
+from fastapi import APIRouter, Depends
+from sqlalchemy.exc import DatabaseError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import delete, select
+from urllib3.connection import HTTPException
 
 from app.db_service.db import get_session
 from app.db_service.models import UserChats, UserSessions
-from app.utils.logger import logger
 
+logger = structlog.get_logger(__name__)
 session_router = APIRouter(prefix="/v1")
 
 
@@ -20,7 +22,7 @@ session_router = APIRouter(prefix="/v1")
 async def users_session(
     user_id: str,
     session: AsyncSession = Depends(get_session),
-) -> List[dict]:
+) -> list[dict]:
     try:
         stmt = (
             select(UserSessions)
@@ -69,12 +71,12 @@ async def delete_session(
         if not db_session:
             return {
                 "status": "Exception",
-                "message": f"Exception occurred : Session not found",
+                "message": "Exception occurred : Session not found",
                 "code": 404,
             }
         await session.delete(db_session)
         await session.commit()
-    except Exception as e:
+    except (DatabaseError, HTTPException) as e:
         await session.rollback()
         logger.error(f"Error occurred while deleting a session: {e}")
 
@@ -108,7 +110,7 @@ async def pin_session(
 
         return await users_session(user_id, session)
 
-    except Exception as e:
+    except (DatabaseError, HTTPException) as e:
         await session.rollback()
         logger.error(f"Pinning chat failed due to {e}")
 
@@ -124,7 +126,6 @@ async def all_chats(
 ):
 
     try:
-
         result = await session.execute(
             select(UserSessions.session_id).where(UserSessions.user_id == user_id)
         )
@@ -146,6 +147,6 @@ async def all_chats(
 
         return {"message": "All chats deleted successfully"}
 
-    except Exception as e:
+    except (DatabaseError, HTTPException) as e:
         await session.rollback()
         logger.error(f"Error deleting chats: {e}")

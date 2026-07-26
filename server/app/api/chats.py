@@ -2,6 +2,7 @@ import json
 from collections.abc import AsyncGenerator
 from sqlite3 import DatabaseError
 
+import structlog
 from fastapi import APIRouter, Depends
 from fastapi.exceptions import HTTPException
 from fastapi.responses import StreamingResponse
@@ -9,7 +10,6 @@ from langchain_core.messages import HumanMessage
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 from starlette import status
-from starlette.status import HTTP_503_SERVICE_UNAVAILABLE
 
 from app.db_service.db import get_session
 from app.db_service.models import UserChats, UserSessions
@@ -17,11 +17,10 @@ from app.schemas.chat_schema import ChatRequest
 from app.services.agent import graph
 from app.utils.config import settings
 from app.utils.core.dependencies import get_rate_limiter
-from app.utils.logger import logger
-from app.utils.rate_limiters.core import (RateLimitPolicy,
-                                          RedisSlidingWindowLimiter)
+from app.utils.rate_limiters.core import RateLimitPolicy, RedisSlidingWindowLimiter
 
 chat_router = APIRouter(prefix="/v1")
+logger = structlog.get_logger(__name__)
 
 
 def sse_event(event: str, data: dict) -> str:

@@ -2,15 +2,14 @@ import asyncio
 import os
 from logging.config import fileConfig
 
-from alembic import context
 from dotenv import load_dotenv
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 from sqlmodel import SQLModel
 
+from alembic import context
 from app.db_service import models
-
 
 load_dotenv()
 
@@ -22,9 +21,7 @@ if config.config_file_name is not None:
 database_url = os.getenv("DB_POSTGRES_URL")
 
 if not database_url:
-    raise RuntimeError(
-        "DATABASE_URL is not configured. Add it to the .env file."
-    )
+    raise RuntimeError("DATABASE_URL is not configured. Add it to the .env file.")
 
 config.set_main_option(
     "sqlalchemy.url",

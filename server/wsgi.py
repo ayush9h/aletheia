@@ -1,5 +1,6 @@
 from contextlib import asynccontextmanager
 
+import structlog
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -9,12 +10,12 @@ from app.api.user_settings import user_router
 from app.db_service.db import engine
 from app.utils.config import settings
 from app.utils.core.redis import create_redis_client
+from app.utils.logger import setup_logging, shutdown_logging
 from app.utils.rate_limiters.core import RedisSlidingWindowLimiter
-from app.utils.rate_limiters.llm import (GroqGuard, GroqModelLimit,
-                                         set_groq_guard)
-from app.utils.rate_limiters.tavily import (TavilyGuard, TavilyLimit,
-                                            set_tavily_guard)
+from app.utils.rate_limiters.llm import GroqGuard, GroqModelLimit, set_groq_guard
+from app.utils.rate_limiters.tavily import TavilyGuard, TavilyLimit, set_tavily_guard
 
+logger = structlog.get_logger(__name__)
 origins = [
     "*",
 ]
@@ -22,6 +23,8 @@ origins = [
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    setup_logging()
+    logger.info("application starting and redis init", status="startup")
 
     redis_client = create_redis_client()
     await redis_client.ping()
@@ -31,6 +34,8 @@ async def lifespan(app: FastAPI):
         redis=redis_client,  # type:ignore
         key_prefix="agent-api:rate-limit",
     )
+
+    logger.info("groq guard init", status="startup")
     groq_guard = GroqGuard(
         limiter=rate_limiter,
         organization_id=settings.GROQ_ORG_ID,
@@ -50,6 +55,7 @@ async def lifespan(app: FastAPI):
         },
     )
 
+    logger.info("tavily guard init", status="startup")
     tavily_guard = TavilyGuard(
         limiter=rate_limiter,
         model_limits={
@@ -66,6 +72,7 @@ async def lifespan(app: FastAPI):
     try:
         yield
     finally:
+        shutdown_logging()
         set_groq_guard(None)
         set_tavily_guard(None)
         await redis_client.aclose()

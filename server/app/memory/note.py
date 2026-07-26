@@ -4,7 +4,6 @@ from typing import Dict, List, Optional
 
 
 class MemoryNote:
-
     def __init__(
         self,
         content: str,

@@ -1,5 +1,6 @@
 from typing import Any, Dict, List
 
+import structlog
 from langchain_groq import ChatGroq
 
 from app.db_service.retriever import PineconeRetriever
@@ -8,7 +9,8 @@ from app.prompts.mem import ANALYSE_PROMPT, EVOLUTION_PROMPT
 from app.schemas.mem.evolve_schema import EvolveSchema
 from app.schemas.mem.note_schema import NoteSchema
 from app.utils.config import settings
-from app.utils.logger import logger
+
+logger = structlog.get_logger(__name__)
 
 
 class MemoryManager:
@@ -184,11 +186,11 @@ class MemoryManager:
 
                 memory_str += (
                     f"memory_id:{doc_id}\t"
-                    f"time:{meta.get('timestamp','')}\t"
-                    f"content:{meta.get('content','')}\t"
-                    f"context:{meta.get('context','')}\t"
-                    f"keywords:{meta.get('keywords',[])}\t"
-                    f"tags:{meta.get('tags',[])}\n"
+                    f"time:{meta.get('timestamp', '')}\t"
+                    f"content:{meta.get('content', '')}\t"
+                    f"context:{meta.get('context', '')}\t"
+                    f"keywords:{meta.get('keywords', [])}\t"
+                    f"tags:{meta.get('tags', [])}\n"
                 )
 
                 memory_ids.append(doc_id)
@@ -219,7 +221,6 @@ class MemoryManager:
             )
 
             try:
-
                 resp = await self.llm_client.ainvoke(
                     prompt, response_format={"type": "json_object"}
                 )
