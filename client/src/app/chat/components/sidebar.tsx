@@ -1,21 +1,27 @@
 /**
-
  * Sidebar responsible for session navigation and chat lifecycle actions.
- *
- * Responsibilities:
- * - Toggleable collapsible navigation rail
- * - Session grouping (pinned vs recent)
  */
+'use client'
+import type { Dispatch, ReactNode } from "react";
+import { useState, useEffect } from "react";
+import { SessionSearchDialog } from "@/app/components/ui/cmd-panel";
+
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 
 import { PanelLeftIcon } from "lucide-react";
-import { ChatAction } from "@/app/types/chats/chat-action";
-import { Session } from "@/app/types/user-message";
+import {
+  FileIcon,
+  MagnifyingGlassIcon,
+  Pencil2Icon,
+} from "@radix-ui/react-icons";
+
+import AppTooltip from "@/app/components/ui/app-tooltip";
+import { SessionItem } from "@/app/components/session-item";
 import { useChatSession } from "@/app/hooks/useChatSession";
 import { pinSession } from "@/app/lib/api/userData";
-import { SessionItem } from "@/app/components/session-item";
-import { Pencil2Icon } from "@radix-ui/react-icons";
+import type { ChatAction } from "@/app/types/chats/chat-action";
+import type { Session } from "@/app/types/user-message";
 
 interface SidebarProps {
   open: boolean;
@@ -23,7 +29,81 @@ interface SidebarProps {
   sessions: Session[];
   selectedSessionId: number | null;
   onSelectSession: (id: number) => void;
-  dispatch: React.Dispatch<ChatAction>;
+  dispatch: Dispatch<ChatAction>;
+  onOpenDocuments?: () => void;
+}
+
+interface SidebarActionProps {
+  open: boolean;
+  label: string;
+  icon: ReactNode;
+  onClick?: () => void;
+  disabled?: boolean;
+  disabledLabel?: string;
+}
+
+function SidebarAction({
+  open,
+  label,
+  icon,
+  onClick,
+  disabled = false,
+  disabledLabel,
+}: SidebarActionProps) {
+  const button = (
+    <button
+      type="button"
+      aria-label={label}
+      aria-disabled={disabled}
+      onClick={(event) => {
+        event.stopPropagation();
+
+        if (disabled) {
+          return;
+        }
+
+        onClick?.();
+      }}
+      className={`
+        flex w-full items-center gap-2 rounded-md p-2
+        transition-colors duration-150
+        ${
+          disabled
+            ? "cursor-not-allowed text-stone-400"
+            : "cursor-pointer text-stone-800 hover:bg-stone-200/70"
+        }
+      `}
+    >
+      <span className="flex h-4 w-4 shrink-0 items-center justify-center">
+        {icon}
+      </span>
+
+      <span
+        className={`
+          overflow-hidden whitespace-nowrap transition-all duration-300
+          ${open ? "max-w-[10rem] opacity-100" : "max-w-0 opacity-0"}
+        `}
+      >
+        {label}
+      </span>
+
+      {open && disabled && (
+        <span className="ml-auto rounded bg-stone-300/70 px-1.5 py-0.5 text-[10px] font-medium text-stone-600">
+          Soon
+        </span>
+      )}
+    </button>
+  );
+
+  if (open) {
+    return button;
+  }
+
+  return (
+    <AppTooltip label={disabled ? disabledLabel ?? label : label}>
+      {button}
+    </AppTooltip>
+  );
 }
 
 export default function Sidebar({
@@ -33,106 +113,187 @@ export default function Sidebar({
   onSelectSession,
   selectedSessionId,
   dispatch,
+  onOpenDocuments,
 }: SidebarProps) {
   const { data: auth } = useSession();
 
-  /**
-   * Session deletion mutation handler.
-   */
+  const [searchOpen, setSearchOpen] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (
+        event.key.toLowerCase() === "k" &&
+        (event.metaKey || event.ctrlKey)
+      ) {
+        event.preventDefault();
+        setSearchOpen((current) => !current);
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   const handleDeleteSession = useChatSession(
     auth?.user?.id,
     dispatch,
     selectedSessionId
   );
 
-  /**
-   * Toggle session pin state and reconcile reducer sessions.
-   */
   const handlePinSession = async (sessionId: number) => {
-    if (!auth?.user?.id) return;
+    const userId = auth?.user?.id;
+
+    if (!userId) {
+      return;
+    }
 
     try {
-      const res = await pinSession(sessionId, auth.user.id);
-      dispatch({ type: "SET_SESSIONS", payload: res.data });
-    } catch (err) {
-      console.error("Pin failed", err);
+      const response = await pinSession(sessionId, userId);
+
+      dispatch({
+        type: "SET_SESSIONS",
+        payload: response.data,
+      });
+    } catch (error) {
+      console.error("Unable to update session pin state", {
+        sessionId,
+        error,
+      });
     }
   };
 
-  /**
-   * Derived session groupings.
-   */
-  const pinnedSessions = sessions.filter((s) => s.is_pinned);
-  const normalSessions = sessions.filter((s) => !s.is_pinned);
+  const pinnedSessions = sessions.filter((session) => session.is_pinned);
+  const recentSessions = sessions.filter((session) => !session.is_pinned);
 
-  /**
-   * Bootstrap fresh chat thread state.
-   */
   const handleNewChat = () => {
-    dispatch({ type: "SET_SELECTED_SESSION", payload: null });
-    dispatch({ type: "SET_MESSAGES", payload: [] });
+    dispatch({
+      type: "SET_SELECTED_SESSION",
+      payload: null,
+    });
+
+    dispatch({
+      type: "SET_MESSAGES",
+      payload: [],
+    });
   };
 
   return (
+    <>
     <aside
-      className={`font-paragraph border-r bg-stone-200/50 p-4 text-sm ${
-        open ? "cursor-pointer" : "cursor-col-resize"
-      }`}
-      onClick={() => !open && onToggle(true)}
+      aria-label="Chat sidebar"
+      className={`
+        font-paragraph flex h-full shrink-0 flex-col overflow-hidden
+        border-r bg-stone-200/50 p-4 text-sm
+        transition-[width] duration-300 ease-in-out
+        ${open ? "w-64" : "w-16 cursor-col-resize"}
+      `}
+      onClick={() => {
+        if (!open) {
+          onToggle(true);
+        }
+      }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <Image
-          src="/logo.png"
-          className="shrink-0 cursor-pointer"
-          alt="Logo"
-          width={32}
-          height={32}
-        />
+      <header className="flex h-8 shrink-0 items-center justify-between">
+        <button
+          type="button"
+          aria-label={open ? "Application home" : "Open sidebar"}
+          className="flex shrink-0 cursor-pointer items-center justify-center"
+          onClick={(event) => {
+            event.stopPropagation();
 
-        <PanelLeftIcon
-          className={`
-            h-4 w-4 cursor-pointer transition-opacity duration-200
-            ${open ? "opacity-100" : "pointer-events-none opacity-0"}
-          `}
-          onClick={() => onToggle(false)}
-        />
-      </div>
-
-      {/* New thread */}
-      <button
-        className="mt-4 flex w-full items-center gap-2 rounded-md p-2 hover:bg-stone-200/50 cursor-pointer"
-        onClick={handleNewChat}
-      >
-        <Pencil2Icon className="shrink-0" />
-        <span
-          className={`
-            overflow-hidden whitespace-nowrap transition-all duration-300
-            ${open ? "max-w-[8rem] opacity-100" : "max-w-0 opacity-0"}
-          `}
+            if (!open) {
+              onToggle(true);
+            }
+          }}
         >
-          New Chat
-        </span>
-      </button>
+          <Image
+            src="/logo.png"
+            alt=""
+            width={32}
+            height={32}
+            priority
+          />
+        </button>
+
+        {open && (
+          <AppTooltip label="Collapse sidebar">
+            <button
+              type="button"
+              aria-label="Collapse sidebar"
+              className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md hover:bg-stone-200/70"
+              onClick={(event) => {
+                event.stopPropagation();
+                onToggle(false);
+              }}
+            >
+              <PanelLeftIcon className="h-4 w-4" />
+            </button>
+          </AppTooltip>
+        )}
+      </header>
+
+      {/* Sidebar actions */}
+      <nav aria-label="Chat actions" className="mt-4 shrink-0 space-y-1">
+        <SidebarAction
+          open={open}
+          label="New Chat"
+          icon={<Pencil2Icon className="h-4 w-4" />}
+          onClick={handleNewChat}
+        />
+
+        <button
+          type="button"
+          className="flex w-full cursor-pointer items-center gap-2 rounded-md p-2 hover:bg-stone-200/50"
+          onClick={(event) => {
+            event.stopPropagation();
+            setSearchOpen(true);
+          }}
+        >
+          <MagnifyingGlassIcon className="shrink-0" />
+
+          <span
+            className={`
+              overflow-hidden whitespace-nowrap transition-all duration-300
+              ${open ? "max-w-[8rem] opacity-100" : "max-w-0 opacity-0"}
+            `}
+          >
+            Search Chats
+          </span>
+
+        </button>
+
+        <SidebarAction
+          open={open}
+          label="Your Documents"
+          icon={<FileIcon className="h-4 w-4" />}
+          onClick={onOpenDocuments}
+          disabled={!onOpenDocuments}
+          disabledLabel="Your Documents is coming soon"
+        />
+      </nav>
 
       {/* Sessions */}
-      <div className="mt-2 space-y-4">
-        {/* Pinned */}
+      <div className="mt-2 min-h-0 flex-1 overflow-y-auto">
         {pinnedSessions.length > 0 && (
-          <div>
+          <section aria-labelledby="pinned-chats-heading">
             <p
-              className={`mt-5 text-xs text-stone-600 ${
-                open ? "opacity-100" : "opacity-0"
-              }`}
+              id="pinned-chats-heading"
+              className={`
+                mt-5 overflow-hidden whitespace-nowrap text-xs text-stone-600
+                transition-opacity duration-200
+                ${open ? "opacity-100" : "pointer-events-none opacity-0"}
+              `}
             >
               Pinned Chats
             </p>
 
             <ul className="mt-2 space-y-1">
-              {pinnedSessions.map((s) => (
+              {pinnedSessions.map((session) => (
                 <SessionItem
-                  key={s.session_id}
-                  s={s}
+                  key={session.session_id}
+                  s={session}
                   open={open}
                   selectedSessionId={selectedSessionId}
                   onSelectSession={onSelectSession}
@@ -141,24 +302,26 @@ export default function Sidebar({
                 />
               ))}
             </ul>
-          </div>
+          </section>
         )}
 
-        {/* Recent */}
-        <div>
+        <section aria-labelledby="recent-chats-heading">
           <p
-            className={`mt-5 text-xs text-stone-600 ${
-              open ? "opacity-100" : "opacity-0"
-            }`}
+            id="recent-chats-heading"
+            className={`
+              mt-5 overflow-hidden whitespace-nowrap text-xs text-stone-600
+              transition-opacity duration-200
+              ${open ? "opacity-100" : "pointer-events-none opacity-0"}
+            `}
           >
             Recent Chats
           </p>
 
           <ul className="mt-2 space-y-1">
-            {normalSessions.map((s) => (
+            {recentSessions.map((session) => (
               <SessionItem
-                key={s.session_id}
-                s={s}
+                key={session.session_id}
+                s={session}
                 open={open}
                 selectedSessionId={selectedSessionId}
                 onSelectSession={onSelectSession}
@@ -167,8 +330,23 @@ export default function Sidebar({
               />
             ))}
           </ul>
-        </div>
+
+          {open && recentSessions.length === 0 && (
+            <p className="mt-3 px-2 text-xs text-stone-500">
+              Your recent chats will appear here.
+            </p>
+          )}
+        </section>
       </div>
     </aside>
+
+    {/*Render CMD-K Panel*/}
+    <SessionSearchDialog
+      open={searchOpen}
+      sessions={sessions}
+      onOpenChange={setSearchOpen}
+      onSelectSession={onSelectSession}
+    />
+  </>
   );
 }
