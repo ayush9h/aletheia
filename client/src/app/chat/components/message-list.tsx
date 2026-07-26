@@ -1,10 +1,7 @@
-/**
- *
- * List of MessageBubbles
- */
-import { Message } from "@/app/types/user-message";
-import MessageBubble from "./message-bubble";
 import { memo } from "react";
+
+import type { Message } from "@/app/types/user-message";
+import MessageBubble from "./message-bubble";
 
 const MessageList = memo(function MessageList({
   messages,
@@ -12,9 +9,12 @@ const MessageList = memo(function MessageList({
   messages: Message[];
 }) {
   return (
-    <div className="mx-auto w-full max-w-3xl space-y-4 p-4">
-      {messages.map((msg, i) => (
-        <MessageBubble key={i} message={msg} />
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 pb-16 pt-4">
+      {messages.map((message, index) => (
+        <MessageBubble
+          key={`${message.role}-${index}`}
+          message={message}
+        />
       ))}
     </div>
   );

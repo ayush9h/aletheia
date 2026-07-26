@@ -49,7 +49,7 @@ export default function ChatWindow(props: ChatWindowProps) {
             ease: [0.16, 1, 0.3, 1],
           }}
           className={`flex w-full shrink-0 justify-center px-4 ${
-            isEmpty ? "" : "pb-4"
+            isEmpty ? "" : "pb-3"
           }`}
         >
           <div className="w-full max-w-4xl transition-[max-width] duration-300 ease-in-out">

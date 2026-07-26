@@ -145,13 +145,6 @@ export default function ChatInput(inputProps: inputProps) {
           </div>
         </div>
       </div>
-
-      {/* Product disclaimer */}
-
-      <p className="font-paragraph mt-2 text-center text-xs text-stone-500">
-        Aletheia is currently being developed. Some features may not be
-        functional. It can make mistakes. Check important info.
-      </p>
     </div>
   );
 }
