@@ -9,7 +9,7 @@ import {
   SpeakerLoudIcon,
   StopIcon
 } from "@radix-ui/react-icons";
-import { useReadAloud } from "@/app/components/read-aloud";
+import { useReadAloud } from "@/app/components/voice/read-aloud";
 
 import type { Message } from "@/app/types/user-message";
 import PlanPanel from "@/app/components/ui/plan-panel";
