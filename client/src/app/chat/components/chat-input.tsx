@@ -56,7 +56,9 @@ export default function ChatInput(inputProps: inputProps) {
       language: "en-US",
     });
 
-    const handleSend = () => {
+  console.log(speechError)
+
+  const handleSend = () => {
       if (!inputProps.value.trim()) {
         return;
       }

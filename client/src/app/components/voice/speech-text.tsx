@@ -111,8 +111,8 @@ function getRecognitionErrorMessage(error: string): string {
       return "Speech recognition could not be completed.";
   }
 }
-
 export function useSpeechToText({
+
   value,
   onChange,
   language = "en-US",
