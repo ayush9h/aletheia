@@ -312,6 +312,7 @@ async def chats(
         for c in chats:
             response.append(
                 {
+                    "id": f"{c.chat_id}-user",
                     "role": "user",
                     "text": c.user_query,
                 }
@@ -326,6 +327,7 @@ async def chats(
 
             response.append(
                 {
+                    "id": f"{c.chat_id}-assistant",
                     "role": "assistant",
                     "text": c.assistant_response,
                     "plan": parsed_plan,
