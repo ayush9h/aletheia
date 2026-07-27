@@ -196,6 +196,7 @@ async def chat_stream(
                         checkpoint_ns = event.get("metadata", {}).get(
                             "langgraph_checkpoint_ns", ""
                         )
+                        parent_ids = event.get("parent_ids", [])
 
                         if kind == "on_chain_end" and node_name == "planner_node":
                             output = event["data"].get("output", {})
@@ -217,12 +218,23 @@ async def chat_stream(
                             if token:
                                 yield sse_event("token", {"token": token})
 
-                        elif kind == "on_chain_end" and (
-                            node_name == "orchestrator"
-                            or event.get("name") == "LangGraph"
-                        ):
+                        elif kind == "on_chain_end":
                             output = event["data"].get("output", {})
-                            final_state.update(output)
+
+                            if not isinstance(output, dict):
+                                continue
+
+                            if node_name in {
+                                "orchestrator",
+                                "generate_session_title",
+                                "memory_store",
+                            }:
+                                final_state.update(output)
+
+                            if not parent_ids:
+                                final_state.clear()
+                                final_state.update(output)
+
                     final_state["duration"] = duration
                     if is_new_session:
                         chat_session.session_title = final_state.get(
