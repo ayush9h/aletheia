@@ -47,7 +47,6 @@ export default function ChatInput(inputProps: inputProps) {
   const {
       isListening,
       isSupported: isSpeechSupported,
-      error: speechError,
       toggle: toggleSpeechRecognition,
       cancel: cancelSpeechRecognition,
     } = useSpeechToText({
@@ -55,8 +54,6 @@ export default function ChatInput(inputProps: inputProps) {
       onChange: inputProps.onChange,
       language: "en-US",
     });
-
-  console.log(speechError)
 
   const handleSend = () => {
       if (!inputProps.value.trim()) {

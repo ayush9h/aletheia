@@ -34,6 +34,8 @@ export function useSendMessage(params: Params) {
     dispatch,
   } = params;
 
+  const messageId = crypto.randomUUID();
+
   /**
    * Sends user message to backend and updates reducer state via SSE stream.
    */
@@ -44,6 +46,7 @@ export function useSendMessage(params: Params) {
     dispatch({
       type: "ADD_MESSAGE",
       payload: {
+        id: `${messageId}-user`,
         role: "user",
         text: trimmed,
         duration: 0,
@@ -57,6 +60,7 @@ export function useSendMessage(params: Params) {
     dispatch({
       type: "ADD_MESSAGE",
       payload: {
+        id: `${messageId}-assistant`,
         role: "assistant",
         text: "",
         duration: 0,

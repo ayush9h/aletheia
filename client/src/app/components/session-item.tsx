@@ -21,7 +21,7 @@ export function SessionItem(SessionItemProps: SessionItemProps) {
         SessionItemProps.open
           ? SessionItemProps.selectedSessionId === SessionItemProps.s.session_id
             ? "bg-stone-200/50"
-            : "hover:bg-stone-200/50"
+            : "hover:bg-stone-200/90"
           : "opacity-0"
       }`}
     >

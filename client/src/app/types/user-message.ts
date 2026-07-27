@@ -18,6 +18,7 @@ export type Plan = {
   steps: PlanStep[];
 };
 export type Message = {
+  id: string;
   role: "user" | "assistant";
   text: string;
   plan?: Plan;

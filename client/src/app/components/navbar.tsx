@@ -77,7 +77,7 @@ export default function Navbar({
             <button
               type="button"
               aria-label={`Open account menu for ${displayName}`}
-              className="flex size-8 items-center justify-center overflow-hidden rounded-full bg-stone-200 cursor-pointer"
+              className="flex size-[2.4rem] items-center justify-center rounded-full bg-stone-200 cursor-pointer"
             >
               {avatarUrl ? (
                 <Image
@@ -85,7 +85,7 @@ export default function Navbar({
                   alt=""
                   width={30}
                   height={30}
-                  className="size-8 object-cover"
+                  className="size-8 object-cover rounded-full"
                 />
               ) : (
                 <span
