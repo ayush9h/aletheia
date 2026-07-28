@@ -76,7 +76,7 @@ export default function ChatPage() {
     <div
       className={`grid h-dvh overflow-hidden transition-all duration-300 ${
         sidebarOpen
-          ? "grid-cols-[15rem_minmax(0,1fr)]"
+          ? "grid-cols-[16rem_minmax(0,1fr)]"
           : "grid-cols-[4rem_minmax(0,1fr)]"
       }`}
     >

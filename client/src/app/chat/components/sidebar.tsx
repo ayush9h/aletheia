@@ -184,7 +184,7 @@ export default function Sidebar({
       aria-label="Chat sidebar"
       className={`
         font-paragraph flex h-full shrink-0 flex-col overflow-hidden
-        border-r bg-stone-200/50 p-4 text-sm
+        border-r bg-stone-100/50 p-4 text-sm
         transition-[width] duration-300 ease-in-out
         ${open ? "w-64" : "w-16 cursor-col-resize"}
       `}

@@ -71,21 +71,21 @@ export default function Navbar({
 
   return (
     <nav aria-label="Account navigation">
-      <div className="flex items-center justify-end px-6 py-3">
+      <div className="flex items-center justify-end px-6 py-2">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button
               type="button"
               aria-label={`Open account menu for ${displayName}`}
-              className="flex size-[2.4rem] items-center justify-center rounded-full bg-stone-200 cursor-pointer"
+              className="flex size-[2.25rem] items-center justify-center rounded-full bg-stone-200 cursor-pointer"
             >
               {avatarUrl ? (
                 <Image
                   src={avatarUrl}
                   alt=""
-                  width={30}
-                  height={30}
-                  className="size-8 object-cover rounded-full"
+                  width={25}
+                  height={25}
+                  className="size-[1.75rem] object-cover rounded-full"
                 />
               ) : (
                 <span

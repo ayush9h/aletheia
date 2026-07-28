@@ -5,9 +5,9 @@ import {
   DropdownMenuItem,
 } from "@/app/components/ui/dropdown-menu";
 import {
-  DotsHorizontalIcon,
   TrashIcon,
   DrawingPinIcon,
+  DotsVerticalIcon,
 } from "@radix-ui/react-icons";
 import { SessionItemProps } from "../types/user-session";
 
@@ -20,8 +20,8 @@ export function SessionItem(SessionItemProps: SessionItemProps) {
       className={`group cursor-pointer rounded-md ${
         SessionItemProps.open
           ? SessionItemProps.selectedSessionId === SessionItemProps.s.session_id
-            ? "bg-stone-200/50"
-            : "hover:bg-stone-200/90"
+            ? "bg-stone-200/45"
+            : "hover:bg-stone-200/45"
           : "opacity-0"
       }`}
     >
@@ -30,7 +30,7 @@ export function SessionItem(SessionItemProps: SessionItemProps) {
           title={SessionItemProps.s.session_title}
           className={`truncate whitespace-nowrap ${
             SessionItemProps.open
-              ? "max-w-[10rem] opacity-100"
+              ? "max-w-[11rem] opacity-100"
               : "max-w-0 opacity-0"
           }`}
         >
@@ -42,6 +42,7 @@ export function SessionItem(SessionItemProps: SessionItemProps) {
             <button
               className={`ml-auto flex h-6 w-6 items-center justify-center rounded
               text-stone-600 transition hover:bg-stone-200 hover:text-stone-800
+              data-[state=open]:opacity-100 data-[state=open]:bg-stone-200
               ${
                 SessionItemProps.open
                   ? "opacity-0 group-hover:opacity-100"
@@ -49,7 +50,7 @@ export function SessionItem(SessionItemProps: SessionItemProps) {
               }`}
               onClick={(e) => e.stopPropagation()}
             >
-              <DotsHorizontalIcon />
+              <DotsVerticalIcon />
             </button>
           </DropdownMenuTrigger>
 
