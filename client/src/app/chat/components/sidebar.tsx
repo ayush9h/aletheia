@@ -34,7 +34,6 @@ import { pinSession } from "@/app/lib/api/userData";
 
 import type { ChatAction } from "@/app/types/chats/chat-action";
 import type { Session } from "@/app/types/user-message";
-import { Button } from "@/app/components/ui/button";
 
 interface SidebarProps {
   open: boolean;

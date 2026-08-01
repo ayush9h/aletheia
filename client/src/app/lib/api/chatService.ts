@@ -10,7 +10,12 @@ type StreamHandlers = {
       duration: number;
       tokens_consumed: number;
     };
-    session: { session_id: number; session_title: string; is_pinned: boolean };
+    session: {
+      session_id: number;
+      session_title: string;
+      is_pinned: boolean;
+      created_at: Date;
+    };
   }) => void;
   onError?: (message: string) => void;
 };
