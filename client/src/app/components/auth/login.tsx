@@ -2,11 +2,13 @@
 import Image from "next/image"
 import { authProviders } from "@/app/config/auth-provider"
 import { signIn } from "next-auth/react"
+import { Button } from "../ui/button"
 
 export default function LoginPage() {
   return (
   <>
-    <div className="flex min-h-screen flex-col px-4 py-8">
+      <div className="flex min-h-screen flex-col px-4 py-8">
+
       <div className="flex flex-1 flex-col items-center justify-center">
         <div className="mb-8">
           <div className="font-paragraph relative inline-flex items-center gap-2 overflow-hidden rounded-md border border-stone-200 bg-white/70 px-4 py-1.5 text-xs font-medium text-stone-600 shadow-[0_6px_20px_rgba(0,0,0,0.06)] backdrop-blur-md">
@@ -25,20 +27,15 @@ export default function LoginPage() {
 
         <div className="flex w-full flex-col justify-center gap-4 sm:w-auto sm:max-w-none sm:flex-row">
           {authProviders.map((item) => (
-            <button
+            <Button
               key={item.id}
-              onClick={() => signIn(item.id, { redirectTo: "/chat" })}
-              className="font-paragraph flex cursor-pointer items-center justify-center gap-2 rounded-md border border-stone-200 bg-stone-50 p-3 text-sm text-stone-800 transition-all duration-300 ease-in-out hover:bg-stone-200/50"
-            >
-              <Image
-                src={item.icon}
-                alt={item.title}
-                width={15}
-                height={15}
-                loading="lazy"
-              />
+              className="font-paragraph flex cursor-pointer items-center justify-center gap-2 rounded-md border border-stone-200 bg-stone-50 text-sm text-stone-800 shadow-xs transition-all duration-150 ease-out hover:bg-stone-200/50 active:translate-y-px active:scale-[0.98] active:bg-stone-200"
+              onClick={() => signIn(item.id, { redirectTo: "/chat" })}>
+
+              <Image src={item.icon} alt={item.title} width={15} height={15} loading="lazy" />
               <span>{item.label}</span>
-            </button>
+
+            </Button>
           ))}
         </div>
       </div>

@@ -8,6 +8,8 @@ import PersonalizationSettings from "./settings/personalization";
 import DataControls from "./settings/data-controls";
 import { SettingsDialogProps } from "../types/settings/settings.type";
 import { UserPrefProps } from "../types/user-pref";
+
+
 export function SettingsDialog(settingsProps: SettingsDialogProps) {
   const { data: session } = useSession();
   const userId = session?.user?.id;

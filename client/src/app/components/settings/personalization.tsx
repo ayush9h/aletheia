@@ -90,7 +90,7 @@ export default function PersonalizationSettings({
                 <SelectValue placeholder="Select tone" />
               </SelectTrigger>
 
-              <SelectContent>
+              <SelectContent className="font-paragraph">
                 <SelectItem value="Efficient">Efficient</SelectItem>
                 <SelectItem value="Balanced">Balanced</SelectItem>
                 <SelectItem value="Creative">Creative</SelectItem>
@@ -210,7 +210,7 @@ export default function PersonalizationSettings({
           variant="outline"
           disabled={isSaving}
           onClick={() => onOpenChange(false)}
-          className="cursor-pointer text-stone-700"
+          className="cursor-pointer text-stone-700 transition-all duration-150 ease-out active:translate-y-px active:scale-[0.98]"
         >
           Cancel
         </Button>
@@ -219,7 +219,7 @@ export default function PersonalizationSettings({
           type="button"
           disabled={isSaving}
           onClick={() => void handleSubmit()}
-          className="cursor-pointer bg-blue-600 hover:bg-blue-700 disabled:cursor-not-allowed"
+          className="cursor-pointer bg-blue-600 hover:bg-blue-700 disabled:cursor-not-allowed transition-all duration-150 ease-out active:translate-y-px active:scale-[0.98]"
         >
           {isSaving ? "Saving..." : "Save"}
         </Button>

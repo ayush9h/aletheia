@@ -1,16 +1,18 @@
 import { useEffect, useRef } from "react";
+import type { VirtuosoHandle } from "react-virtuoso";
 
-/** Auto-scroll hook for chat/message timelines.
- *
- * Behavior:
- * - Scrolls to bottom whenever dependency value changes.*/
-export function AutoScroll<T extends HTMLElement>(deps: [number]) {
-  const containerRef = useRef<T | null>(null);
-  const bottomRef = useRef<HTMLDivElement | null>(null);
+export function useAutoScroll(messageCount: number) {
+  const bottomRef = useRef<VirtuosoHandle>(null);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, deps);
+    if (messageCount === 0) return;
 
-  return { containerRef, bottomRef };
+    bottomRef.current?.scrollToIndex({
+      index: messageCount - 1,
+      align: "end",
+      behavior: "smooth",
+    });
+  }, [messageCount]);
+
+  return { bottomRef };
 }

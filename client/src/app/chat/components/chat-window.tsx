@@ -4,13 +4,11 @@ import MessageList from "./message-list";
 import GreetingWindow from "./greeting-window";
 import ChatInput from "./chat-input";
 
-import { AutoScroll } from "@/app/reducers/auto-scroll";
+import { useAutoScroll } from "@/app/reducers/auto-scroll";
 import type { ChatWindowProps } from "@/app/types/chats/chats.type";
 
 export default function ChatWindow(props: ChatWindowProps) {
-  const { containerRef, bottomRef } = AutoScroll<HTMLDivElement>([
-    props.messages.length,
-  ]);
+  const { bottomRef } = useAutoScroll(props.messages.length);
 
   const isEmpty = props.messages.length === 0;
 
@@ -23,14 +21,8 @@ export default function ChatWindow(props: ChatWindowProps) {
       >
         {/* Message area takes remaining height only when messages exist */}
         {!isEmpty && (
-          <div className="min-h-0 w-full flex-1 overflow-hidden">
-            <div
-              ref={containerRef}
-              className="h-full w-full overflow-y-auto overscroll-contain"
-            >
-              <MessageList messages={props.messages} />
-              <div ref={bottomRef} />
-            </div>
+          <div className="min-h-0 w-full flex-1 overflow-hidden overscroll-contain">
+            <MessageList messages={props.messages} bottomRef={bottomRef} />
           </div>
         )}
 

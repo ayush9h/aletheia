@@ -28,6 +28,7 @@ import {
 import AppTooltip from "@/app/components/ui/app-tooltip";
 import {CaretDownIcon} from "@radix-ui/react-icons";
 import Image from "next/image";
+import { Button } from "@/app/components/ui/button";
 
 export default function ChatInput(inputProps: inputProps) {
   const optionList = inputProps.tools
@@ -93,14 +94,13 @@ export default function ChatInput(inputProps: inputProps) {
         <div className="flex items-center justify-between border-t p-2">
           {/* Options Button */}
           <div className="flex items-center gap-3">
-            <AppTooltip label="Tools and more">
+
               <div>
                 <InputOptions
                   tools={optionList}
                   setTools={setOptionList}
                 />
               </div>
-            </AppTooltip>
 
             {/* Show the tool label from the tools key */}
             {optionList.map((item) => {
@@ -109,11 +109,10 @@ export default function ChatInput(inputProps: inputProps) {
               return (
                 <div
                   key={item}
-                  className="flex items-center gap-1 text-xs bg-blue-200 px-2 py-1 rounded-md text-blue-600"
+                  className="flex items-center gap-1 text-xs bg-blue-200 px-2 py-1 rounded-xl  text-blue-600"
                 >
                   <span>{tool?.toolLabel}</span>
 
-                  <AppTooltip label={`Remove ${tool?.toolLabel}`}>
                     <button
                       onClick={() =>
                         setOptionList(optionList.filter(i => i !== item))
@@ -122,7 +121,6 @@ export default function ChatInput(inputProps: inputProps) {
                     >
                       <Cross2Icon className="h-4 w-4" />
                     </button>
-                  </AppTooltip>
                 </div>
               )
             })}
@@ -136,7 +134,7 @@ export default function ChatInput(inputProps: inputProps) {
                 <DropdownMenuTrigger asChild>
                   <button
                     type="button"
-                    className="font-paragraph flex h-8 items-center gap-1 rounded-md px-2.5 text-sm text-stone-600 transition-colors hover:bg-stone-100"
+                    className="font-paragraph flex h-8 items-center gap-1 rounded-xl px-2.5 text-sm text-stone-600 transition-colors hover:bg-stone-100"
                   >
                     {currentModel}
 
@@ -212,15 +210,12 @@ export default function ChatInput(inputProps: inputProps) {
 
             {/* Send */}
             <AppTooltip label="Send message">
-              <button
-                type="button"
+              <Button
                 onClick={handleSend}
                 disabled={!inputProps.value.trim()}
-                aria-label="Send message"
-                className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md bg-blue-600 transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-              >
+                className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md bg-blue-600  hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50">
                 <ArrowRightIcon className="h-4 w-4 text-white" />
-              </button>
+              </Button>
             </AppTooltip>
           </div>
         </div>

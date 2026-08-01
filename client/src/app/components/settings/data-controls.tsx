@@ -3,6 +3,7 @@ import { useState, type Dispatch } from "react";
 import { DialogHeader, DialogTitle } from "@/app/components/ui/dialog";
 import { deleteUserChatsAll } from "@/app/lib/api/userData";
 import type { ChatAction } from "@/app/types/chats/chat-action";
+import { Button } from "../ui/button";
 
 type DataControlsProps = {
   userId: string;
@@ -54,14 +55,13 @@ export default function DataControls({
             </p>
           </div>
 
-          <button
-            type="button"
+          <Button
             onClick={handleDeleteAll}
             disabled={isDeletingChats}
-            className="justify-self-end whitespace-nowrap rounded-md border border-red-500 bg-red-50 px-4 py-2 text-xs font-medium text-red-500 transition-colors hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-red-950/30 dark:hover:bg-red-950/50"
+            className="justify-self-end cursor-pointer whitespace-nowrap rounded-md border border-red-500 bg-red-50 px-4 py-2 text-xs font-medium text-red-500  hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-red-950/30 dark:hover:bg-red-950/50 transition-all"
           >
             {isDeletingChats ? "Deleting..." : "Delete all"}
-          </button>
+          </Button>
         </div>
       </div>
     </>
