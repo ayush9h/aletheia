@@ -16,16 +16,16 @@ export default function PlanPanel({ plan }: PlanPanelProps) {
   const totalSteps = plan.steps.length;
 
   return (
-    <div className="font-paragraph mb-2 text-xs select-none">
+    <div className="font-paragraph mb-2 select-none text-xs">
       {/* Minimalist Trigger */}
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
         className="
-          inline-flex items-center gap-1.5 py-1 px-1.5 rounded-md
-          text-stone-500 hover:text-stone-900 dark:hover:text-stone-200
-          hover:bg-stone-100 dark:hover:bg-stone-800/50
-          transition-colors cursor-pointer text-[12px] font-normal
+          inline-flex cursor-pointer items-center gap-1.5 rounded-md py-1
+          px-1.5 text-[12px] font-normal
+          text-stone-500 transition-colors
+          hover:bg-stone-100 hover:text-stone-900 dark:hover:bg-stone-800/50 dark:hover:text-stone-200
         "
       >
         <span>
@@ -40,17 +40,17 @@ export default function PlanPanel({ plan }: PlanPanelProps) {
 
       {/* Clean Step List */}
       {isOpen && (
-        <div className="mt-1 pl-2.5 ml-1.5 border-l border-stone-200 dark:border-stone-800 space-y-2 py-1">
+        <div className="mt-1 ml-1.5 space-y-2 border-l border-stone-200 py-1 pl-2.5 dark:border-stone-800">
           {plan.steps.map((step) => (
             <div
               key={step.step_id}
-              className="text-stone-600 dark:text-stone-400 text-[12px] leading-relaxed"
+              className="text-[12px] leading-relaxed text-stone-600 dark:text-stone-400"
             >
               <p>{step.plan}</p>
 
               {/* Tool Pill */}
               {step.evidence?.tool_name && (
-                <span className="mt-1 inline-block font-mono text-[10px] text-stone-500 bg-stone-100 dark:bg-stone-800/80 px-1.5 py-0.5 rounded">
+                <span className="mt-1 inline-block rounded bg-stone-100 px-1.5 py-0.5 font-mono text-[10px] text-stone-500 dark:bg-stone-800/80">
                   {step.evidence.tool_name}
                 </span>
               )}

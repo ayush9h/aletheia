@@ -59,7 +59,7 @@ export default function PersonalizationSettings({
     <div className="flex h-full min-h-0 flex-col">
       {/* Fixed header */}
       <DialogHeader className="shrink-0 pb-5">
-        <DialogTitle className="text-xl font-semibold text-stone-950">
+        <DialogTitle className="text-stone-950 text-xl font-semibold">
           Personalization
         </DialogTitle>
 
@@ -106,8 +106,8 @@ export default function PersonalizationSettings({
               </h3>
 
               <p className="mt-1 text-xs leading-5 text-stone-500">
-                Allow Aletheia to remember useful details and personalize
-                future conversations.
+                Allow Aletheia to remember useful details and personalize future
+                conversations.
               </p>
             </div>
 
@@ -116,19 +116,15 @@ export default function PersonalizationSettings({
               role="switch"
               aria-checked={draft.memoryEnabled}
               aria-label="Toggle memory storage"
-              onClick={() =>
-                update("memoryEnabled", !draft.memoryEnabled)
-              }
+              onClick={() => update("memoryEnabled", !draft.memoryEnabled)}
               className={`relative h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-400 focus-visible:ring-offset-2 ${
                 draft.memoryEnabled ? "bg-blue-500" : "bg-stone-300"
               }`}
             >
               <span
                 aria-hidden="true"
-                className={`absolute left-0.5 top-0.5 size-5 rounded-full bg-white shadow-sm transition-transform ${
-                  draft.memoryEnabled
-                    ? "translate-x-5"
-                    : "translate-x-0"
+                className={`size-5 absolute left-0.5 top-0.5 rounded-full bg-white shadow-sm transition-transform ${
+                  draft.memoryEnabled ? "translate-x-5" : "translate-x-0"
                 }`}
               />
             </button>
@@ -151,36 +147,26 @@ export default function PersonalizationSettings({
           </div>
 
           <div className="space-y-4">
-            <h3 className="font-semibold text-stone-900">
-              About you
-            </h3>
+            <h3 className="font-semibold text-stone-900">About you</h3>
 
             <div className="space-y-2">
-              <h3 className="text-xs font-medium text-stone-700">
-                Nickname
-              </h3>
+              <h3 className="text-xs font-medium text-stone-700">Nickname</h3>
 
               <input
                 value={draft.nickname}
                 placeholder="What should Aletheia call you?"
-                onChange={(event) =>
-                  update("nickname", event.target.value)
-                }
+                onChange={(event) => update("nickname", event.target.value)}
                 className="w-full rounded-md border border-stone-300 px-3 py-2 text-sm text-stone-800 outline-none placeholder:text-stone-400 focus:border-stone-500"
               />
             </div>
 
             <div className="space-y-2">
-              <h3 className="text-xs font-medium text-stone-700">
-                Occupation
-              </h3>
+              <h3 className="text-xs font-medium text-stone-700">Occupation</h3>
 
               <input
                 value={draft.occupation}
                 placeholder="Your profession or role"
-                onChange={(event) =>
-                  update("occupation", event.target.value)
-                }
+                onChange={(event) => update("occupation", event.target.value)}
                 className="w-full rounded-md border border-stone-300 px-3 py-2 text-sm text-stone-800 outline-none placeholder:text-stone-400 focus:border-stone-500"
               />
             </div>
@@ -194,9 +180,7 @@ export default function PersonalizationSettings({
                 rows={3}
                 value={draft.userHobbies}
                 placeholder="Interests, values, preferences"
-                onChange={(event) =>
-                  update("userHobbies", event.target.value)
-                }
+                onChange={(event) => update("userHobbies", event.target.value)}
                 className="w-full resize-none rounded-md border border-stone-300 px-3 py-2 text-sm text-stone-800 outline-none placeholder:text-stone-400 focus:border-stone-500"
               />
             </div>
@@ -219,7 +203,7 @@ export default function PersonalizationSettings({
           type="button"
           disabled={isSaving}
           onClick={() => void handleSubmit()}
-          className="cursor-pointer bg-blue-600 hover:bg-blue-700 disabled:cursor-not-allowed transition-all duration-150 ease-out active:translate-y-px active:scale-[0.98]"
+          className="cursor-pointer bg-blue-600 transition-all duration-150 ease-out hover:bg-blue-700 active:translate-y-px active:scale-[0.98] disabled:cursor-not-allowed"
         >
           {isSaving ? "Saving..." : "Save"}
         </Button>

@@ -6,21 +6,21 @@ import MessageBubble from "./message-bubble";
 
 const MessageList = memo(function MessageList({
   messages,
-  bottomRef
+  bottomRef,
 }: {
-    messages: Message[];
-    bottomRef: React.RefObject<VirtuosoHandle | null>
+  messages: Message[];
+  bottomRef: React.RefObject<VirtuosoHandle | null>;
 }) {
   return (
     <Virtuoso
-    ref={bottomRef}
+      ref={bottomRef}
       className="h-full"
       data={messages}
       computeItemKey={(_, message) => message.id}
-      components={{Footer: () => <div className="h-[20rem]" />}}
+      components={{ Footer: () => <div className="h-[20rem]" /> }}
       itemContent={(_, message) => (
         <div className="mx-auto w-full min-w-0 max-w-3xl px-4 py-3">
-              <MessageBubble message={message} />
+          <MessageBubble message={message} />
         </div>
       )}
     />

@@ -7,7 +7,7 @@ import {
   CopyIcon,
   LightningBoltIcon,
   SpeakerLoudIcon,
-  StopIcon
+  StopIcon,
 } from "@radix-ui/react-icons";
 import { useReadAloud } from "@/app/components/voice/read-aloud";
 
@@ -24,8 +24,11 @@ const MessageBubble = memo(function MessageBubble({
   const [copied, setCopied] = useState(false);
   const text = String(message.text ?? "");
 
-  const { isReading, isSupported, toggle: handleReadAloud } =
-    useReadAloud(text);
+  const {
+    isReading,
+    isSupported,
+    toggle: handleReadAloud,
+  } = useReadAloud(text);
   const handleCopy = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(text);
@@ -50,29 +53,27 @@ const MessageBubble = memo(function MessageBubble({
           className={`rounded-md text-sm ${
             isUser
               ? "max-h-64 max-w-[60%] overflow-y-auto whitespace-pre-wrap break-words bg-blue-500 px-4 py-2 text-stone-100"
-              : "min-w-0 overflow-hidden w-full text-stone-800"
+              : "w-full min-w-0 overflow-hidden text-stone-800"
           }`}
         >
           {!isUser && message.plan && <PlanPanel plan={message.plan} />}
 
           {!isUser && message.isStreaming && !message.text && (
-            <div className="flex min-h-8 items-center py-1">
+            <div className="min-h-8 flex items-center py-1">
               <ThinkingStatus />
             </div>
           )}
 
           {Boolean(message.text) && (
-            <div className="min-w-0 max-w-full break-words leading-6 [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&>p]:my-2 [&_table]:w-full [&_table]:table-fixed [&_th]:break-words [&_td]:break-words [&_pre]:max-w-full [&_pre]:overflow-x-auto">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                {text}
-              </ReactMarkdown>
+            <div className="[&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&>p]:my-2 [&_table]:w-full [&_table]:table-fixed [&_th]:break-words [&_td]:break-words [&_pre]:max-w-full [&_pre]:overflow-x-auto min-w-0 max-w-full break-words leading-6">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>
             </div>
           )}
         </div>
       </div>
 
       {!isUser && !message.isStreaming && Boolean(message.text) && (
-        <div className="mt-1 gap-1 flex items-center justify-between text-stone-500">
+        <div className="mt-1 flex items-center justify-between gap-1 text-stone-500">
           <div className="flex items-center gap-1">
             <button
               type="button"

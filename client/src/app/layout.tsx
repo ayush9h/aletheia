@@ -38,7 +38,6 @@ export default async function RootLayout({
         <TooltipProvider>
           <SessionProvider session={session}>{children}</SessionProvider>
         </TooltipProvider>
-
       </body>
     </html>
   );

@@ -10,10 +10,7 @@ type DataControlsProps = {
   dispatch: Dispatch<ChatAction>;
 };
 
-export default function DataControls({
-  userId,
-  dispatch,
-}: DataControlsProps) {
+export default function DataControls({ userId, dispatch }: DataControlsProps) {
   const [isDeletingChats, setIsDeletingChats] = useState(false);
 
   const handleDeleteAll = async () => {
@@ -37,7 +34,7 @@ export default function DataControls({
   return (
     <>
       <DialogHeader>
-        <DialogTitle className="text-xl font-semibold text-stone-950">
+        <DialogTitle className="text-stone-950 text-xl font-semibold">
           Data Controls
         </DialogTitle>
       </DialogHeader>
@@ -50,15 +47,15 @@ export default function DataControls({
             </h3>
 
             <p className="mt-1 max-w-lg text-xs leading-5 text-stone-500">
-              Permanently delete your entire chat history. This action cannot
-              be undone.
+              Permanently delete your entire chat history. This action cannot be
+              undone.
             </p>
           </div>
 
           <Button
             onClick={handleDeleteAll}
             disabled={isDeletingChats}
-            className="justify-self-end cursor-pointer whitespace-nowrap rounded-md border border-red-500 bg-red-50 px-4 py-2 text-xs font-medium text-red-500  hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-red-950/30 dark:hover:bg-red-950/50 transition-all"
+            className="dark:bg-red-950/30 dark:hover:bg-red-950/50 cursor-pointer justify-self-end whitespace-nowrap rounded-md border border-red-500 bg-red-50 px-4 py-2 text-xs  font-medium text-red-500 transition-all hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isDeletingChats ? "Deleting..." : "Delete all"}
           </Button>

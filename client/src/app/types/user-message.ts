@@ -24,7 +24,7 @@ export type Message = {
   plan?: Plan;
   duration: number;
   tokens_consumed: number;
-  isStreaming?:boolean
+  isStreaming?: boolean;
 };
 
 /**
@@ -34,4 +34,5 @@ export type Session = {
   session_id: number;
   session_title: string;
   is_pinned: boolean;
+  created_at: Date;
 };

@@ -68,7 +68,7 @@ export function SessionSearchDialog({
               value={`session-${session.session_id}`}
               keywords={[title]}
               onSelect={() => handleSelect(session.session_id)}
-              className="flex cursor-pointer items-center gap-3 rounded-md px-3 py-2.5 text-sm text-stone-700 outline-none data-[selected=true]:bg-stone-200 data-[selected=true]:text-stone-950"
+              className="data-[selected=true]:bg-stone-200 data-[selected=true]:text-stone-950 flex cursor-pointer items-center gap-3 rounded-md px-3 py-2.5 text-sm text-stone-700 outline-none"
             >
               <ChatBubbleIcon
                 aria-hidden="true"

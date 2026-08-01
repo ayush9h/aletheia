@@ -8,7 +8,7 @@ export interface inputProps {
   value: string;
   onChange: (v: string) => void;
   onSend: () => void;
-  tools: string[]
+  tools: string[];
   dispatch: React.Dispatch<ChatAction>;
   selectedModel: string;
   setSelectedModel: (model: string) => void;
@@ -24,5 +24,5 @@ export interface ChatWindowProps {
   userPref: UserPrefProps;
   onSend: () => void;
   userName: string;
-  tools:string[]
+  tools: string[];
 }

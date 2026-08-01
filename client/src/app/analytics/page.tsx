@@ -1,5 +1,3 @@
 export default function Analytics() {
-  return (
-    <>this would be analytics</>
-  )
+  return <>this would be analytics</>;
 }

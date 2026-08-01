@@ -28,7 +28,6 @@ export function useInitLoad(
         dispatch({ type: "SET_SESSIONS", payload: sessions });
 
         if (!sessions.length) return;
-
       } catch {}
     }
 

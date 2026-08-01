@@ -31,9 +31,8 @@ export default function ThinkingStatus() {
   }, []);
 
   return (
-    <div className="font-paragraph flex items-center gap-2 text-stone-400 py-1">
-      <span
-        className=" text-xs font-medium tracking-tight text-transparent bg-clip-text animate-shine bg-[linear-gradient(110deg,#a8a29e,45%,#1c1917,55%,#a8a29e)] bg-[size:200%_100%] dark:bg-[linear-gradient(110deg,#78716c,45%,#f5f5f4,55%,#78716c)] transition-all duration-300">
+    <div className="font-paragraph flex items-center gap-2 py-1 text-stone-400">
+      <span className=" animate-shine bg-[size:200%_100%] bg-[linear-gradient(110deg,#a8a29e,45%,#1c1917,55%,#a8a29e)] bg-clip-text text-xs font-medium tracking-tight text-transparent transition-all duration-300 dark:bg-[linear-gradient(110deg,#78716c,45%,#f5f5f4,55%,#78716c)]">
         {ACTION_PHRASES[index]}
       </span>
     </div>

@@ -65,7 +65,7 @@ export function useSendMessage(params: Params) {
         text: "",
         duration: 0,
         tokens_consumed: 0,
-        isStreaming:true,
+        isStreaming: true,
       },
     });
 
@@ -80,17 +80,15 @@ export function useSendMessage(params: Params) {
         userId,
         tools,
         {
-
           onPlan: (plan) => {
             dispatch({ type: "SET_CURRENT_PLAN", payload: plan as Plan });
           },
-
 
           onToken: (token) => {
             streamedText += token;
             dispatch({
               type: "UPDATE_LAST_ASSISTANT_MESSAGE",
-              payload: { text: streamedText, isStreaming:true, },
+              payload: { text: streamedText, isStreaming: true },
             });
           },
 
@@ -122,7 +120,10 @@ export function useSendMessage(params: Params) {
           onError: () => {
             dispatch({
               type: "UPDATE_LAST_ASSISTANT_MESSAGE",
-              payload: { text: "Oops something went wrong. Try Again Later.", isStreaming:false },
+              payload: {
+                text: "Oops something went wrong. Try Again Later.",
+                isStreaming: false,
+              },
             });
           },
         }
@@ -130,7 +131,10 @@ export function useSendMessage(params: Params) {
     } catch {
       dispatch({
         type: "UPDATE_LAST_ASSISTANT_MESSAGE",
-        payload: { text: "Oops something went wrong. Try Again Later.", isStreaming:false },
+        payload: {
+          text: "Oops something went wrong. Try Again Later.",
+          isStreaming: false,
+        },
       });
     }
   }, [

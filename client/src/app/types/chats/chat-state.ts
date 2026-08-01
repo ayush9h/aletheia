@@ -8,7 +8,7 @@ export type ChatState = {
   messages: Message[];
   selectedSessionId: number | null;
   userPref: UserPrefProps;
-  selectedTools: string[]
+  selectedTools: string[];
 };
 
 {
@@ -40,9 +40,9 @@ export const InitialState: ChatState = {
     /** User hobbies for personalization response */
     userHobbies: "",
     /** Memory */
-    memoryEnabled:true,
+    memoryEnabled: true,
   },
 
   /**Selected Tools */
-  selectedTools: [] as string[]
+  selectedTools: [] as string[],
 };

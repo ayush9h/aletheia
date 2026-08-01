@@ -21,7 +21,6 @@ import { useUserPreferences } from "../hooks/useUserPref";
 import { userChats } from "../lib/api/userData";
 import Navbar from "@/app/components/navbar";
 
-
 export default function ChatPage() {
   const { data: session } = useSession();
   const userId = session?.user?.id;
@@ -74,7 +73,7 @@ export default function ChatPage() {
 
   return (
     <div
-      className={`grid h-dvh overflow-hidden transition-all duration-300 ${
+      className={`h-dvh grid overflow-hidden transition-all duration-300 ${
         sidebarOpen
           ? "grid-cols-[16rem_minmax(0,1fr)]"
           : "grid-cols-[4rem_minmax(0,1fr)]"

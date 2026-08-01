@@ -112,7 +112,6 @@ function getRecognitionErrorMessage(error: string): string {
   }
 }
 export function useSpeechToText({
-
   value,
   onChange,
   language = "en-US",
@@ -186,7 +185,6 @@ export function useSpeechToText({
       return;
     }
 
-
     cancelActiveRecognition?.();
 
     const recognition = new Recognition();
@@ -236,9 +234,7 @@ export function useSpeechToText({
 
       const transcript = transcriptParts.join(" ");
 
-      onChangeRef.current(
-        combineText(initialValueRef.current, transcript)
-      );
+      onChangeRef.current(combineText(initialValueRef.current, transcript));
     };
 
     recognition.onerror = (event) => {

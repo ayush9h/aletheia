@@ -74,7 +74,7 @@ export const ChatReducer = (state: ChatState, action: ChatAction) => {
           baseTone: action.payload?.baseTone ?? "",
           occupation: action.payload?.occupation ?? "",
           userHobbies: action.payload?.userHobbies ?? "",
-          memoryEnabled: action.payload?.memoryEnabled ?? false
+          memoryEnabled: action.payload?.memoryEnabled ?? false,
         },
       };
 
@@ -82,27 +82,26 @@ export const ChatReducer = (state: ChatState, action: ChatAction) => {
     case "SET_TOOLS":
       return {
         ...state,
-        selectedTools: action.payload
-      }
-
+        selectedTools: action.payload,
+      };
 
     case "UPDATE_LAST_ASSISTANT_MESSAGE": {
-        const messages = [...state.messages];
-        const lastIndex = messages.length - 1;
-        if (lastIndex >= 0 && messages[lastIndex].role === "assistant") {
-          messages[lastIndex] = { ...messages[lastIndex], ...action.payload };
-        }
-        return { ...state, messages };
+      const messages = [...state.messages];
+      const lastIndex = messages.length - 1;
+      if (lastIndex >= 0 && messages[lastIndex].role === "assistant") {
+        messages[lastIndex] = { ...messages[lastIndex], ...action.payload };
       }
+      return { ...state, messages };
+    }
 
     case "SET_CURRENT_PLAN": {
-          const messages = [...state.messages];
-          const lastIndex = messages.length - 1;
-          if (lastIndex >= 0 && messages[lastIndex].role === "assistant") {
-            messages[lastIndex] = { ...messages[lastIndex], plan: action.payload };
-          }
-          return { ...state, messages };
-        }
+      const messages = [...state.messages];
+      const lastIndex = messages.length - 1;
+      if (lastIndex >= 0 && messages[lastIndex].role === "assistant") {
+        messages[lastIndex] = { ...messages[lastIndex], plan: action.payload };
+      }
+      return { ...state, messages };
+    }
     default:
       return state;
   }

@@ -7,10 +7,7 @@
  */
 
 import Image from "next/image";
-import {
-  useState,
-  type Dispatch,
-} from "react";
+import { useState, type Dispatch } from "react";
 import { signOut, useSession } from "next-auth/react";
 import { ExitIcon, GearIcon } from "@radix-ui/react-icons";
 
@@ -77,7 +74,7 @@ export default function Navbar({
             <button
               type="button"
               aria-label={`Open account menu for ${displayName}`}
-              className="flex size-[2.25rem] items-center justify-center rounded-full bg-stone-200 cursor-pointer"
+              className="size-[2.25rem] flex cursor-pointer items-center justify-center rounded-full bg-stone-200"
             >
               {avatarUrl ? (
                 <Image
@@ -85,7 +82,7 @@ export default function Navbar({
                   alt=""
                   width={25}
                   height={25}
-                  className="size-[1.75rem] object-cover rounded-full"
+                  className="size-[1.75rem] rounded-full object-cover"
                 />
               ) : (
                 <span
@@ -108,7 +105,7 @@ export default function Navbar({
                 <span>{displayName}</span>
 
                 {session.user.email && (
-                  <span className="max-w-56 truncate text-xs font-normal text-muted-foreground">
+                  <span className="max-w-56 text-muted-foreground truncate text-xs font-normal">
                     {session.user.email}
                   </span>
                 )}
@@ -117,9 +114,11 @@ export default function Navbar({
 
             <DropdownMenuSeparator />
 
-            <DropdownMenuItem className="cursor-pointer" onSelect={() => setSettingsOpen(true)}>
+            <DropdownMenuItem
+              className="cursor-pointer"
+              onSelect={() => setSettingsOpen(true)}
+            >
               Settings
-
               <DropdownMenuShortcut>
                 <GearIcon aria-hidden="true" className="size-4" />
               </DropdownMenuShortcut>
@@ -133,8 +132,8 @@ export default function Navbar({
                 void handleSignOut();
               }}
               className="
-                text-red-500 focus:bg-red-50 focus:text-red-600 data-[highlighted]:bg-red-50 data-[highlighted]:text-red-600 dark:focus:bg-red-950/30 dark:data-[highlighted]:bg-red-950/30
-                cursor-pointer
+                data-[highlighted]:bg-red-50 data-[highlighted]:text-red-600 dark:focus:bg-red-950/30 dark:data-[highlighted]:bg-red-950/30 cursor-pointer text-red-500 focus:bg-red-50
+                focus:text-red-600
               "
             >
               {isSigningOut ? "Logging out..." : "Log out"}

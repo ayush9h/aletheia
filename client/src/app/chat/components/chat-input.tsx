@@ -1,4 +1,4 @@
-'use client'
+"use client";
 /**
  * ChatInput renders the primary message composer.
  *
@@ -13,7 +13,7 @@ import { Mic, Square } from "lucide-react";
 import TextareaAutosize from "react-textarea-autosize";
 import { inputProps } from "@/app/types/chats/chats.type";
 import { useSpeechToText } from "@/app/components/voice/speech-text";
-import { options} from "@/app/components/input-options";
+import { options } from "@/app/components/input-options";
 import InputOptions from "@/app/components/input-options";
 import { useMemo } from "react";
 import { MODEL_GROUPS } from "@/app/config/models";
@@ -23,18 +23,17 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
-
 } from "@/app/components/ui/dropdown-menu";
 import AppTooltip from "@/app/components/ui/app-tooltip";
-import {CaretDownIcon} from "@radix-ui/react-icons";
+import { CaretDownIcon } from "@radix-ui/react-icons";
 import Image from "next/image";
 import { Button } from "@/app/components/ui/button";
 
 export default function ChatInput(inputProps: inputProps) {
-  const optionList = inputProps.tools
+  const optionList = inputProps.tools;
 
   const setOptionList = (tools: string[]) =>
-      inputProps.dispatch({ type: "SET_TOOLS", payload: tools })
+    inputProps.dispatch({ type: "SET_TOOLS", payload: tools });
 
   const currentModel = useMemo(() => {
     return (
@@ -44,27 +43,25 @@ export default function ChatInput(inputProps: inputProps) {
     );
   }, [inputProps.selectedModel]);
 
-
   const {
-      isListening,
-      isSupported: isSpeechSupported,
-      toggle: toggleSpeechRecognition,
-      cancel: cancelSpeechRecognition,
-    } = useSpeechToText({
-      value: inputProps.value,
-      onChange: inputProps.onChange,
-      language: "en-US",
-    });
+    isListening,
+    isSupported: isSpeechSupported,
+    toggle: toggleSpeechRecognition,
+    cancel: cancelSpeechRecognition,
+  } = useSpeechToText({
+    value: inputProps.value,
+    onChange: inputProps.onChange,
+    language: "en-US",
+  });
 
   const handleSend = () => {
-      if (!inputProps.value.trim()) {
-        return;
-      }
+    if (!inputProps.value.trim()) {
+      return;
+    }
 
-      cancelSpeechRecognition();
-      inputProps.onSend();
-    };
-
+    cancelSpeechRecognition();
+    inputProps.onSend();
+  };
 
   return (
     <div className="font-paragraph mx-auto w-full max-w-3xl">
@@ -94,35 +91,31 @@ export default function ChatInput(inputProps: inputProps) {
         <div className="flex items-center justify-between border-t p-2">
           {/* Options Button */}
           <div className="flex items-center gap-3">
-
-              <div>
-                <InputOptions
-                  tools={optionList}
-                  setTools={setOptionList}
-                />
-              </div>
+            <div>
+              <InputOptions tools={optionList} setTools={setOptionList} />
+            </div>
 
             {/* Show the tool label from the tools key */}
             {optionList.map((item) => {
-              const tool = options.find(o => o.key === item)
+              const tool = options.find((o) => o.key === item);
 
               return (
                 <div
                   key={item}
-                  className="flex items-center gap-1 text-xs bg-blue-200 px-2 py-1 rounded-xl  text-blue-600"
+                  className="flex items-center gap-1 rounded-lg bg-blue-200 px-2 py-1 text-xs  text-blue-600"
                 >
                   <span>{tool?.toolLabel}</span>
 
-                    <button
-                      onClick={() =>
-                        setOptionList(optionList.filter(i => i !== item))
-                      }
-                      className="ml-1 hover:text-blue-800 cursor-pointer"
-                    >
-                      <Cross2Icon className="h-4 w-4" />
-                    </button>
+                  <button
+                    onClick={() =>
+                      setOptionList(optionList.filter((i) => i !== item))
+                    }
+                    className="ml-1 cursor-pointer hover:text-blue-800"
+                  >
+                    <Cross2Icon className="h-4 w-4" />
+                  </button>
                 </div>
-              )
+              );
             })}
           </div>
 
@@ -134,7 +127,7 @@ export default function ChatInput(inputProps: inputProps) {
                 <DropdownMenuTrigger asChild>
                   <button
                     type="button"
-                    className="font-paragraph flex h-8 items-center gap-1 rounded-xl px-2.5 text-sm text-stone-600 transition-colors hover:bg-stone-100"
+                    className="font-paragraph flex h-8 items-center gap-1 rounded-lg px-2.5 text-sm text-stone-600 transition-colors hover:bg-stone-100"
                   >
                     {currentModel}
 
@@ -143,10 +136,7 @@ export default function ChatInput(inputProps: inputProps) {
                 </DropdownMenuTrigger>
               </AppTooltip>
 
-              <DropdownMenuContent
-                align="end"
-                className="font-paragraph w-56"
-              >
+              <DropdownMenuContent align="end" className="font-paragraph w-56">
                 {MODEL_GROUPS.map((group) => (
                   <div key={group.provider}>
                     <DropdownMenuLabel className="flex items-center gap-2 text-xs text-stone-500">
@@ -197,10 +187,7 @@ export default function ChatInput(inputProps: inputProps) {
                   ].join(" ")}
                 >
                   {isListening ? (
-                    <Square
-                      className="h-3.5 w-3.5"
-                      fill="currentColor"
-                    />
+                    <Square className="h-3.5 w-3.5" fill="currentColor" />
                   ) : (
                     <Mic className="h-4 w-4" />
                   )}
@@ -213,7 +200,8 @@ export default function ChatInput(inputProps: inputProps) {
               <Button
                 onClick={handleSend}
                 disabled={!inputProps.value.trim()}
-                className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md bg-blue-600  hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50">
+                className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md bg-blue-600  hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+              >
                 <ArrowRightIcon className="h-4 w-4 text-white" />
               </Button>
             </AppTooltip>

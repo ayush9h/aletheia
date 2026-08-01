@@ -9,7 +9,6 @@ import DataControls from "./settings/data-controls";
 import { SettingsDialogProps } from "../types/settings/settings.type";
 import { UserPrefProps } from "../types/user-pref";
 
-
 export function SettingsDialog(settingsProps: SettingsDialogProps) {
   const { data: session } = useSession();
   const userId = session?.user?.id;
@@ -46,11 +45,8 @@ export function SettingsDialog(settingsProps: SettingsDialogProps) {
   }
 
   return (
-    <Dialog
-      open={settingsProps.open}
-      onOpenChange={settingsProps.onOpenChange}
-    >
-      <DialogContent className="h-[85dvh] max-h-[85dvh] max-w-2xl overflow-hidden p-0 font-paragraph">
+    <Dialog open={settingsProps.open} onOpenChange={settingsProps.onOpenChange}>
+      <DialogContent className="font-paragraph h-[85dvh] max-h-[85dvh] max-w-2xl overflow-hidden p-0">
         <div className="flex h-full min-h-0">
           <aside className="w-48 shrink-0 border-r border-stone-200 p-5">
             <div className="space-y-2 text-xs">

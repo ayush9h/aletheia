@@ -56,23 +56,21 @@ export type ChatAction =
    * Sets or clears personalization preferences.
    */
   | { type: "SET_USER_PREF"; payload?: UserPrefProps }
-
   | {
-    /**
-     * Updates selected tool list for current message composer.
-     */
-    type: "SET_TOOLS"
-    payload: string[]
-  }
-
+      /**
+       * Updates selected tool list for current message composer.
+       */
+      type: "SET_TOOLS";
+      payload: string[];
+    }
   | {
-    type: "UPDATE_LAST_ASSISTANT_MESSAGE"; payload: Partial<{
-      text: string;
-      reasoning: string;
-      duration: number;
-      tokens_consumed: number;
-      isStreaming: boolean;
-    }>
-  }
-
+      type: "UPDATE_LAST_ASSISTANT_MESSAGE";
+      payload: Partial<{
+        text: string;
+        reasoning: string;
+        duration: number;
+        tokens_consumed: number;
+        isStreaming: boolean;
+      }>;
+    }
   | { type: "SET_CURRENT_PLAN"; payload: Plan };

@@ -1,6 +1,5 @@
 import { UserPrefProps } from "@/app/types/user-pref";
 
-
 type StreamHandlers = {
   onPlan?: (plan: unknown) => void;
   onToken?: (token: string) => void;
@@ -11,11 +10,10 @@ type StreamHandlers = {
       duration: number;
       tokens_consumed: number;
     };
-    session: { session_id: number; session_title: string; is_pinned: boolean; };
+    session: { session_id: number; session_title: string; is_pinned: boolean };
   }) => void;
   onError?: (message: string) => void;
 };
-
 
 export async function streamChatMessage(
   selectedModel: string,
