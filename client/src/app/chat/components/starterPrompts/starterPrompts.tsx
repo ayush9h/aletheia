@@ -7,7 +7,6 @@ import {
   ListChecks,
   MessageCircleQuestion,
   Pen,
-  PenLineIcon,
 } from "lucide-react";
 
 type StarterPrompt = {
@@ -49,7 +48,7 @@ const STARTER_PROMPTS: StarterPrompt[] = [
   {
     id: "improve",
     label: "Improve my writing",
-    icon: PenLineIcon,
+    icon: Pen,
     prompt:
       "Improve this text so it sounds clear, natural, and professional.",
   },
