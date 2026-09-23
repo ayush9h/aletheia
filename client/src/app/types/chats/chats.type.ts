@@ -12,6 +12,7 @@ export interface inputProps {
   dispatch: React.Dispatch<ChatAction>;
   selectedModel: string;
   setSelectedModel: (model: string) => void;
+  showStarterPrompts?: boolean;
 }
 
 /* Chat Window Props */

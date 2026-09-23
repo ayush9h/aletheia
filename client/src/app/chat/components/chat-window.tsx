@@ -63,6 +63,7 @@ export default function ChatWindow(props: ChatWindowProps) {
                 })
               }
               selectedModel={props.selectedModel}
+              showStarterPrompts={isEmpty}
             />
           </div>
         </motion.div>

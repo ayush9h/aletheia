@@ -28,6 +28,7 @@ import AppTooltip from "@/app/components/ui/app-tooltip";
 import { CaretDownIcon } from "@radix-ui/react-icons";
 import Image from "next/image";
 import { Button } from "@/app/components/ui/button";
+import StarterPrompts from "./starterPrompts/starterPrompts";
 
 export default function ChatInput(inputProps: inputProps) {
   const optionList = inputProps.tools;
@@ -65,7 +66,9 @@ export default function ChatInput(inputProps: inputProps) {
 
   return (
     <div className="font-paragraph mx-auto w-full max-w-3xl">
+
       <div className="flex flex-col rounded-xl border">
+
         {/* User Input */}
         <TextareaAutosize
           value={inputProps.value}
@@ -208,6 +211,13 @@ export default function ChatInput(inputProps: inputProps) {
           </div>
         </div>
       </div>
+
+      <StarterPrompts
+        show={inputProps.showStarterPrompts ?? false}
+        onPromptSelect={(prompt) => {
+          inputProps.onChange(prompt);
+        }}
+      />
     </div>
   );
 }

@@ -117,7 +117,7 @@ export function SessionItem({
                 void handleDeleteSession(s.session_id);
               }}
             >
-              <TrashIcon className="h-4 w-4" />
+              <TrashIcon className="h-4 w-4 text-red-500" />
               Delete
             </DropdownMenuItem>
           </DropdownMenuContent>
