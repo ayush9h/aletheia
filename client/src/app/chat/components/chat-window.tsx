@@ -13,7 +13,7 @@ export default function ChatWindow(props: ChatWindowProps) {
   const isEmpty = props.messages.length === 0;
 
   return (
-    <div className="flex h-full min-h-0 flex-col overflow-hidden">
+    <div className="flex h-full min-h-0 flex-col overflow-hidden bg-stone-100/40">
       <div
         className={`flex min-h-0 flex-1 flex-col items-center overflow-hidden ${
           isEmpty ? "justify-center" : ""

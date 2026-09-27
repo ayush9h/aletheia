@@ -44,8 +44,8 @@ export function SessionItem({
         ${
           open
             ? isSelected
-              ? "bg-stone-200/45 cursor-pointer"
-              : "hover:bg-stone-200/45 cursor-pointer"
+              ? "bg-stone-200/30 cursor-pointer"
+              : "hover:bg-stone-200/30 cursor-pointer"
             : "pointer-events-none opacity-0"
         }
       `}

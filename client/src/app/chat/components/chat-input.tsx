@@ -65,9 +65,10 @@ export default function ChatInput(inputProps: inputProps) {
   };
 
   return (
-    <div className="font-paragraph mx-auto w-full max-w-3xl">
+    <div className="font-paragraph mx-auto w-full max-w-3xl rounded-xl">
 
-      <div className="flex flex-col rounded-xl border">
+      <div className="flex flex-col rounded-xl bg-white shadow-[0_1px_6px_rgba(0,0,0,0.025)]
+ border focus-within:border-blue-500">
 
         {/* User Input */}
         <TextareaAutosize

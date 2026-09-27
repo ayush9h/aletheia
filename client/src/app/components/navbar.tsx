@@ -68,7 +68,7 @@ export default function Navbar({
 
   return (
     <nav aria-label="Account navigation">
-      <div className="flex items-center justify-end px-6 py-2">
+      <div className="flex items-center justify-end px-6 py-2 bg-stone-100/40">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button

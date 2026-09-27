@@ -6,34 +6,49 @@ import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { Virtuoso } from "react-virtuoso";
 
-import { PanelLeftIcon } from "lucide-react";
 import {
   CaretSortIcon,
-  FileIcon,
   MagnifyingGlassIcon,
   Pencil2Icon,
 } from "@radix-ui/react-icons";
 
-import { ChevronDownIcon } from "lucide-react";
+import {
+  ChevronDownIcon,
+  PanelLeftIcon,
+  PlugIcon,
+} from "lucide-react";
+
 import AppTooltip from "@/app/components/ui/app-tooltip";
+
 import {
   Accordion,
   AccordionItem,
   AccordionTrigger,
 } from "@/app/components/ui/accordion";
+
 import { SessionSearchDialog } from "@/app/components/ui/cmd-panel";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/app/components/ui/dropdown-menu";
+
 import { SessionItem } from "@/app/components/session-item";
 import { useChatSession } from "@/app/hooks/useChatSession";
 import { pinSession } from "@/app/lib/api/userData";
 
 import type { ChatAction } from "@/app/types/chats/chat-action";
 import type { Session } from "@/app/types/user-message";
+
+import ConnectorsDialog from "@/app/components/connectors/ConnectorDialog";
+
+import {
+  buildSidebarRows,
+  type SortOrder,
+  type SidebarRow,
+} from "./sidebar-utils";
 
 interface SidebarProps {
   open: boolean;
@@ -42,7 +57,6 @@ interface SidebarProps {
   selectedSessionId: number | null;
   onSelectSession: (id: number) => void;
   dispatch: Dispatch<ChatAction>;
-  onOpenDocuments?: () => void;
 }
 
 interface SidebarActionProps {
@@ -53,25 +67,6 @@ interface SidebarActionProps {
   disabled?: boolean;
   disabledLabel?: string;
 }
-
-type SortOrder = "asc" | "desc";
-type SectionId = "pinned" | "recent";
-
-type SidebarRow =
-  | {
-      type: "section";
-      id: SectionId;
-      label: string;
-    }
-  | {
-      type: "session";
-      id: string;
-      session: Session;
-    }
-  | {
-      type: "empty";
-      id: "recent-empty";
-    };
 
 function SidebarAction({
   open,
@@ -96,7 +91,7 @@ function SidebarAction({
         ${
           disabled
             ? "cursor-not-allowed text-stone-400"
-            : "cursor-pointer text-stone-800 hover:bg-stone-200/70"
+            : "cursor-pointer text-stone-800 hover:bg-stone-200/30"
         }
       `}
     >
@@ -114,25 +109,22 @@ function SidebarAction({
       </span>
 
       {open && disabled && (
-        <span className="ml-auto rounded bg-stone-300/70 px-1.5 py-0.5 text-[10px] font-medium text-stone-600">
+        <span className="ml-auto rounded bg-stone-300/20 px-1.5 py-0.5 text-[10px] font-medium text-stone-600">
           Soon
         </span>
       )}
     </button>
   );
 
-  return open ? (
-    button
-  ) : (
+  if (open) {
+    return button;
+  }
+
+  return (
     <AppTooltip label={disabled ? disabledLabel ?? label : label}>
       {button}
     </AppTooltip>
   );
-}
-
-function getSessionTimestamp(session: Session): number {
-  const timestamp = new Date(session.created_at).getTime();
-  return Number.isNaN(timestamp) ? 0 : timestamp;
 }
 
 export default function Sidebar({
@@ -142,15 +134,24 @@ export default function Sidebar({
   onSelectSession,
   selectedSessionId,
   dispatch,
-  onOpenDocuments,
 }: SidebarProps) {
   const { data: auth } = useSession();
+
   const [searchOpen, setSearchOpen] = useState(false);
+  const [connectorsOpen, setConnectorsOpen] = useState(false);
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
+
   const [expandedSections, setExpandedSections] = useState<string[]>([
     "pinned",
     "recent",
   ]);
+
+  /**
+   * Cmd/Ctrl + K → open session search.
+   */
+  const handleSearchShortcut = useCallback(() => {
+    setSearchOpen((current) => !current);
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -162,12 +163,15 @@ export default function Sidebar({
       }
 
       event.preventDefault();
-      setSearchOpen((current) => !current);
+      handleSearchShortcut();
     };
 
     document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, []);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [handleSearchShortcut]);
 
   const handleDeleteSession = useChatSession(
     auth?.user?.id,
@@ -178,11 +182,18 @@ export default function Sidebar({
   const handlePinSession = useCallback(
     async (sessionId: number) => {
       const userId = auth?.user?.id;
-      if (!userId) return;
+
+      if (!userId) {
+        return;
+      }
 
       try {
         const { data } = await pinSession(sessionId, userId);
-        dispatch({ type: "SET_SESSIONS", payload: data });
+
+        dispatch({
+          type: "SET_SESSIONS",
+          payload: data,
+        });
       } catch (error) {
         console.error("Unable to update session pin state", {
           sessionId,
@@ -193,64 +204,30 @@ export default function Sidebar({
     [auth?.user?.id, dispatch]
   );
 
-  const sessionRows = useMemo<SidebarRow[]>(() => {
-    const direction = sortOrder === "asc" ? 1 : -1;
-    const pinned: Session[] = [];
-    const recent: Session[] = [];
+  const sessionRows = useMemo<SidebarRow[]>(
+    () => buildSidebarRows(sessions, sortOrder, expandedSections),
+    [sessions, sortOrder, expandedSections]
+  );
 
-    for (const session of [...sessions].sort(
-      (a, b) => (getSessionTimestamp(a) - getSessionTimestamp(b)) * direction
-    )) {
-      (session.is_pinned ? pinned : recent).push(session);
-    }
-
-    const rows: SidebarRow[] = [];
-
-    if (pinned.length > 0) {
-      rows.push({
-        type: "section",
-        id: "pinned",
-        label: "Pinned Chats",
-      });
-
-      if (expandedSections.includes("pinned")) {
-        rows.push(
-          ...pinned.map((session) => ({
-            type: "session" as const,
-            id: `session-${session.session_id}`,
-            session,
-          }))
-        );
-      }
-    }
-
-    rows.push({
-      type: "section",
-      id: "recent",
-      label: "Recent Chats",
+  const handleNewChat = useCallback(() => {
+    dispatch({
+      type: "SET_SELECTED_SESSION",
+      payload: null,
     });
 
-    if (expandedSections.includes("recent")) {
-      if (recent.length > 0) {
-        rows.push(
-          ...recent.map((session) => ({
-            type: "session" as const,
-            id: `session-${session.session_id}`,
-            session,
-          }))
-        );
-      } else {
-        rows.push({ type: "empty", id: "recent-empty" });
-      }
-    }
+    dispatch({
+      type: "SET_MESSAGES",
+      payload: [],
+    });
+  }, [dispatch]);
 
-    return rows;
-  }, [expandedSections, sessions, sortOrder]);
+  const handleOpenSearch = useCallback(() => {
+    setSearchOpen(true);
+  }, []);
 
-  const handleNewChat = () => {
-    dispatch({ type: "SET_SELECTED_SESSION", payload: null });
-    dispatch({ type: "SET_MESSAGES", payload: [] });
-  };
+  const handleOpenConnectors = useCallback(() => {
+    setConnectorsOpen(true);
+  }, []);
 
   return (
     <>
@@ -258,12 +235,17 @@ export default function Sidebar({
         aria-label="Chat sidebar"
         className={`
           font-paragraph flex h-full shrink-0 flex-col overflow-hidden
-          border-r bg-stone-100/50 p-4 text-sm
+          border-r bg-stone-100/20 p-4 text-sm
           transition-[width] duration-300 ease-in-out
           ${open ? "w-64" : "w-16 cursor-col-resize"}
         `}
-        onClick={() => !open && onToggle(true)}
+        onClick={() => {
+          if (!open) {
+            onToggle(true);
+          }
+        }}
       >
+        {/* Header */}
         <header className="flex h-8 shrink-0 items-center justify-between">
           <button
             type="button"
@@ -271,10 +253,19 @@ export default function Sidebar({
             className="flex shrink-0 cursor-pointer items-center justify-center"
             onClick={(event) => {
               event.stopPropagation();
-              if (!open) onToggle(true);
+
+              if (!open) {
+                onToggle(true);
+              }
             }}
           >
-            <Image src="/logo.png" alt="" width={32} height={32} priority />
+            <Image
+              src="/logo.png"
+              alt=""
+              width={32}
+              height={32}
+              priority
+            />
           </button>
 
           {open && (
@@ -294,7 +285,11 @@ export default function Sidebar({
           )}
         </header>
 
-        <nav aria-label="Chat actions" className="mt-4 shrink-0 space-y-1">
+        {/* Sidebar Actions */}
+        <nav
+          aria-label="Chat actions"
+          className="mt-4 shrink-0 space-y-1"
+        >
           <SidebarAction
             open={open}
             label="New Chat"
@@ -302,49 +297,43 @@ export default function Sidebar({
             onClick={handleNewChat}
           />
 
-          <button
-            type="button"
-            aria-label="Search chats"
-            className="flex w-full cursor-pointer items-center gap-2 rounded-md p-2 hover:bg-stone-200/50"
-            onClick={(event) => {
-              event.stopPropagation();
-              setSearchOpen(true);
-            }}
-          >
-            <MagnifyingGlassIcon className="h-4 w-4 shrink-0" />
-            <span
-              className={`
-                overflow-hidden whitespace-nowrap transition-all duration-300
-                ${open ? "max-w-[8rem] opacity-100" : "max-w-0 opacity-0"}
-              `}
-            >
-              Search Chats
-            </span>
-          </button>
+          <SidebarAction
+            open={open}
+            label="Search Chats"
+            icon={<MagnifyingGlassIcon className="h-4 w-4" />}
+            onClick={handleOpenSearch}
+          />
 
           <SidebarAction
             open={open}
-            label="Your Documents"
-            icon={<FileIcon className="h-4 w-4" />}
-            onClick={onOpenDocuments}
-            disabled={!onOpenDocuments}
-            disabledLabel="Your Documents is coming soon"
+            label="Connectors"
+            icon={<PlugIcon className="h-4 w-4" />}
+            onClick={handleOpenConnectors}
           />
         </nav>
 
+        {/* Chat List */}
         {open && (
           <div className="font-paragraph mt-5 flex min-h-0 flex-1 flex-col overflow-hidden">
             <div className="flex shrink-0 items-center justify-between px-2 pb-1">
               <span className="text-xs">Chats</span>
+
               <DropdownMenu>
-                <DropdownMenuTrigger asChild className="cursor-pointer">
-                  <button className="flex h-6 items-center gap-1 px-2 text-xs  text-stone-600">
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    className="flex h-6 cursor-pointer items-center gap-1 px-2 text-xs text-stone-600"
+                  >
                     <CaretSortIcon className="h-3 w-3" />
+
                     {sortOrder === "desc" ? "Newest" : "Oldest"}
                   </button>
                 </DropdownMenuTrigger>
 
-                <DropdownMenuContent align="end" className="font-paragraph">
+                <DropdownMenuContent
+                  align="end"
+                  className="font-paragraph"
+                >
                   <DropdownMenuItem
                     className="cursor-pointer"
                     onSelect={() => setSortOrder("desc")}
@@ -372,15 +361,23 @@ export default function Sidebar({
                 className="h-full [scrollbar-gutter:stable]"
                 data={sessionRows}
                 computeItemKey={(_, row) => row.id}
-                increaseViewportBy={{ top: 80, bottom: 120 }}
+                increaseViewportBy={{
+                  top: 80,
+                  bottom: 120,
+                }}
                 itemContent={(_, row) => {
                   if (row.type === "section") {
                     return (
-                      <AccordionItem value={row.id} className="border-none">
+                      <AccordionItem
+                        value={row.id}
+                        className="border-none"
+                      >
                         <AccordionTrigger
                           className="
-                            [&>svg:last-child]:hidden group w-fit flex-none justify-start gap-1.5 px-2
-                            py-2 text-xs leading-none text-stone-600
+                            [&>svg:last-child]:hidden
+                            group w-fit flex-none justify-start
+                            gap-1.5 px-2 py-2
+                            text-xs leading-none text-stone-600
                             hover:no-underline
                           "
                         >
@@ -388,8 +385,9 @@ export default function Sidebar({
 
                           <ChevronDownIcon
                             className="
-                              group-data-[state=open]:rotate-90 h-3.5 w-3.5
-                              shrink-0 cursor-pointer
+                              group-data-[state=open]:rotate-90
+                              h-3.5 w-3.5 shrink-0
+                              cursor-pointer
                               transition-transform duration-200
                             "
                           />
@@ -420,7 +418,12 @@ export default function Sidebar({
                   );
                 }}
                 components={{
-                  Footer: () => <div className="h-2" aria-hidden="true" />,
+                  Footer: () => (
+                    <div
+                      className="h-2"
+                      aria-hidden="true"
+                    />
+                  ),
                 }}
               />
             </Accordion>
@@ -428,11 +431,18 @@ export default function Sidebar({
         )}
       </aside>
 
+      {/* Search Dialog */}
       <SessionSearchDialog
         open={searchOpen}
         sessions={sessions}
         onOpenChange={setSearchOpen}
         onSelectSession={onSelectSession}
+      />
+
+      {/* Connectors Dialog */}
+      <ConnectorsDialog
+        open={connectorsOpen}
+        onOpenChange={setConnectorsOpen}
       />
     </>
   );

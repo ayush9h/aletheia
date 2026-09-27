@@ -10,7 +10,7 @@
 
 import { useReducer, useState } from "react";
 import { useSession } from "next-auth/react";
-import Sidebar from "./components/sidebar";
+import Sidebar from "./components/Sidebar/sidebar";
 import ChatWindow from "./components/chat-window";
 import { ChatReducer } from "../reducers/chat-reducer";
 import { InitialState } from "../types/chats/chat-state";
