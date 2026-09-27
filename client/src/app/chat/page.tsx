@@ -8,7 +8,7 @@
  * - Manage sidebar layout state */
 "use client";
 
-import { useReducer, useState } from "react";
+import { useReducer, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import Sidebar from "./components/Sidebar/sidebar";
 import ChatWindow from "./components/chat-window";
@@ -20,11 +20,12 @@ import { useSendMessage } from "../hooks/useSendMessage";
 import { useUserPreferences } from "../hooks/useUserPref";
 import { userChats } from "../lib/api/userData";
 import Navbar from "@/app/components/navbar";
+import { toast } from "sonner";
+
 
 export default function ChatPage() {
   const { data: session } = useSession();
   const userId = session?.user?.id;
-
   /**
    * Global chat state container.
    */
@@ -34,6 +35,60 @@ export default function ChatPage() {
    * Sidebar layout state.
    */
   const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  useEffect(() => {
+    const handleConnectorMessage = (
+      event: MessageEvent
+    ) => {
+      // Only accept messages from our own application.
+      if (event.origin !== window.location.origin) {
+        return;
+      }
+
+      if (event.data?.type !== "connector") {
+        return;
+      }
+
+      const { connector, status } = event.data;
+
+      if (!connector || !status) {
+        return;
+      }
+
+      const connectorName =
+        connector.charAt(0).toUpperCase() +
+        connector.slice(1);
+
+      if (status === "connected") {
+        toast.success(
+          `${connectorName} connected successfully`,
+          {
+            className:
+              "!border-green-200 !bg-green-50 !text-green-800",
+          }
+        );
+      }
+
+      if (status === "error") {
+        toast.error(
+          `Unable to connect ${connectorName}`
+        );
+      }
+    };
+
+    window.addEventListener(
+      "message",
+      handleConnectorMessage
+    );
+
+    return () => {
+      window.removeEventListener(
+        "message",
+        handleConnectorMessage
+      );
+    };
+  }, []);
+
   /**
    * Initial data hydration.
    */
