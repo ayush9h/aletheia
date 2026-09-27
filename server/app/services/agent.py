@@ -18,7 +18,7 @@ logger = structlog.get_logger(__name__)
 memory_manager = MemoryManager(
     llm_client=ChatGroq(
         api_key=settings.GROQ_API_KEY,
-        model="llama-3.3-70b-versatile",
+        model="meta-llama/llama-prompt-guard-2-22m",
     )
 )
 
@@ -58,7 +58,7 @@ def route_memory_store(state: AgentState) -> str:
 
 
 async def generate_session_title(state: AgentState) -> AgentState:
-    model_name = state.get("user_model", "llama-3.3-70b-versatile")
+    model_name = state.get("user_model", "meta-llama/llama-prompt-guard-2-22m")
     groq_guard = get_groq_guard()
 
     input_tokens = _estimate_input_tokens(state["user_input"])
