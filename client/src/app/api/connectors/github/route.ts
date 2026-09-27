@@ -5,7 +5,7 @@ export async function GET() {
   const state = randomBytes(32).toString("hex");
 
   const params = new URLSearchParams({
-    client_id: process.env.GITHUB_CLIENT_ID!,
+    client_id: process.env.GITHUB_CONNECTOR_ID!,
     redirect_uri: process.env.GITHUB_CALLBACK_URL!,
     state,
   });
