@@ -13,14 +13,4 @@ export const MODEL_GROUPS = [
       },
     ],
   },
-  {
-    provider: "Meta",
-    url: "./meta-color.svg",
-    models: [
-      {
-        label: "Llama-3.1-8B",
-        value: "llama-3.1-8b-instant",
-      },
-    ],
-  },
 ];
