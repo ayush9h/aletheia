@@ -73,8 +73,8 @@ export async function GET(request: Request) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        client_id: process.env.GITHUB_CLIENT_ID,
-        client_secret: process.env.GITHUB_CLIENT_SECRET,
+        client_id: process.env.GITHUB_CONNECTOR_ID,
+        client_secret: process.env.GITHUB_CONNECTOR_SECRET,
         code,
         redirect_uri: process.env.GITHUB_CALLBACK_URL,
       }),
