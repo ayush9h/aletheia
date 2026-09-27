@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-
+import { auth } from "@/app/auth";
 
 function connectorResult(
   status: "connected" | "error"
@@ -52,13 +52,13 @@ export async function GET(request: Request) {
   const state = searchParams.get("state");
 
   if (!code || !state) {
-    return NextResponse.redirect(
-      new URL("/chat?connector=github&status=error", request.url)
-    );
+    return connectorResult("error");
   }
 
   const cookieStore = await cookies();
-  const storedState = cookieStore.get("github_oauth_state")?.value;
+
+  const storedState =
+    cookieStore.get("github_oauth_state")?.value;
 
   if (!storedState || storedState !== state) {
     return connectorResult("error");
@@ -84,27 +84,78 @@ export async function GET(request: Request) {
   const tokenData = await tokenResponse.json();
 
   if (!tokenResponse.ok || !tokenData.access_token) {
-    console.error("GitHub token exchange failed:", tokenData);
+    console.error(
+      "GitHub token exchange failed:",
+      tokenData
+    );
 
     return connectorResult("error");
   }
 
-  const githubResponse = await fetch("https://api.github.com/user", {
-    headers: {
-      Accept: "application/vnd.github+json",
-      Authorization: `Bearer ${tokenData.access_token}`,
-      "X-GitHub-Api-Version": "2026-03-10",
-    },
-  });
+  const githubResponse = await fetch(
+    "https://api.github.com/user",
+    {
+      headers: {
+        Accept: "application/vnd.github+json",
+        Authorization: `Bearer ${tokenData.access_token}`,
+        "X-GitHub-Api-Version": "2026-03-10",
+      },
+    }
+  );
 
   if (!githubResponse.ok) {
+    console.error(
+      "Failed to fetch GitHub user:",
+      await githubResponse.text()
+    );
+
     return connectorResult("error");
   }
 
   const githubUser = await githubResponse.json();
 
-  console.log("GitHub connected:", {
-    id: githubUser.id,
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    console.error(
+      "No authenticated application user found"
+    );
+
+    return connectorResult("error");
+  }
+
+  const backendResponse = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/connectors/github`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Connector-Secret":
+          process.env.CONNECTOR_SECRET!,
+      },
+      body: JSON.stringify({
+        userId: session.user.id,
+        providerUserId: String(githubUser.id),
+        providerUsername: githubUser.login,
+        accessToken: tokenData.access_token,
+      }),
+    }
+  );
+
+  if (!backendResponse.ok) {
+    const errorText = await backendResponse.text();
+
+    console.error(
+      "Failed to store GitHub connector:",
+      errorText
+    );
+
+    return connectorResult("error");
+  }
+
+  console.log("GitHub connector stored:", {
+    userId: session.user.id,
+    githubUserId: githubUser.id,
     login: githubUser.login,
   });
 

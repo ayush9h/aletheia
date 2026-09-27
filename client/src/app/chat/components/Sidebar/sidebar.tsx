@@ -57,6 +57,7 @@ interface SidebarProps {
   selectedSessionId: number | null;
   onSelectSession: (id: number) => void;
   dispatch: Dispatch<ChatAction>;
+  userId?: string;
 }
 
 interface SidebarActionProps {
@@ -134,6 +135,7 @@ export default function Sidebar({
   onSelectSession,
   selectedSessionId,
   dispatch,
+  userId
 }: SidebarProps) {
   const { data: auth } = useSession();
 
@@ -441,6 +443,7 @@ export default function Sidebar({
 
       {/* Connectors Dialog */}
       <ConnectorsDialog
+        userId={userId}
         open={connectorsOpen}
         onOpenChange={setConnectorsOpen}
       />

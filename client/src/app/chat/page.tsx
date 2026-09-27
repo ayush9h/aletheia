@@ -141,6 +141,7 @@ export default function ChatPage() {
         selectedSessionId={state.selectedSessionId}
         onSelectSession={handleSessionSelect}
         dispatch={dispatch}
+        userId={userId}
       />
 
       <div className="flex min-h-0 min-w-0 flex-col overflow-hidden">

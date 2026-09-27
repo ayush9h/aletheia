@@ -1,7 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Loader2, Search, X } from "lucide-react";
+import {
+  Check,
+  Loader2,
+  Search,
+  X,
+} from "lucide-react";
 
 import {
   Dialog,
@@ -16,9 +21,17 @@ import {
   ConnectorCategory,
 } from "./connector-data";
 
+type ConnectedConnector = {
+  provider: string;
+  providerUserId: string | null;
+  providerUsername: string | null;
+  status: string;
+};
+
 type ConnectorsDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  userId?: string;
 };
 
 const CATEGORY_ORDER: ConnectorCategory[] = [
@@ -34,39 +47,130 @@ const CATEGORY_ORDER: ConnectorCategory[] = [
 export default function ConnectorsDialog({
   open,
   onOpenChange,
+  userId,
 }: ConnectorsDialogProps) {
   const [search, setSearch] = useState("");
-  const [connectingId, setConnectingId] = useState<string | null>(
-    null
-  );
+
+  const [connectingId, setConnectingId] =
+    useState<string | null>(null);
+
+  const [connectedConnectors, setConnectedConnectors] =
+    useState<ConnectedConnector[]>([]);
+
+  const [loadingConnectors, setLoadingConnectors] =
+    useState(false);
 
   /*
-   * Listen for the result from the OAuth popup.
+   * Load currently connected connectors
+   * whenever the dialog is opened.
    */
   useEffect(() => {
-    const handleConnectorMessage = (event: MessageEvent) => {
-      // Only accept messages from this application.
-      if (event.origin !== window.location.origin) {
+    if (!open || !userId) {
+      return;
+    }
+
+    const loadConnectors = async () => {
+      try {
+        setLoadingConnectors(true);
+
+        const response = await fetch(
+          `/api/connectors?user_id=${encodeURIComponent(
+            userId
+          )}`,
+          {
+            cache: "no-store",
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(
+            "Failed to fetch connectors"
+          );
+        }
+
+        const data = await response.json();
+
+        setConnectedConnectors(
+          data.connectors ?? []
+        );
+      } catch (error) {
+        console.error(
+          "Failed to load connectors:",
+          error
+        );
+
+        setConnectedConnectors([]);
+      } finally {
+        setLoadingConnectors(false);
+      }
+    };
+
+    loadConnectors();
+  }, [open, userId]);
+
+  /*
+   * Listen for the OAuth popup result.
+   */
+  useEffect(() => {
+    const handleConnectorMessage = (
+      event: MessageEvent
+    ) => {
+      if (
+        event.origin !== window.location.origin
+      ) {
         return;
       }
 
-      if (event.data?.type !== "connector") {
+      if (
+        event.data?.type !== "connector"
+      ) {
         return;
       }
 
-      const { connector } = event.data;
+      const {
+        connector,
+        status,
+      } = event.data;
 
       if (!connector) {
         return;
       }
 
-      // OAuth has finished.
       if (connector === "github") {
         setConnectingId(null);
+
+        if (status === "connected") {
+          setConnectedConnectors((current) => {
+            const alreadyConnected =
+              current.some(
+                (item) =>
+                  item.provider ===
+                    connector &&
+                  item.status === "connected"
+              );
+
+            if (alreadyConnected) {
+              return current;
+            }
+
+            return [
+              ...current,
+              {
+                provider: connector,
+                providerUserId: null,
+                providerUsername: null,
+                status: "connected",
+              },
+            ];
+          });
+        }
       }
     };
 
-    window.addEventListener("message", handleConnectorMessage);
+    window.addEventListener(
+      "message",
+      handleConnectorMessage
+    );
 
     return () => {
       window.removeEventListener(
@@ -77,7 +181,9 @@ export default function ConnectorsDialog({
   }, []);
 
   const filteredConnectors = useMemo(() => {
-    const query = search.trim().toLowerCase();
+    const query = search
+      .trim()
+      .toLowerCase();
 
     if (!query) {
       return CONNECTORS;
@@ -85,13 +191,21 @@ export default function ConnectorsDialog({
 
     return CONNECTORS.filter(
       (connector) =>
-        connector.name.toLowerCase().includes(query) ||
-        connector.description.toLowerCase().includes(query) ||
-        connector.category.toLowerCase().includes(query)
+        connector.name
+          .toLowerCase()
+          .includes(query) ||
+        connector.description
+          .toLowerCase()
+          .includes(query) ||
+        connector.category
+          .toLowerCase()
+          .includes(query)
     );
   }, [search]);
 
-  const handleOpenChange = (value: boolean) => {
+  const handleOpenChange = (
+    value: boolean
+  ) => {
     onOpenChange(value);
 
     if (!value) {
@@ -100,7 +214,9 @@ export default function ConnectorsDialog({
     }
   };
 
-  const handleConnect = (connectorId: string) => {
+  const handleConnect = (
+    connectorId: string
+  ) => {
     if (connectorId !== "github") {
       return;
     }
@@ -124,28 +240,25 @@ export default function ConnectorsDialog({
       `width=${width},height=${height},left=${left},top=${top}`
     );
 
-    // Browser blocked the popup.
     if (!popup) {
       setConnectingId(null);
       return;
     }
 
-    /*
-     * If the user closes the popup without completing OAuth,
-     * reset the button back to "Connect".
-     */
-    const checkPopup = window.setInterval(() => {
-      if (popup.closed) {
-        window.clearInterval(checkPopup);
-        setConnectingId(null);
-      }
-    }, 500);
+    const checkPopup =
+      window.setInterval(() => {
+        if (popup.closed) {
+          window.clearInterval(
+            checkPopup
+          );
+          setConnectingId(null);
+        }
+      }, 500);
 
-    /*
-     * Safety cleanup in case something unexpected happens.
-     */
     window.setTimeout(() => {
-      window.clearInterval(checkPopup);
+      window.clearInterval(
+        checkPopup
+      );
     }, 10 * 60 * 1000);
   };
 
@@ -161,8 +274,8 @@ export default function ConnectorsDialog({
           </DialogTitle>
 
           <DialogDescription className="text-xs text-stone-500">
-            Connect your apps to give your assistant access
-            to your data.
+            Connect your apps to give your
+            assistant access to your data.
           </DialogDescription>
         </DialogHeader>
 
@@ -190,7 +303,9 @@ export default function ConnectorsDialog({
             {search && (
               <button
                 type="button"
-                onClick={() => setSearch("")}
+                onClick={() =>
+                  setSearch("")
+                }
                 className="cursor-pointer text-stone-400 transition-colors hover:text-stone-600"
                 aria-label="Clear search"
               >
@@ -200,147 +315,154 @@ export default function ConnectorsDialog({
           </div>
 
           {/* Connector list */}
-          <div
-            className="
-              max-h-[420px]
-              overflow-y-auto
-              pr-1.5
-              [scrollbar-gutter:stable]
-              [&::-webkit-scrollbar]:w-1.5
-              [&::-webkit-scrollbar-track]:bg-transparent
-              [&::-webkit-scrollbar-thumb]:rounded-full
-              [&::-webkit-scrollbar-thumb]:bg-stone-300
-              [&::-webkit-scrollbar-thumb:hover]:bg-stone-400
-            "
-          >
-            {CATEGORY_ORDER.map((category) => {
-              const connectors = filteredConnectors.filter(
-                (connector) =>
-                  connector.category === category
-              );
-
-              if (connectors.length === 0) {
-                return null;
-              }
-
-              return (
-                <section
-                  key={category}
-                  className="mb-4 last:mb-0"
-                >
-                  <h3 className="mb-1.5 px-2 text-[11px] font-medium uppercase tracking-wide text-stone-400">
-                    {category}
-                  </h3>
-
-                  <div className="space-y-0.5">
-                    {connectors.map((connector) => {
-                      const Icon = connector.icon;
-
-                      const isConnecting =
-                        connectingId === connector.id;
-
-                      return (
-                        <div
-                          key={connector.id}
-                          className="
-                            flex
-                            items-center
-                            gap-3
-                            rounded-lg
-                            px-2.5
-                            py-2.5
-                          "
-                        >
-                          {/* Icon */}
-                          <span
-                            className="
-                              flex
-                              h-9
-                              w-9
-                              shrink-0
-                              items-center
-                              justify-center
-                              rounded-lg
-                              border
-                              border-stone-200
-                              bg-white
-                            "
-                          >
-                            <Icon className="h-4 w-4 text-stone-600" />
-                          </span>
-
-                          {/* Connector information */}
-                          <div className="min-w-0 flex-1">
-                            <span className="block text-sm font-medium text-stone-800">
-                              {connector.name}
-                            </span>
-
-                            <span className="block truncate text-xs text-stone-500">
-                              {connector.description}
-                            </span>
-                          </div>
-
-                          {/* Connect button */}
-                          <button
-                            type="button"
-                            disabled={isConnecting}
-                            onClick={() =>
-                              handleConnect(
-                                connector.id
-                              )
-                            }
-                            className="
-                              inline-flex
-                              h-8
-                              min-w-[76px]
-                              shrink-0
-                              cursor-pointer
-                              items-center
-                              justify-center
-                              gap-1.5
-                              rounded-md
-                              border
-                              border-stone-200
-                              bg-white
-                              px-2.5
-                              text-xs
-                              font-medium
-                              text-stone-700
-                              shadow-sm
-                              transition-all
-                              hover:border-stone-300
-                              hover:bg-stone-50
-                              hover:text-stone-900
-                              active:scale-[0.98]
-                              disabled:cursor-not-allowed
-                              disabled:opacity-70
-                            "
-                          >
-                            {isConnecting ? (
-                              <>
-                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                                <span>
-                                  Connecting
-                                </span>
-                              </>
-                            ) : (
-                              "Connect"
-                            )}
-                          </button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </section>
-              );
-            })}
-
-            {filteredConnectors.length === 0 && (
-              <div className="px-3 py-10 text-center">
-                <p className="text-sm text-stone-500">
-                  No connectors found.
-                </p>
+          <div className="max-h-[420px] overflow-y-auto pr-1.5 [scrollbar-gutter:stable] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-stone-300 [&::-webkit-scrollbar-thumb:hover]:bg-stone-400">
+            {loadingConnectors ? (
+              <div className="flex items-center justify-center py-10">
+                <Loader2 className="h-4 w-4 animate-spin text-stone-400" />
               </div>
+            ) : (
+              <>
+                {CATEGORY_ORDER.map(
+                  (category) => {
+                    const connectors =
+                      filteredConnectors.filter(
+                        (connector) =>
+                          connector.category ===
+                          category
+                      );
+
+                    if (
+                      connectors.length === 0
+                    ) {
+                      return null;
+                    }
+
+                    return (
+                      <section
+                        key={category}
+                        className="mb-4 last:mb-0"
+                      >
+                        <h3 className="mb-1.5 px-2 text-[11px] font-medium uppercase tracking-wide text-stone-400">
+                          {category}
+                        </h3>
+
+                        <div className="space-y-0.5">
+                          {connectors.map(
+                            (connector) => {
+                              const Icon =
+                                connector.icon;
+
+                              const isConnecting =
+                                connectingId ===
+                                connector.id;
+
+                              const isConnected =
+                                connectedConnectors.some(
+                                  (
+                                    connected
+                                  ) =>
+                                    connected.provider ===
+                                      connector.id &&
+                                    connected.status ===
+                                      "connected"
+                                );
+
+                              return (
+                                <div
+                                  key={
+                                    connector.id
+                                  }
+                                  className="flex items-center gap-3 rounded-lg px-2.5 py-2.5"
+                                >
+                                  {/* Icon */}
+                                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-stone-200 bg-white">
+                                    <Icon className="h-4 w-4 text-stone-600" />
+                                  </span>
+
+                                  {/* Details */}
+                                  <div className="min-w-0 flex-1">
+                                    <span className="block text-sm font-medium text-stone-800">
+                                      {
+                                        connector.name
+                                      }
+                                    </span>
+
+                                    <span className="block truncate text-xs text-stone-500">
+                                      {
+                                        connector.description
+                                      }
+                                    </span>
+                                  </div>
+
+                                  {/* Action */}
+                                  <button
+                                    type="button"
+                                    disabled={
+                                      isConnecting ||
+                                      isConnected
+                                    }
+                                    onClick={() =>
+                                      handleConnect(
+                                        connector.id
+                                      )
+                                    }
+                                    className={
+                                      isConnected
+                                        ? `
+                                          inline-flex h-8 min-w-[88px] shrink-0
+                                          cursor-default items-center justify-center gap-1.5
+                                          rounded-md border border-green-200 bg-green-50 px-2.5
+                                          text-xs font-medium text-green-700
+                                        `
+                                        : `
+                                          inline-flex h-8 min-w-[76px] shrink-0
+                                          cursor-pointer items-center justify-center gap-1.5
+                                          rounded-md border border-stone-200 bg-white px-2.5
+                                          text-xs font-medium text-stone-700 shadow-sm
+                                          transition-all hover:border-stone-300
+                                          hover:bg-stone-50 hover:text-stone-900
+                                          active:scale-[0.98]
+                                          disabled:cursor-not-allowed disabled:opacity-70
+                                        `
+                                    }
+                                  >
+                                    {isConnecting ? (
+                                      <>
+                                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                        <span>
+                                          Connecting
+                                        </span>
+                                      </>
+                                    ) : isConnected ? (
+                                      <>
+                                        <Check className="h-3.5 w-3.5" />
+                                        <span>
+                                          Connected
+                                        </span>
+                                      </>
+                                    ) : (
+                                      "Connect"
+                                    )}
+                                  </button>
+                                </div>
+                              );
+                            }
+                          )}
+                        </div>
+                      </section>
+                    );
+                  }
+                )}
+
+                {filteredConnectors.length ===
+                  0 && (
+                  <div className="px-3 py-10 text-center">
+                    <p className="text-sm text-stone-500">
+                      No connectors found.
+                    </p>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
