@@ -31,9 +31,9 @@ class MemoryManager:
                 content_with_prompt, response_format={"type": "json_object"}
             )
 
-            parsed = NoteSchema.model_validate_json(resp.content)  # type:ignore
+            parsed = NoteSchema.model_validate_json(resp.content)  # type: ignore
 
-            return parsed.model_dump()  # type:ignore
+            return parsed.model_dump()  # type: ignore
 
         except Exception as e:
             logger.error(f"Error occurred during analyzing content:{e}")
@@ -126,7 +126,7 @@ class MemoryManager:
 
             memories = []
 
-            for match in results["matches"]:  # type:ignore
+            for match in results["matches"]:  # type: ignore
                 meta = match["metadata"]
                 # doc_id = meta["id"]
 
@@ -180,7 +180,7 @@ class MemoryManager:
             memory_str = ""
             memory_ids = []
 
-            for match in results["matches"]:  # type:ignore
+            for match in results["matches"]:  # type: ignore
                 meta = match["metadata"]
                 doc_id = meta["id"]
 
@@ -236,7 +236,7 @@ class MemoryManager:
                             suggest_connections = resp_json["suggested_connections"]
                             new_tags = resp_json["tags_to_update"]
 
-                            note.links.extend(suggest_connections)  # type:ignore
+                            note.links.extend(suggest_connections)  # type: ignore
                             note.tags = new_tags
 
                         elif action == "update_neighbor":

@@ -14,8 +14,10 @@ from app.utils.config import settings
 from app.utils.core.redis import create_redis_client
 from app.utils.logger import setup_logging, shutdown_logging
 from app.utils.rate_limiters.core import RedisSlidingWindowLimiter
-from app.utils.rate_limiters.llm import GroqGuard, GroqModelLimit, set_groq_guard
-from app.utils.rate_limiters.tavily import TavilyGuard, TavilyLimit, set_tavily_guard
+from app.utils.rate_limiters.llm import (GroqGuard, GroqModelLimit,
+                                         set_groq_guard)
+from app.utils.rate_limiters.tavily import (TavilyGuard, TavilyLimit,
+                                            set_tavily_guard)
 
 logger = structlog.get_logger(__name__)
 origins = [
@@ -43,7 +45,7 @@ async def lifespan(app: FastAPI):
 
     app.state.langfuse = langfuse_client
     rate_limiter = RedisSlidingWindowLimiter(
-        redis=redis_client,  # type:ignore
+        redis=redis_client,  # type: ignore
         key_prefix="agent-api:rate-limit",
     )
 

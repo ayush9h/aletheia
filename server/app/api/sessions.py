@@ -143,7 +143,7 @@ async def all_chats(
         )
 
         await session.execute(
-            delete(UserSessions).where(UserSessions.user_id == user_id)  # type:ignore
+            delete(UserSessions).where(UserSessions.user_id == user_id)  # type: ignore
         )
 
         logger.info("All Sessions deleted")

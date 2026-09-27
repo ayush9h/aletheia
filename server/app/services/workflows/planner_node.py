@@ -74,7 +74,7 @@ async def planner_node(state: AgentState) -> AgentState:
     )
 
     output = await planner_llm.ainvoke(messages)
-    generated_plan = planner_parser.parse(output.content)  # type:ignore
+    generated_plan = planner_parser.parse(output.content)  # type: ignore
 
     logger.info(f"Generated Plan:{generated_plan}")
     # store the generated plan in the global state

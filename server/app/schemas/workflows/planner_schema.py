@@ -8,45 +8,47 @@ class Evidence(BaseModel):
         default=None,
         description=(
             "Identifier of the evidence in the form of #E1, #E2 etc. "
-            "Null if this step does not produce any evidence (e.g. no tool used)."
+            "Null if this step does not produce any evidence."
         ),
     )
     content: str | None = Field(
         default=None,
-        description="Output from the worker after running the tool if present",
-    )
-    tool_name: str | None = Field(
-        default=None,
-        description="Name of the tool to execute (must match TOOL_REGISTRY)",
-    )
-    tool_input: dict[str, Any] = Field(
-        default_factory=dict,
-        description="Inputs valid for the tool execution",
+        description="Output from the worker after running the tool, if present.",
     )
 
 
 class Step(BaseModel):
     step_id: int = Field(
-        description="Step number",
+        description="Step number.",
     )
     plan: str = Field(
-        description="Instruction for the worker to execute itself",
+        description="Instruction for the worker to execute.",
     )
-    evidence: Evidence = Field(description="Placeholder for the result")
-    depends_on: list[int] = Field(
-        default_factory=list,
-        description="List of step_ids that this step is depended on before its execution",
+    tool_name: str | None = Field(
+        default=None,
+        description="Name of the tool or agent to execute. Null when no tool is required.",
     )
-    next_tool_call: list[str] = Field(
-        default_factory=list,
-        description="List of tool names to be called next if the current tool succeeds",
+    tool_input: dict[str, Any] = Field(
+        default_factory=dict,
+        description="Input arguments for the selected tool or agent.",
+    )
+    evidence: Evidence = Field(
+        default_factory=Evidence,
+        description="Placeholder for the execution result.",
     )
     status: Literal[
-        "pending", "running", "success", "failed", "pending_human_approval"
-    ] = "pending"
+        "pending",
+        "running",
+        "success",
+        "failed",
+        "pending_human_approval",
+    ] = Field(
+        default="pending",
+        description="Current execution status of the step.",
+    )
 
 
 class Plan(BaseModel):
     steps: list[Step] = Field(
-        description="Ordered list of execution steps for the completion of the task",
+        description="Ordered list of execution steps for the task.",
     )

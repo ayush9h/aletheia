@@ -20,7 +20,8 @@ from app.schemas.chat_schema import ChatRequest
 from app.services.agent import graph
 from app.utils.config import settings
 from app.utils.core.dependencies import get_rate_limiter
-from app.utils.rate_limiters.core import RateLimitPolicy, RedisSlidingWindowLimiter
+from app.utils.rate_limiters.core import (RateLimitPolicy,
+                                          RedisSlidingWindowLimiter)
 
 chat_router = APIRouter(prefix="/v1")
 logger = structlog.get_logger(__name__)
@@ -213,7 +214,7 @@ async def chat_stream(
                             kind == "on_chat_model_stream"
                             and checkpoint_ns.startswith("orchestrator:")
                         ):
-                            chunk = event["data"]["chunk"]  # type:ignore
+                            chunk = event["data"]["chunk"]  # type: ignore
                             token = getattr(chunk, "content", "")
                             if token:
                                 yield sse_event("token", {"token": token})
@@ -311,7 +312,7 @@ async def chats(
         stmt = (
             select(UserChats)
             .where(UserChats.session_id == session_id)
-            .order_by(UserChats.created_at.asc())  # type:ignore
+            .order_by(UserChats.created_at.asc())  # type: ignore
         )
 
         result = await session.execute(stmt)

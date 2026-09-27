@@ -21,3 +21,4 @@ class AgentState(TypedDict):
     tools: list[str] | None
     plan: Plan
     use_memory: bool
+    tool_results: list

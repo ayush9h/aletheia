@@ -108,10 +108,10 @@ class PineconeRetriever:
             vector=vector,
             top_k=k,
             include_metadata=True,
-            filter=filter_dict,  # type:ignore
+            filter=filter_dict,  # type: ignore
         )
 
-        for match in results["matches"]:  # type:ignore
+        for match in results["matches"]:  # type: ignore
             meta = match.get("metadata", {})
             for key, value in meta.items():
                 try:

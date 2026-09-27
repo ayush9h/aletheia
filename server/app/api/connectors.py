@@ -94,7 +94,6 @@ async def store_github_connector(
         ) from e
 
 
-
 @connector_router.get(
     "",
     tags=["connectors"],

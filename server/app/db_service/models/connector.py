@@ -5,7 +5,7 @@ from sqlmodel import Field, SQLModel
 
 # ================== User Connectors ==================
 class UserConnectors(SQLModel, table=True):
-    __tablename__ = "user_connectors" #type:ignore
+    __tablename__ = "user_connectors"  # type: ignore
 
     id: int | None = Field(default=None, primary_key=True)
 
@@ -20,10 +20,6 @@ class UserConnectors(SQLModel, table=True):
 
     status: str = Field(default="connected")
 
-    created_at: datetime = Field(
-        default_factory=datetime.utcnow
-    )
+    created_at: datetime = Field(default_factory=datetime.utcnow)
 
-    updated_at: datetime = Field(
-        default_factory=datetime.utcnow
-    )
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
