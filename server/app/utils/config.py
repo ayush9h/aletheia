@@ -27,6 +27,7 @@ class Settings(BaseSettings):
     LANGFUSE_SECRET_KEY: str
     LANGFUSE_PUBLIC_KEY: str
     LANGFUSE_BASE_URL: str
+    CONNECTOR_SECRET: str
 
     model_config = SettingsConfigDict(
         env_file=ENV_FILE,

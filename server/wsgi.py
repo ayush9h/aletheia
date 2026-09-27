@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from langfuse import Langfuse, get_client
 
 from app.api.chats import chat_router
+from app.api.connectors import connector_router
 from app.api.sessions import session_router
 from app.api.user_settings import user_router
 from app.db_service.db import engine
@@ -103,3 +104,4 @@ app.add_middleware(
 app.include_router(chat_router)
 app.include_router(user_router)
 app.include_router(session_router)
+app.include_router(connector_router)
