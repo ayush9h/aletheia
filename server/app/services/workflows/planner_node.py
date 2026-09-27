@@ -12,7 +12,7 @@ from app.utils.rate_limiters.llm import get_groq_guard
 
 logger = structlog.get_logger(__name__)
 planner_llm = ChatGroq(
-    api_key=settings.GROQ_API_KEY, model="meta-llama/llama-prompt-guard-2-22m", max_tokens=1024
+    api_key=settings.GROQ_API_KEY, model="qwen/qwen3.8-27b", max_tokens=512
 )
 
 
@@ -68,9 +68,9 @@ async def planner_node(state: AgentState) -> AgentState:
     groq_guard = get_groq_guard()
 
     await groq_guard.acquire(
-        model="meta-llama/llama-prompt-guard-2-22m",
+        model="qwen/qwen3.8-27b",
         input_tokens=est_tokens(messages),
-        max_output_tokens=1024,
+        max_output_tokens=512,
     )
 
     output = await planner_llm.ainvoke(messages)

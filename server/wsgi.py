@@ -55,7 +55,7 @@ async def lifespan(app: FastAPI):
             "llama-3.1-8b-instant": GroqModelLimit(
                 rpm=settings.GROQ_META_RPM, tpm=settings.GROQ_META_TPM
             ),
-            "meta-llama/llama-prompt-guard-2-22m": GroqModelLimit(
+            "qwen/qwen3.8-27b": GroqModelLimit(
                 rpm=settings.GROQ_META_RPM, tpm=settings.GROQ_META_TPM
             ),
             "openai/gpt-oss-120b": GroqModelLimit(
