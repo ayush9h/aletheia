@@ -65,8 +65,45 @@ const MessageBubble = memo(function MessageBubble({
           )}
 
           {Boolean(message.text) && (
-            <div className="[&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&>p]:my-2 [&_table]:w-full [&_table]:table-fixed [&_th]:break-words [&_td]:break-words [&_pre]:max-w-full [&_pre]:overflow-x-auto min-w-0 max-w-full break-words leading-6">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>
+            <div className="min-w-0 max-w-full break-words leading-6 [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&>p]:my-2 [&_pre]:max-w-full [&_pre]:overflow-x-auto">
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                components={{
+                  table: ({ children }) => (
+                    <div className="my-3 w-full overflow-x-auto">
+                      <table className="min-w-[800px] border-collapse text-sm">
+                        {children}
+                      </table>
+                    </div>
+                  ),
+
+                  thead: ({ children }) => (
+                    <thead className="border-b border-stone-300">
+                      {children}
+                    </thead>
+                  ),
+
+                  th: ({ children }) => (
+                    <th className="whitespace-nowrap px-3 py-2 text-left font-semibold">
+                      {children}
+                    </th>
+                  ),
+
+                  td: ({ children }) => (
+                    <td className="px-3 py-2 align-top">
+                      {children}
+                    </td>
+                  ),
+
+                  tr: ({ children }) => (
+                    <tr className="border-b border-stone-200 last:border-b-0">
+                      {children}
+                    </tr>
+                  ),
+                }}
+              >
+                {text}
+              </ReactMarkdown>
             </div>
           )}
         </div>
