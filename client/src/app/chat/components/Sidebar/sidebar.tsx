@@ -220,9 +220,17 @@ export default function Sidebar({
 
   return (
     <>
+      {open && (
+        <button
+          type="button"
+          aria-label="Close sidebar"
+          className="fixed inset-0 z-40 hidden cursor-default bg-black/40 backdrop-blur-xl max-md:block"
+          onClick={() => onToggle(false)}
+        />
+      )}
       <aside
         aria-label="Chat sidebar"
-        className={`font-paragraph flex h-full shrink-0 flex-col overflow-hidden border-r border-stone-200 bg-stone-100/20 p-4 text-sm text-stone-800 transition-[width] duration-300 ease-in-out dark:border-stone-700/50 dark:bg-stone-800/50 dark:text-stone-200 ${open ? "w-64" : "w-16 cursor-col-resize"}`}
+        className={`font-paragraph flex h-full shrink-0 flex-col overflow-hidden border-r border-stone-200 bg-stone-100/20 p-4 text-sm text-stone-800 transition-[width,transform] duration-300 ease-in-out dark:border-stone-700/50 dark:bg-stone-800/50 dark:text-stone-200 max-md:fixed max-md:inset-y-0 max-md:left-0 max-md:z-50 max-md:w-64 max-md:shadow-2xl ${open ? "w-64 translate-x-0" : "w-16 cursor-col-resize max-md:-translate-x-full "}`}
         onClick={() => {
           if (!open) {
             onToggle(true);

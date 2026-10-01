@@ -128,11 +128,7 @@ export default function ChatPage() {
 
   return (
     <div
-      className={`h-dvh grid overflow-hidden transition-all duration-300 ${
-        sidebarOpen
-          ? "grid-cols-[16rem_minmax(0,1fr)]"
-          : "grid-cols-[4rem_minmax(0,1fr)]"
-      }`}
+      className={`relative grid h-dvh w-full overflow-hidden transition-[grid-template-columns] duration-300 ${sidebarOpen ? "grid-cols-[16rem_minmax(0,1fr)]" : "grid-cols-[4rem_minmax(0,1fr)]"} max-md:grid-cols-1`}
     >
       <Sidebar
         open={sidebarOpen}
@@ -155,6 +151,7 @@ export default function ChatPage() {
                 payload: value,
               })
             }
+            onOpenSidebar={() => setSidebarOpen(true)}
           />
         </div>
 

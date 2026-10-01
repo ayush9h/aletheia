@@ -43,7 +43,9 @@ export default function ConnectorsDialog({
 }: ConnectorsDialogProps) {
   const [search, setSearch] = useState("");
   const [connectingId, setConnectingId] = useState<string | null>(null);
-  const [connectedConnectors, setConnectedConnectors] = useState<ConnectedConnector[]>([]);
+  const [connectedConnectors, setConnectedConnectors] = useState<
+    ConnectedConnector[]
+  >([]);
   const [loadingConnectors, setLoadingConnectors] = useState(false);
 
   useEffect(() => {
@@ -55,9 +57,12 @@ export default function ConnectorsDialog({
       try {
         setLoadingConnectors(true);
 
-        const response = await fetch(`/api/connectors?user_id=${encodeURIComponent(userId)}`, {
-          cache: "no-store",
-        });
+        const response = await fetch(
+          `/api/connectors?user_id=${encodeURIComponent(userId)}`,
+          {
+            cache: "no-store",
+          },
+        );
 
         if (!response.ok) {
           throw new Error("Failed to fetch connectors");
@@ -98,7 +103,9 @@ export default function ConnectorsDialog({
         if (status === "connected") {
           setConnectedConnectors((current) => {
             const alreadyConnected = current.some(
-              (item) => item.provider === connector && item.status === "connected",
+              (item) =>
+                item.provider === connector &&
+                item.status === "connected",
             );
 
             if (alreadyConnected) {
@@ -188,8 +195,9 @@ export default function ConnectorsDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="font-paragraph max-w-lg gap-0 overflow-hidden border-stone-200 bg-white p-0 text-stone-900 dark:border-stone-700/50 dark:bg-stone-950 dark:text-stone-100">
-        <DialogHeader className="border-b border-stone-200 px-5 py-4 dark:border-stone-700/50">
+      <DialogContent className="font-paragraph flex h-[85dvh] max-h-[85dvh] w-[calc(100%-1rem)] max-w-lg flex-col gap-0 overflow-hidden border-stone-200 bg-white p-0 text-stone-900 dark:border-stone-700/50 dark:bg-stone-950 dark:text-stone-100 sm:w-[calc(100%-2rem)]">
+        {/* Header */}
+        <DialogHeader className="shrink-0 border-b border-stone-200 px-4 py-4 pr-12 dark:border-stone-700/50 sm:px-5">
           <DialogTitle className="text-base font-medium text-stone-900 dark:text-stone-100">
             Connectors
           </DialogTitle>
@@ -199,14 +207,17 @@ export default function ConnectorsDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="border-b border-yellow-200 bg-yellow-50 px-5 py-2.5 dark:border-yellow-900/60 dark:bg-yellow-950/30">
+        {/* Work in progress */}
+        <div className="shrink-0 border-b border-yellow-200 bg-yellow-50 px-4 py-2.5 dark:border-yellow-900/60 dark:bg-yellow-950/30 sm:px-5">
           <p className="text-xs font-medium text-yellow-800 dark:text-yellow-400">
             Work in progress
           </p>
         </div>
 
-        <div className="p-3">
-          <div className="mb-3 flex h-9 items-center gap-2 rounded-lg border border-stone-200 bg-stone-50 px-3 dark:border-stone-700 dark:bg-stone-900">
+        {/* Content */}
+        <div className="flex min-h-0 flex-1 flex-col p-3">
+          {/* Search */}
+          <div className="mb-3 flex h-9 shrink-0 items-center gap-2 rounded-lg border border-stone-200 bg-stone-50 px-3 dark:border-stone-700 dark:bg-stone-900">
             <Search className="h-4 w-4 shrink-0 text-stone-400 dark:text-stone-500" />
 
             <input
@@ -221,7 +232,7 @@ export default function ConnectorsDialog({
               <button
                 type="button"
                 onClick={() => setSearch("")}
-                className="cursor-pointer text-stone-400 transition-colors hover:text-stone-600 dark:text-stone-500 dark:hover:text-stone-300"
+                className="shrink-0 cursor-pointer text-stone-400 transition-colors hover:text-stone-600 dark:text-stone-500 dark:hover:text-stone-300"
                 aria-label="Clear search"
               >
                 <X className="h-3.5 w-3.5" />
@@ -229,7 +240,8 @@ export default function ConnectorsDialog({
             )}
           </div>
 
-          <div className="max-h-[420px] overflow-y-auto pr-1.5 [scrollbar-gutter:stable] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-stone-300 [&::-webkit-scrollbar-thumb:hover]:bg-stone-400 dark:[&::-webkit-scrollbar-thumb]:bg-stone-700 dark:[&::-webkit-scrollbar-thumb:hover]:bg-stone-600">
+          {/* Connector list */}
+          <div className="min-h-0 flex-1 overflow-y-auto pr-1.5 [scrollbar-gutter:stable] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-stone-300 [&::-webkit-scrollbar-thumb:hover]:bg-stone-400 dark:[&::-webkit-scrollbar-thumb]:bg-stone-700 dark:[&::-webkit-scrollbar-thumb:hover]:bg-stone-600">
             {loadingConnectors ? (
               <div className="flex items-center justify-center py-10">
                 <Loader2 className="h-4 w-4 animate-spin text-stone-400 dark:text-stone-500" />
@@ -255,7 +267,8 @@ export default function ConnectorsDialog({
                         {connectors.map((connector) => {
                           const Icon = connector.icon;
 
-                          const isConnecting = connectingId === connector.id;
+                          const isConnecting =
+                            connectingId === connector.id;
 
                           const isConnected = connectedConnectors.some(
                             (connected) =>
@@ -266,14 +279,16 @@ export default function ConnectorsDialog({
                           return (
                             <div
                               key={connector.id}
-                              className="flex items-center gap-3 rounded-lg px-2.5 py-2.5"
+                              className="flex min-w-0 items-center gap-2 rounded-lg px-2 py-2.5 sm:gap-3 sm:px-2.5"
                             >
+                              {/* Icon */}
                               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-stone-200 bg-white dark:border-stone-700 dark:bg-stone-900">
                                 <Icon className="h-4 w-4 text-stone-600 dark:text-stone-300" />
                               </span>
 
+                              {/* Connector info */}
                               <div className="min-w-0 flex-1">
-                                <span className="block text-sm font-medium text-stone-800 dark:text-stone-200">
+                                <span className="block truncate text-sm font-medium text-stone-800 dark:text-stone-200">
                                   {connector.name}
                                 </span>
 
@@ -282,25 +297,32 @@ export default function ConnectorsDialog({
                                 </span>
                               </div>
 
+                              {/* Connect button */}
                               <button
                                 type="button"
                                 disabled={isConnecting || isConnected}
-                                onClick={() => handleConnect(connector.id)}
+                                onClick={() =>
+                                  handleConnect(connector.id)
+                                }
                                 className={
                                   isConnected
-                                    ? "inline-flex h-8 min-w-[88px] shrink-0 cursor-default items-center justify-center gap-1.5 rounded-md border border-green-200 bg-green-50 px-2.5 text-xs font-medium text-green-700 dark:border-green-900/60 dark:bg-green-950/30 dark:text-green-400"
-                                    : "inline-flex h-8 min-w-[76px] shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-md border border-stone-200 bg-white px-2.5 text-xs font-medium text-stone-700 shadow-sm transition-all hover:border-stone-300 hover:bg-stone-50 hover:text-stone-900 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300 dark:hover:border-stone-600 dark:hover:bg-stone-800 dark:hover:text-stone-100"
+                                    ? "inline-flex h-8 min-w-[82px] shrink-0 cursor-default items-center justify-center gap-1.5 rounded-md border border-green-200 bg-green-50 px-2 text-xs font-medium text-green-700 dark:border-green-900/60 dark:bg-green-950/30 dark:text-green-400 sm:min-w-[88px] sm:px-2.5"
+                                    : "inline-flex h-8 min-w-[68px] shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-md border border-stone-200 bg-white px-2 text-xs font-medium text-stone-700 shadow-sm transition-all hover:border-stone-300 hover:bg-stone-50 hover:text-stone-900 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300 dark:hover:border-stone-600 dark:hover:bg-stone-800 dark:hover:text-stone-100 sm:min-w-[76px] sm:px-2.5"
                                 }
                               >
                                 {isConnecting ? (
                                   <>
                                     <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                                    <span>Connecting</span>
+                                    <span className="hidden sm:inline">
+                                      Connecting
+                                    </span>
                                   </>
                                 ) : isConnected ? (
                                   <>
                                     <Check className="h-3.5 w-3.5" />
-                                    <span>Connected</span>
+                                    <span className="hidden sm:inline">
+                                      Connected
+                                    </span>
                                   </>
                                 ) : (
                                   "Connect"

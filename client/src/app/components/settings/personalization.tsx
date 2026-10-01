@@ -58,7 +58,7 @@ export default function PersonalizationSettings({
   };
 
   return (
-    <div className="flex h-full min-h-0 flex-col">
+    <div className="min-h-0 flex-1 overflow-y-auto pr-2 sm:pr-3">
       <DialogHeader className="shrink-0 pb-5">
         <DialogTitle className="text-xl font-semibold text-stone-950 dark:text-stone-100">
           Personalization
@@ -69,10 +69,10 @@ export default function PersonalizationSettings({
         </DialogDescription>
       </DialogHeader>
 
-      <div className="min-h-0 flex-1 overflow-y-auto pr-3">
-        <div className="space-y-6 pb-6">
+      <div className="min-h-0 flex-1 overflow-y-auto pr-2 sm:pr-3">
+        <div className="space-y-6 pb-8">
           {/* Base style */}
-          <div className="flex items-center justify-between gap-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
             <div className="min-w-0">
               <h3 className="text-sm font-medium text-stone-800 dark:text-stone-200">
                 Base style and tone
@@ -87,9 +87,7 @@ export default function PersonalizationSettings({
               value={draft.baseTone}
               onValueChange={(value) => update("baseTone", value)}
             >
-              <SelectTrigger
-                className="w-40 shrink-0 border-stone-300 text-stone-700 dark:border-stone-700/50 dark:bg-stone-900 dark:text-stone-200"
-              >
+              <SelectTrigger className="w-full shrink-0 border-stone-300 text-stone-700 dark:border-stone-700/50 dark:bg-stone-900 dark:text-stone-200 sm:w-40">
                 <SelectValue placeholder="Select tone" />
               </SelectTrigger>
 
@@ -103,7 +101,7 @@ export default function PersonalizationSettings({
           </div>
 
           {/* Memory */}
-          <div className="flex items-center justify-between gap-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
             <div className="min-w-0">
               <h3 className="text-sm font-medium text-stone-800 dark:text-stone-200">
                 Memory storage
@@ -120,47 +118,12 @@ export default function PersonalizationSettings({
               role="switch"
               aria-checked={draft.memoryEnabled}
               aria-label="Toggle memory storage"
-              onClick={() =>
-                update("memoryEnabled", !draft.memoryEnabled)
-              }
-              className={`
-                relative
-                h-6
-                w-11
-                shrink-0
-                cursor-pointer
-                rounded-full
-                transition-colors
-                focus-visible:outline-none
-                focus-visible:ring-2
-                focus-visible:ring-stone-400
-                focus-visible:ring-offset-2
-                focus-visible:ring-offset-white
-                dark:focus-visible:ring-offset-stone-950
-                ${
-                  draft.memoryEnabled
-                    ? "bg-blue-500"
-                    : "bg-stone-300 dark:bg-stone-700"
-                }
-              `}
+              onClick={() => update("memoryEnabled", !draft.memoryEnabled)}
+              className={`relative h-6 w-11 shrink-0 cursor-pointer self-start rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-stone-950 sm:self-center ${draft.memoryEnabled ? "bg-blue-500" : "bg-stone-300 dark:bg-stone-700"}`}
             >
               <span
                 aria-hidden="true"
-                className={`
-                  absolute
-                  left-0.5
-                  top-0.5
-                  size-5
-                  rounded-full
-                  bg-white
-                  shadow-sm
-                  transition-transform
-                  ${
-                    draft.memoryEnabled
-                      ? "translate-x-5"
-                      : "translate-x-0"
-                  }
-                `}
+                className={`absolute left-0.5 top-0.5 size-5 rounded-full bg-white shadow-sm transition-transform ${draft.memoryEnabled ? "translate-x-5" : "translate-x-0"}`}
               />
             </button>
           </div>
@@ -196,9 +159,7 @@ export default function PersonalizationSettings({
               <input
                 value={draft.nickname}
                 placeholder="What should Aletheia call you?"
-                onChange={(event) =>
-                  update("nickname", event.target.value)
-                }
+                onChange={(event) => update("nickname", event.target.value)}
                 className="w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-sm text-stone-800 outline-none placeholder:text-stone-400 focus:border-stone-500 dark:border-stone-700/50 dark:bg-stone-900 dark:text-stone-200 dark:placeholder:text-stone-500 dark:focus:border-stone-500"
               />
             </div>
@@ -211,9 +172,7 @@ export default function PersonalizationSettings({
               <input
                 value={draft.occupation}
                 placeholder="Your profession or role"
-                onChange={(event) =>
-                  update("occupation", event.target.value)
-                }
+                onChange={(event) => update("occupation", event.target.value)}
                 className="w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-sm text-stone-800 outline-none placeholder:text-stone-400 focus:border-stone-500 dark:border-stone-700/50 dark:bg-stone-900 dark:text-stone-200 dark:placeholder:text-stone-500 dark:focus:border-stone-500"
               />
             </div>
@@ -227,9 +186,7 @@ export default function PersonalizationSettings({
                 rows={3}
                 value={draft.userHobbies}
                 placeholder="Interests, values, preferences"
-                onChange={(event) =>
-                  update("userHobbies", event.target.value)
-                }
+                onChange={(event) => update("userHobbies", event.target.value)}
                 className="w-full resize-none rounded-md border border-stone-300 bg-white px-3 py-2 text-sm text-stone-800 outline-none placeholder:text-stone-400 focus:border-stone-500 dark:border-stone-700/50 dark:bg-stone-900 dark:text-stone-200 dark:placeholder:text-stone-500 dark:focus:border-stone-500"
               />
             </div>
@@ -238,7 +195,7 @@ export default function PersonalizationSettings({
       </div>
 
       {/* Footer */}
-      <div className="flex shrink-0 justify-end gap-2 pt-4">
+      <div className="flex shrink-0 justify-end gap-2 border-t border-stone-200 bg-white pt-4 dark:border-stone-700/50 dark:bg-stone-900">
         <Button
           type="button"
           variant="outline"

@@ -9,7 +9,7 @@
 import Image from "next/image";
 import { useState, type Dispatch } from "react";
 import { signOut, useSession } from "next-auth/react";
-import { ExitIcon, GearIcon } from "@radix-ui/react-icons";
+import { ExitIcon, GearIcon, HamburgerMenuIcon } from "@radix-ui/react-icons";
 
 import {
   DropdownMenu,
@@ -29,12 +29,14 @@ type NavbarProps = {
   userPref: UserPrefProps;
   setUserPref: Dispatch<UserPrefProps>;
   dispatch: Dispatch<ChatAction>;
+  onOpenSidebar?: () => void;
 };
 
 export default function Navbar({
   userPref,
   setUserPref,
   dispatch,
+  onOpenSidebar
 }: NavbarProps) {
   const { data: session, status } = useSession();
 
@@ -68,7 +70,15 @@ export default function Navbar({
 
   return (
     <nav aria-label="Account navigation">
-      <div className="flex items-center justify-end bg-stone-100/40 px-6 py-2 dark:bg-stone-800/60">
+      <div className="flex items-center justify-between bg-stone-100/40 px-4 py-2 dark:bg-stone-950/40 md:justify-end md:px-6">
+        <button
+          type="button"
+          aria-label="Open sidebar"
+          onClick={onOpenSidebar}
+          className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-stone-600 transition-colors hover:bg-stone-200 dark:text-stone-300 dark:hover:bg-stone-800 md:hidden"
+        >
+          <HamburgerMenuIcon className="size-4" />
+        </button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button

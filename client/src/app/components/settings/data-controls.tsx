@@ -48,43 +48,20 @@ export default function DataControls({
       </DialogHeader>
 
       <div className="mt-8">
-        <div className="grid grid-cols-[minmax(0,1fr)_7rem] items-center gap-6">
+        <div className="flex flex-col gap-5 sm:grid sm:grid-cols-[minmax(0,1fr)_7rem] sm:items-center sm:gap-6">
           <div className="min-w-0 text-left">
             <h3 className="text-sm font-medium text-stone-800 dark:text-stone-200">
               Delete all chats
             </h3>
-
             <p className="mt-1 max-w-lg text-xs leading-5 text-stone-500 dark:text-stone-400">
-              Permanently delete your entire chat history. This action cannot
-              be undone.
+              Permanently delete your entire chat history. This action cannot be undone.
             </p>
           </div>
 
           <Button
             onClick={handleDeleteAll}
             disabled={isDeletingChats}
-            className="
-              cursor-pointer
-              justify-self-end
-              whitespace-nowrap
-              rounded-md
-              border
-              border-red-500
-              bg-red-50
-              px-4
-              py-2
-              text-xs
-              font-medium
-              text-red-500
-              transition-all
-              hover:bg-red-100
-              disabled:cursor-not-allowed
-              disabled:opacity-60
-              dark:border-red-900
-              dark:bg-red-950/30
-              dark:text-red-400
-              dark:hover:bg-red-950/50
-            "
+            className="w-fit cursor-pointer whitespace-nowrap rounded-md border border-red-500 bg-red-50 px-4 py-2 text-xs font-medium text-red-500 transition-all hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-red-900 dark:bg-red-950/30 dark:text-red-400 dark:hover:bg-red-950/50 sm:justify-self-end"
           >
             {isDeletingChats ? "Deleting..." : "Delete all"}
           </Button>

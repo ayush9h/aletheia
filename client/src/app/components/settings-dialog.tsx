@@ -55,19 +55,13 @@ export function SettingsDialog(settingsProps: SettingsDialogProps) {
   }
 
   return (
-    <Dialog
-      open={settingsProps.open}
-      onOpenChange={settingsProps.onOpenChange}
-    >
-      <DialogContent
-        className="font-paragraph h-[85dvh] max-h-[85dvh] max-w-2xl overflow-hidden  border-stone-200 p-0  text-stone-900  dark:border-stone-700/50  dark:text-stone-100"
-      >
+    <Dialog open={settingsProps.open} onOpenChange={settingsProps.onOpenChange}>
+      <DialogContent className="font-paragraph h-[85dvh] max-h-[85dvh] w-[calc(100%-1.5rem)] max-w-2xl overflow-hidden border-stone-200 p-0 text-stone-900 dark:border-stone-700/50 dark:bg-stone-900 dark:text-stone-100 sm:w-[calc(100%-2rem)]">
         <DialogTitle className="sr-only">Settings</DialogTitle>
-        <div className="flex h-full min-h-0">
-          <aside
-            className="w-48 shrink-0 border-r border-stone-200 bg-stone-50 p-5 dark:border-stone-700/50 dark:bg-stone-800/50"
-          >
-            <div className="space-y-2 text-xs">
+
+        <div className="flex h-full min-h-0 flex-col md:flex-row">
+          <aside className="shrink-0 border-b border-stone-200 bg-stone-50 dark:border-stone-700/50 dark:bg-stone-950 md:w-48 md:border-b-0 md:border-r md:p-5">
+            <div className="flex gap-1 overflow-x-auto p-3 md:flex-col md:gap-2 md:overflow-visible md:p-0">
               {SETTING_SECTIONS.map((section) => {
                 const Icon = section.icon;
                 const isActive = activeSection === section.id;
@@ -77,18 +71,18 @@ export function SettingsDialog(settingsProps: SettingsDialogProps) {
                     key={section.id}
                     type="button"
                     onClick={() => setActiveSection(section.id)}
-                    className={`flex w-full cursor-pointer items-center gap-2 rounded-md p-2 text-left transition-colors ${isActive ? "bg-stone-200 text-stone-900 dark:bg-stone-800 dark:text-stone-100" : "text-stone-700 hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-200"}`}
+                    className={`flex shrink-0 cursor-pointer items-center gap-2 rounded-md p-2 text-left text-xs transition-colors md:w-full ${isActive ? "bg-stone-200 text-stone-900 dark:bg-stone-800 dark:text-stone-100" : "text-stone-700 hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-200"}`}
                   >
-                    <Icon aria-hidden="true" className="size-4" />
-                    {section.label}
+                    <Icon aria-hidden="true" className="size-4 shrink-0" />
+                    <span className="whitespace-nowrap">{section.label}</span>
                   </button>
                 );
               })}
             </div>
           </aside>
 
-          <main className="min-h-0 min-w-0 flex-1 overflow-hidden bg-white p-6 dark:bg-stone-800/60">
-            {renderSection()}
+          <main className="flex min-h-0 min-w-0 flex-1 overflow-hidden bg-white p-4 dark:bg-stone-900 sm:p-6">
+              {renderSection()}
           </main>
         </div>
       </DialogContent>

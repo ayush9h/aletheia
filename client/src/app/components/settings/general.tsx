@@ -36,9 +36,9 @@ export default function GeneralSettings() {
         </DialogDescription>
       </DialogHeader>
 
-      <div className="min-h-0 flex-1 overflow-y-auto pr-3">
+      <div className="min-h-0 flex-1 overflow-y-auto pr-2 sm:pr-3">
         <div className="space-y-6 pb-6">
-          <div className="flex items-center justify-between gap-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
             <div className="min-w-0">
               <h3 className="text-sm font-medium text-stone-800 dark:text-stone-200">
                 Theme
@@ -52,7 +52,7 @@ export default function GeneralSettings() {
             <div
               role="group"
               aria-label="Theme"
-              className="flex shrink-0 rounded-lg border border-stone-300 bg-stone-50 p-1 dark:border-stone-700 dark:bg-stone-900"
+              className="flex w-fit shrink-0 rounded-lg border border-stone-300 bg-stone-50 p-1 dark:border-stone-700 dark:bg-stone-900"
             >
               <button
                 type="button"
