@@ -40,7 +40,7 @@ export default function PlanPanel({ plan }: PlanPanelProps) {
 
       {/* Clean Step List */}
       {isOpen && (
-        <div className="mt-1 ml-1.5 space-y-2 border-l border-stone-200 py-1 pl-2.5 dark:border-stone-800">
+        <div className="mt-1 ml-1.5 space-y-2 border-l border-stone-200 py-1 pl-2.5 dark:border-stone-700/50">
           {plan.steps.map((step) => (
             <div
               key={step.step_id}

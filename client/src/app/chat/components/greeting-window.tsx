@@ -1,4 +1,5 @@
 "use client";
+
 /**
  * GreetingWindow
  *
@@ -32,7 +33,7 @@ export default function GreetingWindow({ userName }: { userName: string }) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3, ease: "easeOut" }}
-          className="font-paragraph text-center text-2xl text-stone-800"
+          className="font-paragraph text-center text-2xl text-stone-800 dark:text-stone-100"
         >
           {greeting}
         </motion.h1>

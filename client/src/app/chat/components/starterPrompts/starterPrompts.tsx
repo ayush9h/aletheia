@@ -21,36 +21,31 @@ const STARTER_PROMPTS: StarterPrompt[] = [
     id: "plan",
     label: "Plan my day",
     icon: CalendarDays,
-    prompt:
-      "Help me plan my day based on what I need to get done.",
+    prompt: "Help me plan my day based on what I need to get done.",
   },
   {
     id: "learn",
     label: "Explain something",
     icon: MessageCircleQuestion,
-    prompt:
-      "Explain a concept to me in simple terms with a practical example.",
+    prompt: "Explain a concept to me in simple terms with a practical example.",
   },
   {
     id: "ideas",
     label: "Brainstorm ideas",
     icon: Lightbulb,
-    prompt:
-      "Help me brainstorm some useful ideas for what I can work on today.",
+    prompt: "Help me brainstorm some useful ideas for what I can work on today.",
   },
   {
     id: "organize",
     label: "Organize my thoughts",
     icon: ListChecks,
-    prompt:
-      "Help me organize my thoughts and turn them into a clear plan.",
+    prompt: "Help me organize my thoughts and turn them into a clear plan.",
   },
   {
     id: "improve",
     label: "Improve my writing",
     icon: Pen,
-    prompt:
-      "Improve this text so it sounds clear, natural, and professional.",
+    prompt: "Improve this text so it sounds clear, natural, and professional.",
   },
 ];
 
@@ -92,30 +87,9 @@ export default function StarterPrompts({
                 delay: index * 0.035,
               }}
               onClick={() => onPromptSelect(item.prompt)}
-              className={[
-                "group flex h-9 items-center gap-1.5",
-                "cursor-pointer whitespace-nowrap",
-                "rounded-lg border",
-                "border-stone-200",
-                "bg-white",
-                "px-3",
-                "text-[12px] font-medium text-stone-600",
-                "transition-all duration-150",
-                "hover:border-blue-200",
-                "hover:bg-blue-50/70",
-                "hover:text-blue-700",
-
-              ].join(" ")}
+              className="group flex h-9 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-lg border border-stone-200 bg-white px-3 text-[12px] font-medium text-stone-600 transition-all duration-150 hover:border-blue-200 hover:bg-blue-50/70 hover:text-blue-700 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300 dark:hover:border-blue-800 dark:hover:bg-blue-950/40 dark:hover:text-blue-300"
             >
-              <Icon
-                className={[
-                  "h-3.5 w-3.5",
-                  "text-stone-400",
-                  "transition-colors duration-150",
-                  "group-hover:text-blue-500",
-                ].join(" ")}
-              />
-
+              <Icon className="h-3.5 w-3.5 text-stone-400 transition-colors duration-150 group-hover:text-blue-500 dark:text-stone-500 dark:group-hover:text-blue-400" />
               <span>{item.label}</span>
             </motion.button>
           );

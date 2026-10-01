@@ -4,7 +4,8 @@ import "./globals.css";
 import { SessionProvider } from "next-auth/react";
 import { auth } from "./auth";
 import { TooltipProvider } from "./components/ui/tooltip";
-import {Toaster} from 'sonner'
+import { Toaster } from 'sonner'
+import { ThemeProvider } from "next-themes";
 
 const headerFont = Poiret_One({
   subsets: ["latin"],
@@ -32,16 +33,18 @@ export default async function RootLayout({
 }>) {
   const session = await auth();
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${headerFont.variable} ${paragraphFont.variable} antialiased`}
       >
-        <TooltipProvider>
-          <SessionProvider session={session}>
-            {children}
-            <Toaster position="bottom-right" />
-          </SessionProvider>
-        </TooltipProvider>
+        <ThemeProvider  attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+          <TooltipProvider>
+            <SessionProvider session={session}>
+              {children}
+              <Toaster position="bottom-right" />
+            </SessionProvider>
+          </TooltipProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

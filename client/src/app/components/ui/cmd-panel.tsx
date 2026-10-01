@@ -34,28 +34,28 @@ export function SessionSearchDialog({
       label="Search chats"
       loop
       overlayClassName="fixed inset-0 z-40 bg-black/30 backdrop-blur-[1px]"
-      contentClassName="fixed left-1/2 top-1/4 z-50 w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 overflow-hidden rounded-lg border border-stone-200 bg-stone-50 shadow-xl"
+      contentClassName="fixed left-1/2 top-1/4 z-50 w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 overflow-hidden rounded-lg border border-stone-200 bg-stone-50 shadow-xl dark:border-stone-700/50 dark:bg-stone-900 dark:shadow-black/30"
       className="font-paragraph"
     >
       <DialogPrimitive.Title className="sr-only">
         Search chats
       </DialogPrimitive.Title>
 
-      <div className="flex items-center gap-2 border-b border-stone-200 px-3">
+      <div className="flex items-center gap-2 border-b border-stone-200 px-3 dark:border-stone-700/50">
         <MagnifyingGlassIcon
           aria-hidden="true"
-          className="h-4 w-4 shrink-0 text-stone-400"
+          className="h-4 w-4 shrink-0 text-stone-400 dark:text-stone-500"
         />
 
         <Command.Input
           autoFocus
           placeholder="Search chats..."
-          className="h-12 w-full bg-transparent text-sm outline-none placeholder:text-stone-400"
+          className="h-12 w-full bg-transparent text-sm text-stone-900 outline-none placeholder:text-stone-400 dark:text-stone-100 dark:placeholder:text-stone-500"
         />
       </div>
 
       <Command.List className="max-h-80 overflow-y-auto p-1.5">
-        <Command.Empty className="p-8 text-center text-sm text-stone-500">
+        <Command.Empty className="p-8 text-center text-sm text-stone-500 dark:text-stone-400">
           No chats found.
         </Command.Empty>
 
@@ -68,11 +68,11 @@ export function SessionSearchDialog({
               value={`session-${session.session_id}`}
               keywords={[title]}
               onSelect={() => handleSelect(session.session_id)}
-              className="data-[selected=true]:bg-stone-200 data-[selected=true]:text-stone-950 flex cursor-pointer items-center gap-3 rounded-md px-3 py-2.5 text-sm text-stone-700 outline-none"
+              className="flex cursor-pointer items-center gap-3 rounded-md px-3 py-2.5 text-sm text-stone-700 outline-none data-[selected=true]:bg-stone-200 data-[selected=true]:text-stone-950 dark:text-stone-300 dark:data-[selected=true]:bg-stone-800 dark:data-[selected=true]:text-stone-100"
             >
               <ChatBubbleIcon
                 aria-hidden="true"
-                className="h-4 w-4 shrink-0 text-stone-500"
+                className="h-4 w-4 shrink-0 text-stone-500 dark:text-stone-400"
               />
 
               <span className="min-w-0 flex-1 truncate">{title}</span>

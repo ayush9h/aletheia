@@ -68,13 +68,13 @@ export default function Navbar({
 
   return (
     <nav aria-label="Account navigation">
-      <div className="flex items-center justify-end px-6 py-2 bg-stone-100/40">
+      <div className="flex items-center justify-end bg-stone-100/40 px-6 py-2 dark:bg-stone-800/60">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button
               type="button"
               aria-label={`Open account menu for ${displayName}`}
-              className="size-[2.25rem] flex cursor-pointer items-center justify-center rounded-full bg-stone-200"
+              className="flex size-[2.25rem] cursor-pointer items-center justify-center rounded-full bg-stone-200 dark:bg-stone-800"
             >
               {avatarUrl ? (
                 <Image
@@ -87,7 +87,7 @@ export default function Navbar({
               ) : (
                 <span
                   aria-hidden="true"
-                  className="text-sm font-medium text-stone-700"
+                  className="text-sm font-medium text-stone-700 dark:text-stone-200"
                 >
                   {fallbackInitial}
                 </span>
@@ -98,24 +98,24 @@ export default function Navbar({
           <DropdownMenuContent
             align="end"
             sideOffset={8}
-            className="font-paragraph"
+            className="font-paragraph dark:border-stone-700 dark:bg-stone-900"
           >
-            <DropdownMenuLabel>
+            <DropdownMenuLabel className="dark:text-stone-200">
               <div className="flex flex-col">
                 <span>{displayName}</span>
 
                 {session.user.email && (
-                  <span className="max-w-56 text-muted-foreground truncate text-xs font-normal">
+                  <span className="max-w-56 truncate text-xs font-normal text-muted-foreground dark:text-stone-400">
                     {session.user.email}
                   </span>
                 )}
               </div>
             </DropdownMenuLabel>
 
-            <DropdownMenuSeparator />
+            <DropdownMenuSeparator className="dark:bg-stone-700" />
 
             <DropdownMenuItem
-              className="cursor-pointer"
+              className="cursor-pointer dark:text-stone-200 dark:focus:bg-stone-800 dark:focus:text-stone-100"
               onSelect={() => setSettingsOpen(true)}
             >
               Settings
@@ -124,17 +124,14 @@ export default function Navbar({
               </DropdownMenuShortcut>
             </DropdownMenuItem>
 
-            <DropdownMenuSeparator />
+            <DropdownMenuSeparator className="dark:bg-stone-700" />
 
             <DropdownMenuItem
               disabled={isSigningOut}
               onSelect={() => {
                 void handleSignOut();
               }}
-              className="
-                data-[highlighted]:bg-red-50 data-[highlighted]:text-red-600 dark:focus:bg-red-950/30 dark:data-[highlighted]:bg-red-950/30 cursor-pointer text-red-500 focus:bg-red-50
-                focus:text-red-600
-              "
+              className="cursor-pointer text-red-500 focus:bg-red-50 focus:text-red-600 data-[highlighted]:bg-red-50 data-[highlighted]:text-red-600 dark:text-red-400 dark:focus:bg-red-950/30 dark:focus:text-red-400 dark:data-[highlighted]:bg-red-950/30 dark:data-[highlighted]:text-red-400"
             >
               {isSigningOut ? "Logging out..." : "Log out"}
 

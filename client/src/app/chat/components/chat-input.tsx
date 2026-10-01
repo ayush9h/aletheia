@@ -1,4 +1,5 @@
 "use client";
+
 /**
  * ChatInput renders the primary message composer.
  *
@@ -8,14 +9,16 @@
  * - Expose send + future attachment entry points
  */
 
-import { ArrowRightIcon, Cross2Icon } from "@radix-ui/react-icons";
+import { useMemo } from "react";
+import { ArrowRightIcon, Cross2Icon, CaretDownIcon } from "@radix-ui/react-icons";
 import { Mic, Square } from "lucide-react";
 import TextareaAutosize from "react-textarea-autosize";
+import Image from "next/image";
+
 import { inputProps } from "@/app/types/chats/chats.type";
 import { useSpeechToText } from "@/app/components/voice/speech-text";
 import { options } from "@/app/components/input-options";
 import InputOptions from "@/app/components/input-options";
-import { useMemo } from "react";
 import { MODEL_GROUPS } from "@/app/config/models";
 import {
   DropdownMenu,
@@ -25,8 +28,6 @@ import {
   DropdownMenuTrigger,
 } from "@/app/components/ui/dropdown-menu";
 import AppTooltip from "@/app/components/ui/app-tooltip";
-import { CaretDownIcon } from "@radix-ui/react-icons";
-import Image from "next/image";
 import { Button } from "@/app/components/ui/button";
 import StarterPrompts from "./starterPrompts/starterPrompts";
 
@@ -39,7 +40,7 @@ export default function ChatInput(inputProps: inputProps) {
   const currentModel = useMemo(() => {
     return (
       MODEL_GROUPS.flatMap((g) => g.models).find(
-        (m) => m.value === inputProps.selectedModel
+        (m) => m.value === inputProps.selectedModel,
       )?.label ?? "Select model"
     );
   }, [inputProps.selectedModel]);
@@ -66,10 +67,7 @@ export default function ChatInput(inputProps: inputProps) {
 
   return (
     <div className="font-paragraph mx-auto w-full max-w-3xl rounded-xl">
-
-      <div className="flex flex-col rounded-xl bg-white shadow-[0_1px_6px_rgba(0,0,0,0.025)]
- border focus-within:border-blue-500">
-
+      <div className="flex flex-col rounded-xl border border-stone-200 bg-white shadow-[0_1px_6px_rgba(0,0,0,0.025)] focus-within:border-blue-500 dark:border-stone-700/50 dark:bg-stone-800/50 dark:shadow-none dark:focus-within:border-blue-500">
         {/* User Input */}
         <TextareaAutosize
           value={inputProps.value}
@@ -86,35 +84,33 @@ export default function ChatInput(inputProps: inputProps) {
               handleSend();
             }
           }}
-          className="max-h-[10rem] w-full resize-none overflow-y-auto bg-transparent p-3 text-sm outline-none"
+          className="max-h-[10rem] w-full resize-none overflow-y-auto bg-transparent p-3 text-sm text-stone-900 outline-none placeholder:text-stone-400 dark:text-stone-100 dark:placeholder:text-stone-500"
           minRows={1}
           maxRows={6}
           placeholder={isListening ? "Listening…" : "Ask anything"}
           aria-label="Message"
         />
-        <div className="flex items-center justify-between border-t p-2">
-          {/* Options Button */}
+
+        <div className="flex items-center justify-between border-t border-stone-200 p-2 dark:border-stone-700/50">
+          {/* Options */}
           <div className="flex items-center gap-3">
             <div>
               <InputOptions tools={optionList} setTools={setOptionList} />
             </div>
 
-            {/* Show the tool label from the tools key */}
             {optionList.map((item) => {
               const tool = options.find((o) => o.key === item);
 
               return (
-                <div
-                  key={item}
-                  className="flex items-center gap-1 rounded-lg bg-blue-200 px-2 py-1 text-xs  text-blue-600"
-                >
+                <div key={item} className="flex items-center gap-1 rounded-lg bg-blue-100 px-2 py-1 text-xs text-blue-600 dark:bg-blue-950/50 dark:text-blue-400">
                   <span>{tool?.toolLabel}</span>
 
                   <button
+                    type="button"
                     onClick={() =>
                       setOptionList(optionList.filter((i) => i !== item))
                     }
-                    className="ml-1 cursor-pointer hover:text-blue-800"
+                    className="ml-1 cursor-pointer text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
                   >
                     <Cross2Icon className="h-4 w-4" />
                   </button>
@@ -123,7 +119,7 @@ export default function ChatInput(inputProps: inputProps) {
             })}
           </div>
 
-          {/* Model selector + Send, grouped so the selector sits right before send */}
+          {/* Model selector + Send */}
           <div className="ml-3 flex shrink-0 items-center gap-1">
             {/* Model selector */}
             <DropdownMenu>
@@ -131,19 +127,19 @@ export default function ChatInput(inputProps: inputProps) {
                 <DropdownMenuTrigger asChild>
                   <button
                     type="button"
-                    className="font-paragraph flex h-8 items-center gap-1 rounded-lg px-2.5 text-sm text-stone-600 transition-colors hover:bg-stone-100"
+                    className="font-paragraph flex h-8 items-center gap-1 rounded-lg px-2.5 text-sm text-stone-600 transition-colors hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800"
                   >
                     {currentModel}
 
-                    <CaretDownIcon className="h-3.5 w-3.5 text-stone-400" />
+                    <CaretDownIcon className="h-3.5 w-3.5 text-stone-400 dark:text-stone-500" />
                   </button>
                 </DropdownMenuTrigger>
               </AppTooltip>
 
-              <DropdownMenuContent align="end" className="font-paragraph w-56">
+              <DropdownMenuContent align="end" className="font-paragraph w-56 dark:border-stone-700 dark:bg-stone-900">
                 {MODEL_GROUPS.map((group) => (
                   <div key={group.provider}>
-                    <DropdownMenuLabel className="flex items-center gap-2 text-xs text-stone-500">
+                    <DropdownMenuLabel className="flex items-center gap-2 text-xs text-stone-500 dark:text-stone-400">
                       <Image
                         src={group.url}
                         alt=""
@@ -161,7 +157,7 @@ export default function ChatInput(inputProps: inputProps) {
                         onSelect={() => {
                           inputProps.setSelectedModel(model.value);
                         }}
-                        className="cursor-pointer pl-8 text-xs"
+                        className="cursor-pointer pl-8 text-xs dark:text-stone-200 dark:focus:bg-stone-800 dark:focus:text-stone-100"
                       >
                         {model.label}
                       </DropdownMenuItem>
@@ -186,8 +182,8 @@ export default function ChatInput(inputProps: inputProps) {
                   className={[
                     "flex h-8 w-8 cursor-pointer items-center justify-center rounded-md transition-colors",
                     isListening
-                      ? "bg-red-100 text-red-600 hover:bg-red-200"
-                      : "text-stone-600 hover:bg-stone-100",
+                      ? "bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-950/50 dark:text-red-400 dark:hover:bg-red-950/70"
+                      : "text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800",
                   ].join(" ")}
                 >
                   {isListening ? (
@@ -204,7 +200,7 @@ export default function ChatInput(inputProps: inputProps) {
               <Button
                 onClick={handleSend}
                 disabled={!inputProps.value.trim()}
-                className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md bg-blue-600  hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md bg-blue-600 hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <ArrowRightIcon className="h-4 w-4 text-white" />
               </Button>
@@ -212,6 +208,7 @@ export default function ChatInput(inputProps: inputProps) {
           </div>
         </div>
       </div>
+      <p className="text-center md:text-xs mt-2 text-stone-800 dark:text-stone-400">Aletheia can make mistakes. Check important information.</p>
 
       <StarterPrompts
         show={inputProps.showStarterPrompts ?? false}

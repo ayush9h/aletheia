@@ -7,7 +7,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/app/components/ui/dialog";
+
 import { Button } from "@/app/components/ui/button";
+
 import {
   Select,
   SelectContent,
@@ -33,7 +35,7 @@ export default function PersonalizationSettings({
 
   const update = <K extends keyof UserPrefProps>(
     key: K,
-    value: UserPrefProps[K]
+    value: UserPrefProps[K],
   ) => {
     setDraft((current) => ({
       ...current,
@@ -57,27 +59,26 @@ export default function PersonalizationSettings({
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      {/* Fixed header */}
       <DialogHeader className="shrink-0 pb-5">
-        <DialogTitle className="text-stone-950 text-xl font-semibold">
+        <DialogTitle className="text-xl font-semibold text-stone-950 dark:text-stone-100">
           Personalization
         </DialogTitle>
 
-        <DialogDescription className="text-stone-500">
+        <DialogDescription className="text-stone-500 dark:text-stone-400">
           Customize how Aletheia responds to you.
         </DialogDescription>
       </DialogHeader>
 
-      {/* Only this section scrolls */}
       <div className="min-h-0 flex-1 overflow-y-auto pr-3">
         <div className="space-y-6 pb-6">
+          {/* Base style */}
           <div className="flex items-center justify-between gap-6">
             <div className="min-w-0">
-              <h3 className="text-sm font-medium text-stone-800">
+              <h3 className="text-sm font-medium text-stone-800 dark:text-stone-200">
                 Base style and tone
               </h3>
 
-              <p className="mt-1 text-xs leading-5 text-stone-500">
+              <p className="mt-1 text-xs leading-5 text-stone-500 dark:text-stone-400">
                 This controls response personality, not capability.
               </p>
             </div>
@@ -86,11 +87,13 @@ export default function PersonalizationSettings({
               value={draft.baseTone}
               onValueChange={(value) => update("baseTone", value)}
             >
-              <SelectTrigger className="w-40 shrink-0 text-stone-700">
+              <SelectTrigger
+                className="w-40 shrink-0 border-stone-300 text-stone-700 dark:border-stone-700/50 dark:bg-stone-900 dark:text-stone-200"
+              >
                 <SelectValue placeholder="Select tone" />
               </SelectTrigger>
 
-              <SelectContent className="font-paragraph">
+              <SelectContent className="font-paragraph dark:border-stone-700/50 dark:bg-stone-900">
                 <SelectItem value="Efficient">Efficient</SelectItem>
                 <SelectItem value="Balanced">Balanced</SelectItem>
                 <SelectItem value="Creative">Creative</SelectItem>
@@ -99,15 +102,16 @@ export default function PersonalizationSettings({
             </Select>
           </div>
 
+          {/* Memory */}
           <div className="flex items-center justify-between gap-6">
             <div className="min-w-0">
-              <h3 className="text-sm font-medium text-stone-800">
+              <h3 className="text-sm font-medium text-stone-800 dark:text-stone-200">
                 Memory storage
               </h3>
 
-              <p className="mt-1 text-xs leading-5 text-stone-500">
-                Allow Aletheia to remember useful details and personalize future
-                conversations.
+              <p className="mt-1 text-xs leading-5 text-stone-500 dark:text-stone-400">
+                Allow Aletheia to remember useful details and personalize
+                future conversations.
               </p>
             </div>
 
@@ -116,22 +120,54 @@ export default function PersonalizationSettings({
               role="switch"
               aria-checked={draft.memoryEnabled}
               aria-label="Toggle memory storage"
-              onClick={() => update("memoryEnabled", !draft.memoryEnabled)}
-              className={`relative h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-400 focus-visible:ring-offset-2 ${
-                draft.memoryEnabled ? "bg-blue-500" : "bg-stone-300"
-              }`}
+              onClick={() =>
+                update("memoryEnabled", !draft.memoryEnabled)
+              }
+              className={`
+                relative
+                h-6
+                w-11
+                shrink-0
+                cursor-pointer
+                rounded-full
+                transition-colors
+                focus-visible:outline-none
+                focus-visible:ring-2
+                focus-visible:ring-stone-400
+                focus-visible:ring-offset-2
+                focus-visible:ring-offset-white
+                dark:focus-visible:ring-offset-stone-950
+                ${
+                  draft.memoryEnabled
+                    ? "bg-blue-500"
+                    : "bg-stone-300 dark:bg-stone-700"
+                }
+              `}
             >
               <span
                 aria-hidden="true"
-                className={`size-5 absolute left-0.5 top-0.5 rounded-full bg-white shadow-sm transition-transform ${
-                  draft.memoryEnabled ? "translate-x-5" : "translate-x-0"
-                }`}
+                className={`
+                  absolute
+                  left-0.5
+                  top-0.5
+                  size-5
+                  rounded-full
+                  bg-white
+                  shadow-sm
+                  transition-transform
+                  ${
+                    draft.memoryEnabled
+                      ? "translate-x-5"
+                      : "translate-x-0"
+                  }
+                `}
               />
             </button>
           </div>
 
+          {/* Custom instructions */}
           <div className="space-y-2">
-            <h3 className="text-xs font-medium text-stone-700">
+            <h3 className="text-xs font-medium text-stone-700 dark:text-stone-300">
               Custom instructions
             </h3>
 
@@ -142,37 +178,48 @@ export default function PersonalizationSettings({
               onChange={(event) =>
                 update("userCustomInstruction", event.target.value)
               }
-              className="w-full resize-none rounded-md border border-stone-300 px-3 py-2 text-sm text-stone-800 outline-none placeholder:text-stone-400 focus:border-stone-500"
+              className="w-full resize-none rounded-md border border-stone-300 bg-white px-3 py-2 text-sm text-stone-800 outline-none placeholder:text-stone-400 focus:border-stone-500 dark:border-stone-700/50 dark:bg-stone-900 dark:text-stone-200 dark:placeholder:text-stone-500 dark:focus:border-stone-500"
             />
           </div>
 
+          {/* About you */}
           <div className="space-y-4">
-            <h3 className="font-semibold text-stone-900">About you</h3>
+            <h3 className="font-semibold text-stone-900 dark:text-stone-100">
+              About you
+            </h3>
 
             <div className="space-y-2">
-              <h3 className="text-xs font-medium text-stone-700">Nickname</h3>
+              <h3 className="text-xs font-medium text-stone-700 dark:text-stone-300">
+                Nickname
+              </h3>
 
               <input
                 value={draft.nickname}
                 placeholder="What should Aletheia call you?"
-                onChange={(event) => update("nickname", event.target.value)}
-                className="w-full rounded-md border border-stone-300 px-3 py-2 text-sm text-stone-800 outline-none placeholder:text-stone-400 focus:border-stone-500"
+                onChange={(event) =>
+                  update("nickname", event.target.value)
+                }
+                className="w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-sm text-stone-800 outline-none placeholder:text-stone-400 focus:border-stone-500 dark:border-stone-700/50 dark:bg-stone-900 dark:text-stone-200 dark:placeholder:text-stone-500 dark:focus:border-stone-500"
               />
             </div>
 
             <div className="space-y-2">
-              <h3 className="text-xs font-medium text-stone-700">Occupation</h3>
+              <h3 className="text-xs font-medium text-stone-700 dark:text-stone-300">
+                Occupation
+              </h3>
 
               <input
                 value={draft.occupation}
                 placeholder="Your profession or role"
-                onChange={(event) => update("occupation", event.target.value)}
-                className="w-full rounded-md border border-stone-300 px-3 py-2 text-sm text-stone-800 outline-none placeholder:text-stone-400 focus:border-stone-500"
+                onChange={(event) =>
+                  update("occupation", event.target.value)
+                }
+                className="w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-sm text-stone-800 outline-none placeholder:text-stone-400 focus:border-stone-500 dark:border-stone-700/50 dark:bg-stone-900 dark:text-stone-200 dark:placeholder:text-stone-500 dark:focus:border-stone-500"
               />
             </div>
 
             <div className="space-y-2">
-              <h3 className="text-xs font-medium text-stone-700">
+              <h3 className="text-xs font-medium text-stone-700 dark:text-stone-300">
                 More about you
               </h3>
 
@@ -180,21 +227,24 @@ export default function PersonalizationSettings({
                 rows={3}
                 value={draft.userHobbies}
                 placeholder="Interests, values, preferences"
-                onChange={(event) => update("userHobbies", event.target.value)}
-                className="w-full resize-none rounded-md border border-stone-300 px-3 py-2 text-sm text-stone-800 outline-none placeholder:text-stone-400 focus:border-stone-500"
+                onChange={(event) =>
+                  update("userHobbies", event.target.value)
+                }
+                className="w-full resize-none rounded-md border border-stone-300 bg-white px-3 py-2 text-sm text-stone-800 outline-none placeholder:text-stone-400 focus:border-stone-500 dark:border-stone-700/50 dark:bg-stone-900 dark:text-stone-200 dark:placeholder:text-stone-500 dark:focus:border-stone-500"
               />
             </div>
           </div>
         </div>
       </div>
 
-      <div className="flex shrink-0 justify-end gap-2  bg-white pt-4">
+      {/* Footer */}
+      <div className="flex shrink-0 justify-end gap-2 pt-4">
         <Button
           type="button"
           variant="outline"
           disabled={isSaving}
           onClick={() => onOpenChange(false)}
-          className="cursor-pointer text-stone-700 transition-all duration-150 ease-out active:translate-y-px active:scale-[0.98]"
+          className="cursor-pointer border-stone-300 text-stone-700 transition-all duration-150 ease-out active:translate-y-px active:scale-[0.98] dark:border-stone-700/50 dark:bg-stone-900 dark:text-stone-300 dark:hover:bg-stone-800"
         >
           Cancel
         </Button>
@@ -203,7 +253,7 @@ export default function PersonalizationSettings({
           type="button"
           disabled={isSaving}
           onClick={() => void handleSubmit()}
-          className="cursor-pointer bg-blue-600 transition-all duration-150 ease-out hover:bg-blue-700 active:translate-y-px active:scale-[0.98] disabled:cursor-not-allowed"
+          className="cursor-pointer bg-blue-600 transition-all duration-150 ease-out hover:bg-blue-700 active:translate-y-px active:scale-[0.98] disabled:cursor-not-allowed dark:text-stone-300"
         >
           {isSaving ? "Saving..." : "Save"}
         </Button>
