@@ -70,7 +70,7 @@ export default function Navbar({
 
   return (
     <nav aria-label="Account navigation">
-      <div className="flex items-center justify-between bg-stone-100/40 px-4 py-2 dark:bg-stone-950/40 md:justify-end md:px-6">
+      <div className="flex items-center justify-between bg-stone-100/40 px-4 py-2 dark:bg-stone-800/60 md:justify-end md:px-6">
         <button
           type="button"
           aria-label="Open sidebar"

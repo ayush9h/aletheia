@@ -56,7 +56,7 @@ export function SettingsDialog(settingsProps: SettingsDialogProps) {
 
   return (
     <Dialog open={settingsProps.open} onOpenChange={settingsProps.onOpenChange}>
-      <DialogContent className="font-paragraph h-[85dvh] max-h-[85dvh] w-[calc(100%-1.5rem)] max-w-2xl overflow-hidden border-stone-200 p-0 text-stone-900 dark:border-stone-700/50 dark:bg-stone-900 dark:text-stone-100 sm:w-[calc(100%-2rem)]">
+      <DialogContent className="font-paragraph h-[85dvh] max-h-[85dvh] w-[calc(100%-1.5rem)] max-w-2xl overflow-hidden border-stone-200 p-0 text-stone-900 dark:border-stone-700/50 dark:bg-stone-800/50 dark:text-stone-100 sm:w-[calc(100%-2rem)]">
         <DialogTitle className="sr-only">Settings</DialogTitle>
 
         <div className="flex h-full min-h-0 flex-col md:flex-row">
