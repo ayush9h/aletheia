@@ -24,10 +24,21 @@ import {
 } from "@/app/lib/api/userData";
 
 import WeeklyActivityChart from "./weeklyChart";
+
 interface AnalyticsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
+
+const emptyWeeklyActivity = [
+  { day: "Mon", messages: 0 },
+  { day: "Tue", messages: 0 },
+  { day: "Wed", messages: 0 },
+  { day: "Thu", messages: 0 },
+  { day: "Fri", messages: 0 },
+  { day: "Sat", messages: 0 },
+  { day: "Sun", messages: 0 },
+];
 
 const emptyAnalytics: AnalyticsResponse = {
   total_conversations: 0,
@@ -35,30 +46,25 @@ const emptyAnalytics: AnalyticsResponse = {
   average_session: "0s",
   active_days: 0,
   tokens_consumed: 0,
-  weekly_activity: [
-    { day: "Mon", messages: 0 },
-    { day: "Tue", messages: 0 },
-    { day: "Wed", messages: 0 },
-    { day: "Thu", messages: 0 },
-    { day: "Fri", messages: 0 },
-    { day: "Sat", messages: 0 },
-    { day: "Sun", messages: 0 },
-  ],
+  weekly_activity: emptyWeeklyActivity,
 };
 
 function normalizeAnalytics(
   data: Partial<AnalyticsResponse> | null | undefined,
 ): AnalyticsResponse {
+  const weeklyActivity = data?.weekly_activity;
+
   return {
     total_conversations: data?.total_conversations ?? 0,
     messages_sent: data?.messages_sent ?? 0,
     average_session: data?.average_session ?? "0s",
-    tokens_consumed: data?.tokens_consumed ?? 0,
-    weekly_activity:
-      data?.weekly_activity?.length > 0
-        ? data.weekly_activity
-        : emptyAnalytics.weekly_activity,
     active_days: data?.active_days ?? 0,
+    tokens_consumed: data?.tokens_consumed ?? 0,
+
+    weekly_activity:
+      weeklyActivity && weeklyActivity.length > 0
+        ? weeklyActivity
+        : emptyWeeklyActivity,
   };
 }
 
@@ -132,7 +138,11 @@ export default function AnalyticsDialog({
       value: analytics.active_days,
       icon: CalendarDays,
     },
-    {label:"Tokens Consumed", value: analytics.tokens_consumed, icon: Hash}
+    {
+      label: "Tokens consumed",
+      value: analytics.tokens_consumed,
+      icon: Hash,
+    },
   ];
 
   return (
@@ -142,9 +152,7 @@ export default function AnalyticsDialog({
       >
         <div className="flex h-full min-h-0 flex-col">
           {/* Header */}
-          <div
-            className="shrink-0 border-b border-stone-200 bg-stone-50 px-5 py-4 dark:border-stone-700/50 dark:bg-stone-950 sm:px-6"
-          >
+          <div className="shrink-0 border-b border-stone-200 bg-stone-50 px-5 py-4 dark:border-stone-700/50 dark:bg-stone-950 sm:px-6">
             <DialogHeader className="space-y-1">
               <DialogTitle className="text-base font-medium">
                 Analytics
@@ -157,17 +165,7 @@ export default function AnalyticsDialog({
           </div>
 
           {/* Content */}
-          <main
-            className="
-              min-h-0
-              flex-1
-              overflow-y-auto
-              bg-white
-              p-4
-              dark:bg-stone-900
-              sm:p-6
-            "
-          >
+          <main className="min-h-0 flex-1 overflow-y-auto bg-white p-4 dark:bg-stone-900 sm:p-6">
             {loading ? (
               <div className="flex h-full items-center justify-center">
                 <span className="text-xs text-stone-500 dark:text-stone-400">
@@ -186,27 +184,18 @@ export default function AnalyticsDialog({
                     {stats.map(({ label, value, icon: Icon }) => (
                       <div
                         key={label}
-                          className="rounded-lg border border-stone-200 bg-stone-50 p-4 dark:border-stone-700/60 dark:bg-stone-800/50"
+                        className="rounded-lg border border-stone-200 bg-stone-50 p-4 dark:border-stone-700/60 dark:bg-stone-800/50"
                       >
                         <Icon
                           aria-hidden="true"
-                          className="
-                            mb-3
-                            size-4
-                            text-stone-500
-                            dark:text-stone-400
-                          "
+                          className="mb-3 size-4 text-stone-500 dark:text-stone-400"
                         />
 
-                        <div
-                          className="text-lg font-medium text-stone-900 dark:text-stone-100"
-                        >
+                        <div className="text-lg font-medium text-stone-900 dark:text-stone-100">
                           {value}
                         </div>
 
-                        <div
-                          className="mt-1 text-[11px] leading-4 text-stone-500 dark:text-stone-400"
-                        >
+                        <div className="mt-1 text-[11px] leading-4 text-stone-500 dark:text-stone-400">
                           {label}
                         </div>
                       </div>
@@ -215,12 +204,8 @@ export default function AnalyticsDialog({
                 </section>
 
                 {/* Weekly Activity */}
-                <section
-                  className="rounded-lg border border-stone-200 dark:border-stone-700/60"
-                >
-                  <div
-                    className="border-b border-stone-200 px-4 py-3 dark:border-stone-700/60"
-                  >
+                <section className="rounded-lg border border-stone-200 dark:border-stone-700/60">
+                  <div className="border-b border-stone-200 px-4 py-3 dark:border-stone-700/60">
                     <h3 className="text-sm font-medium text-stone-900 dark:text-stone-100">
                       Weekly activity
                     </h3>
@@ -232,12 +217,10 @@ export default function AnalyticsDialog({
 
                   <div className="p-4 sm:p-5">
                     <WeeklyActivityChart
-                      data={analytics.weekly_activity ?? []}
+                      data={analytics.weekly_activity}
                     />
                   </div>
                 </section>
-
-
               </div>
             )}
           </main>
