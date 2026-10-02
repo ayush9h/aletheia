@@ -4,13 +4,18 @@
  * Application navbar responsible for:
  * - Account controls
  * - Settings dialog access
+ * - Analytics dialog access
  */
 
 import Image from "next/image";
 import { useState, type Dispatch } from "react";
 import { signOut, useSession } from "next-auth/react";
-import { ExitIcon, GearIcon, HamburgerMenuIcon } from "@radix-ui/react-icons";
-
+import {
+  ExitIcon,
+  GearIcon,
+  HamburgerMenuIcon,
+} from "@radix-ui/react-icons";
+import { ChartNoAxesCombinedIcon } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,9 +26,10 @@ import {
   DropdownMenuTrigger,
 } from "@/app/components/ui/dropdown-menu";
 
-import { SettingsDialog } from "./settings-dialog";
-import type { UserPrefProps } from "../types/user-pref";
-import type { ChatAction } from "../types/chats/chat-action";
+import { SettingsDialog } from "../settings-dialog";
+import AnalyticsDialog from "@/app/analytics/components/analytics";
+import { UserPrefProps } from "@/app/types/user-pref";
+import { ChatAction } from "@/app/types/chats/chat-action";
 
 type NavbarProps = {
   userPref: UserPrefProps;
@@ -36,11 +42,12 @@ export default function Navbar({
   userPref,
   setUserPref,
   dispatch,
-  onOpenSidebar
+  onOpenSidebar,
 }: NavbarProps) {
   const { data: session, status } = useSession();
 
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [analyticsOpen, setAnalyticsOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
 
   if (status === "loading" || !session?.user) {
@@ -71,6 +78,7 @@ export default function Navbar({
   return (
     <nav aria-label="Account navigation">
       <div className="flex items-center justify-between bg-stone-100/40 px-4 py-2 dark:bg-stone-800/60 md:justify-end md:px-6">
+        {/* Mobile sidebar button */}
         <button
           type="button"
           aria-label="Open sidebar"
@@ -79,6 +87,8 @@ export default function Navbar({
         >
           <HamburgerMenuIcon className="size-4" />
         </button>
+
+        {/* Account menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button
@@ -124,18 +134,39 @@ export default function Navbar({
 
             <DropdownMenuSeparator className="dark:bg-stone-700" />
 
+            {/* Settings */}
             <DropdownMenuItem
               className="cursor-pointer dark:text-stone-200 dark:focus:bg-stone-800 dark:focus:text-stone-100"
               onSelect={() => setSettingsOpen(true)}
             >
               Settings
+
               <DropdownMenuShortcut>
-                <GearIcon aria-hidden="true" className="size-4" />
+                <GearIcon
+                  aria-hidden="true"
+                  className="size-4"
+                />
+              </DropdownMenuShortcut>
+            </DropdownMenuItem>
+
+            {/* Analytics */}
+            <DropdownMenuItem
+              className="cursor-pointer dark:text-stone-200 dark:focus:bg-stone-800 dark:focus:text-stone-100"
+              onSelect={() => setAnalyticsOpen(true)}
+            >
+              Analytics
+
+              <DropdownMenuShortcut>
+                <ChartNoAxesCombinedIcon
+                  aria-hidden="true"
+                  className="size-4"
+                />
               </DropdownMenuShortcut>
             </DropdownMenuItem>
 
             <DropdownMenuSeparator className="dark:bg-stone-700" />
 
+            {/* Logout */}
             <DropdownMenuItem
               disabled={isSigningOut}
               onSelect={() => {
@@ -155,12 +186,19 @@ export default function Navbar({
           </DropdownMenuContent>
         </DropdownMenu>
 
+        {/* Settings dialog */}
         <SettingsDialog
           open={settingsOpen}
           onOpenChange={setSettingsOpen}
           userPref={userPref}
           setUserPref={setUserPref}
           dispatch={dispatch}
+        />
+
+        {/* Analytics dialog */}
+        <AnalyticsDialog
+          open={analyticsOpen}
+          onOpenChange={setAnalyticsOpen}
         />
       </div>
     </nav>

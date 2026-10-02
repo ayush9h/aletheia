@@ -1,6 +1,3 @@
-import {
-  Mail,
-} from "lucide-react";
 import { GitHubLogoIcon } from "@radix-ui/react-icons";
 export type ConnectorCategory =
   | "Email"
@@ -20,13 +17,6 @@ export type Connector = {
 };
 
 export const CONNECTORS: Connector[] = [
-  {
-    id: "gmail",
-    name: "Gmail",
-    description: "Search and work with your emails",
-    category: "Email",
-    icon: Mail,
-  },
   {
     id: "github",
     name: "GitHub",

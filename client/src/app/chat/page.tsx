@@ -5,40 +5,53 @@
  * - Initialize reducer-driven chat state
  * - Coordinate session hydration and preference loading
  * - Bridge domain hooks to layout components
- * - Manage sidebar layout state */
+ * - Manage sidebar layout state
+ */
+
 "use client";
 
-import { useReducer, useEffect, useState } from "react";
+import { useEffect, useReducer, useState } from "react";
 import { useSession } from "next-auth/react";
+
 import Sidebar from "./components/Sidebar/sidebar";
 import ChatWindow from "./components/chat-window";
+
 import { ChatReducer } from "../reducers/chat-reducer";
 import { InitialState } from "../types/chats/chat-state";
 
 import { useInitLoad } from "../hooks/useInitLoad";
 import { useSendMessage } from "../hooks/useSendMessage";
 import { useUserPreferences } from "../hooks/useUserPref";
-import { userChats } from "../lib/api/userData";
-import Navbar from "@/app/components/navbar";
-import { toast } from "sonner";
 
+import { userChats } from "../lib/api/userData";
+
+import Navbar from "../components/navigation/navbar";
+import { toast } from "sonner";
 
 export default function ChatPage() {
   const { data: session } = useSession();
+
   const userId = session?.user?.id;
+
   /**
    * Global chat state container.
    */
-  const [state, dispatch] = useReducer(ChatReducer, InitialState);
+  const [state, dispatch] = useReducer(
+    ChatReducer,
+    InitialState,
+  );
 
   /**
    * Sidebar layout state.
    */
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
+  /**
+   * Connector events.
+   */
   useEffect(() => {
     const handleConnectorMessage = (
-      event: MessageEvent
+      event: MessageEvent,
     ) => {
       // Only accept messages from our own application.
       if (event.origin !== window.location.origin) {
@@ -65,32 +78,35 @@ export default function ChatPage() {
           {
             className:
               "!border-green-200 !bg-green-50 !text-green-800",
-          }
+          },
         );
       }
 
       if (status === "error") {
         toast.error(
-          `Unable to connect ${connectorName}`
+          `Unable to connect ${connectorName}`,
         );
       }
     };
 
     window.addEventListener(
       "message",
-      handleConnectorMessage
+      handleConnectorMessage,
     );
 
     return () => {
       window.removeEventListener(
         "message",
-        handleConnectorMessage
+        handleConnectorMessage,
       );
     };
   }, []);
 
   /**
    * Initial data hydration.
+   *
+   * This loads the user's sessions and other initial
+   * chat data.
    */
   useInitLoad(userId as string, dispatch);
 
@@ -116,19 +132,36 @@ export default function ChatPage() {
   /**
    * Session selection flow with message hydration.
    */
-  const handleSessionSelect = async (sessionId: number) => {
-    dispatch({ type: "SET_SELECTED_SESSION", payload: sessionId });
+  const handleSessionSelect = async (
+    sessionId: number,
+  ) => {
+    dispatch({
+      type: "SET_SELECTED_SESSION",
+      payload: sessionId,
+    });
+
     try {
       const res = await userChats(sessionId);
-      dispatch({ type: "SET_MESSAGES", payload: res.data });
+
+      dispatch({
+        type: "SET_MESSAGES",
+        payload: res.data,
+      });
     } catch {
-      dispatch({ type: "SET_MESSAGES", payload: [] });
+      dispatch({
+        type: "SET_MESSAGES",
+        payload: [],
+      });
     }
   };
 
   return (
     <div
-      className={`relative grid h-dvh w-full overflow-hidden transition-[grid-template-columns] duration-300 ${sidebarOpen ? "grid-cols-[16rem_minmax(0,1fr)]" : "grid-cols-[4rem_minmax(0,1fr)]"} max-md:grid-cols-1`}
+      className={`relative grid h-dvh w-full overflow-hidden transition-[grid-template-columns] duration-300 ${
+        sidebarOpen
+          ? "grid-cols-[16rem_minmax(0,1fr)]"
+          : "grid-cols-[4rem_minmax(0,1fr)]"
+      } max-md:grid-cols-1`}
     >
       <Sidebar
         open={sidebarOpen}
@@ -155,7 +188,7 @@ export default function ChatPage() {
           />
         </div>
 
-        <div className="min-h-0 flex-1 overflow-hidden">
+        <main className="min-h-0 flex-1 overflow-hidden">
           <ChatWindow
             messages={state.messages}
             input={state.input}
@@ -166,7 +199,7 @@ export default function ChatPage() {
             userName={session?.user?.name ?? ""}
             tools={state.selectedTools}
           />
-        </div>
+        </main>
       </div>
     </div>
   );

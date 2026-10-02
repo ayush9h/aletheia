@@ -270,11 +270,14 @@ export default function ConnectorsDialog({
                           const isConnecting =
                             connectingId === connector.id;
 
-                          const isConnected = connectedConnectors.some(
+                          const connectedConnector = connectedConnectors.find(
                             (connected) =>
-                              connected.provider === connector.id &&
-                              connected.status === "connected",
+                              connected.provider === connector.id,
                           );
+
+                          const isConnected = connectedConnector?.status === "connected"
+
+                          const needsReconnect = connectedConnector?.status==='reauth'
 
                           return (
                             <div
@@ -301,18 +304,19 @@ export default function ConnectorsDialog({
                               <button
                                 type="button"
                                 disabled={isConnecting || isConnected}
-                                onClick={() =>
-                                  handleConnect(connector.id)
-                                }
+                                onClick={() => handleConnect(connector.id)}
                                 className={
                                   isConnected
                                     ? "inline-flex h-8 min-w-[82px] shrink-0 cursor-default items-center justify-center gap-1.5 rounded-md border border-green-200 bg-green-50 px-2 text-xs font-medium text-green-700 dark:border-green-900/60 dark:bg-green-950/30 dark:text-green-400 sm:min-w-[88px] sm:px-2.5"
-                                    : "inline-flex h-8 min-w-[68px] shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-md border border-stone-200 bg-white px-2 text-xs font-medium text-stone-700 shadow-sm transition-all hover:border-stone-300 hover:bg-stone-50 hover:text-stone-900 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300 dark:hover:border-stone-600 dark:hover:bg-stone-800 dark:hover:text-stone-100 sm:min-w-[76px] sm:px-2.5"
+                                    : needsReconnect
+                                      ? "inline-flex h-8 min-w-[82px] shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-md border border-amber-200 bg-amber-50 px-2 text-xs font-medium text-amber-700 transition-all hover:border-amber-300 hover:bg-amber-100 active:scale-[0.98] dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-400 dark:hover:border-amber-800 dark:hover:bg-amber-950/50 sm:min-w-[88px] sm:px-2.5"
+                                      : "inline-flex h-8 min-w-[68px] shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-md border border-stone-200 bg-white px-2 text-xs font-medium text-stone-700 shadow-sm transition-all hover:border-stone-300 hover:bg-stone-50 hover:text-stone-900 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300 dark:hover:border-stone-600 dark:hover:bg-stone-800 dark:hover:text-stone-100 sm:min-w-[76px] sm:px-2.5"
                                 }
                               >
                                 {isConnecting ? (
                                   <>
                                     <Loader2 className="h-3.5 w-3.5 animate-spin" />
+
                                     <span className="hidden sm:inline">
                                       Connecting
                                     </span>
@@ -320,10 +324,13 @@ export default function ConnectorsDialog({
                                 ) : isConnected ? (
                                   <>
                                     <Check className="h-3.5 w-3.5" />
+
                                     <span className="hidden sm:inline">
                                       Connected
                                     </span>
                                   </>
+                                ) : needsReconnect ? (
+                                  "Reconnect"
                                 ) : (
                                   "Connect"
                                 )}

@@ -6,6 +6,7 @@ import { auth } from "./auth";
 import { TooltipProvider } from "./components/ui/tooltip";
 import { Toaster } from 'sonner'
 import { ThemeProvider } from "next-themes";
+import ThemeShortcuts from "./reducers/theme-shortcut";
 
 const headerFont = Poiret_One({
   subsets: ["latin"],
@@ -40,6 +41,7 @@ export default async function RootLayout({
         <ThemeProvider  attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <TooltipProvider>
             <SessionProvider session={session}>
+              <ThemeShortcuts />
               {children}
               <Toaster position="bottom-right" />
             </SessionProvider>

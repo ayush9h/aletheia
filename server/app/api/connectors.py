@@ -116,7 +116,6 @@ async def get_user_connectors(
     try:
         stmt = select(UserConnectors).where(
             UserConnectors.user_id == user_id,
-            UserConnectors.status == "connected",
         )
 
         result = await session.execute(stmt)

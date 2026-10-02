@@ -242,7 +242,7 @@ export default function ChatInput(inputProps: inputProps) {
 
       {/* Disclaimer */}
       <p className="font-paragraph mt-2 text-center text-[11px] leading-4 text-stone-500 dark:text-stone-400 sm:text-xs">
-        <span className="font-header text-sm">Aletheia</span> can make
+        <span className="font-paragraph text-sm">Aletheia</span> can make
         mistakes. Check important information.
       </p>
 

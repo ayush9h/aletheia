@@ -27,7 +27,7 @@ import {
 } from "@/app/components/ui/accordion";
 
 import { SessionSearchDialog } from "@/app/components/ui/cmd-panel";
-
+import { useRouter } from "next/navigation";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -125,6 +125,7 @@ export default function Sidebar({
   userId,
 }: SidebarProps) {
   const { data: auth } = useSession();
+  const router = useRouter()
 
   const [searchOpen, setSearchOpen] = useState(false);
   const [connectorsOpen, setConnectorsOpen] = useState(false);
@@ -208,7 +209,8 @@ export default function Sidebar({
       type: "SET_MESSAGES",
       payload: [],
     });
-  }, [dispatch]);
+    router.push("/chat")
+  }, [dispatch, router]);
 
   const handleOpenSearch = useCallback(() => {
     setSearchOpen(true);
@@ -249,11 +251,12 @@ export default function Sidebar({
               if (!open) {
                 onToggle(true);
               }
+              router.push('/chat')
             }}
           >
             <Image
               src="/logo.png"
-              alt=""
+              alt="Logo"
               width={32}
               height={32}
               priority
