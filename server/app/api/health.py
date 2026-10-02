@@ -77,7 +77,7 @@ async def perform_health_checks() -> dict:
     }
 
 
-@health_router.get(
+@health_router.head(
     "/health",
     tags=["backend_health_check"],
     summary="Backend health check",
