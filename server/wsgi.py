@@ -10,6 +10,7 @@ from app.api.connectors import connector_router
 from app.api.sessions import session_router
 from app.api.user_settings import user_router
 from app.api.analytics import  analytics_router
+from app.api.health import health_router
 from app.db_service.db import engine
 from app.utils.config import settings
 from app.utils.core.redis import create_redis_client
@@ -109,3 +110,4 @@ app.include_router(user_router)
 app.include_router(session_router)
 app.include_router(connector_router)
 app.include_router(analytics_router)
+app.include_router(health_router)
