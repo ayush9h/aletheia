@@ -2,8 +2,8 @@ import structlog
 from langchain_groq import ChatGroq
 
 from app.db_service.db import get_session
-from app.services.agents.github.agent import create_github_agent
 from app.services.agent_state import AgentState
+from app.services.agents.github.agent import create_github_agent
 from app.utils.config import settings
 
 logger = structlog.get_logger(__name__)
@@ -93,7 +93,6 @@ async def executor_node(state: AgentState) -> AgentState:
                         "result": f"Unsupported tool: {step.tool_name}",
                     }
                 )
-
 
     state["tool_results"] = results
 

@@ -1,10 +1,9 @@
+import json
 from typing import Any
 
 from langchain_core.tools import tool
 
 from app.services.agents.github.client import get_github_client
-
-import json
 
 MAX_DESCRIPTION_LENGTH = 300
 

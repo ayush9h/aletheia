@@ -131,9 +131,7 @@ Do not add dependency fields or next-tool fields.
 {format_instructions}
 """,
         input_variables=["query", "tools"],
-        partial_variables={
-            "format_instructions": parser.get_format_instructions()
-        },
+        partial_variables={"format_instructions": parser.get_format_instructions()},
     )
 
     return prompt, parser

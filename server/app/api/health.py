@@ -1,13 +1,12 @@
 import asyncio
 import logging
 
-from fastapi import APIRouter, status
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, Response, status
 from sqlalchemy import text
 
 from app.db_service.db import engine
-from app.utils.core.redis import create_redis_client
 from app.utils.config import settings
+from app.utils.core.redis import create_redis_client
 
 logger = logging.getLogger(__name__)
 
@@ -66,10 +65,7 @@ async def perform_health_checks() -> dict:
         "papertrail": papertrail,
     }
 
-    healthy = all(
-        value == "up"
-        for value in checks.values()
-    )
+    healthy = all(value == "up" for value in checks.values())
 
     return {
         "status": "healthy" if healthy else "unhealthy",
@@ -92,7 +88,4 @@ async def health_check():
         else status.HTTP_503_SERVICE_UNAVAILABLE
     )
 
-    return JSONResponse(
-        content=result,
-        status_code=status_code,
-    )
+    return Response(status_code=status_code)

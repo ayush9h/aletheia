@@ -58,17 +58,12 @@ async def get_user_analytics(
     try:
 
         session_result = await session.execute(
-            select(UserSessions).where(
-                UserSessions.user_id == user_id
-            )
+            select(UserSessions).where(UserSessions.user_id == user_id)
         )
 
         user_sessions = session_result.scalars().all()
 
-        session_ids = [
-            item.session_id
-            for item in user_sessions
-        ]
+        session_ids = [item.session_id for item in user_sessions]
 
         logger.info(
             "Analytics sessions fetched",
@@ -92,9 +87,7 @@ async def get_user_analytics(
             }
 
         chat_result = await session.execute(
-            select(UserChats).where(
-                UserChats.session_id.in_(session_ids)
-            )
+            select(UserChats).where(UserChats.session_id.in_(session_ids))
         )
 
         chats = chat_result.scalars().all()
@@ -107,10 +100,7 @@ async def get_user_analytics(
         )
 
         messages_sent = len(chats)
-        tokens_consumed = sum(
-            int(chat.tokens_consumed or 0)
-            for chat in chats
-        )
+        tokens_consumed = sum(int(chat.tokens_consumed or 0) for chat in chats)
 
         session_durations: dict[int, float] = defaultdict(float)
 
@@ -120,13 +110,9 @@ async def get_user_analytics(
             session_durations[chat.session_id] += float(duration)
 
         if session_durations:
-            average_duration = (
-                sum(session_durations.values())
-                / len(session_durations)
-            )
+            average_duration = sum(session_durations.values()) / len(session_durations)
         else:
             average_duration = 0
-
 
         now = datetime.utcnow()
 
@@ -143,15 +129,9 @@ async def get_user_analytics(
 
         active_days = len(active_dates)
 
-        weekly_dates = [
-            (now - timedelta(days=i)).date()
-            for i in range(6, -1, -1)
-        ]
+        weekly_dates = [(now - timedelta(days=i)).date() for i in range(6, -1, -1)]
 
-        weekly_counts = {
-            date: 0
-            for date in weekly_dates
-        }
+        weekly_counts = {date: 0 for date in weekly_dates}
 
         for chat in chats:
             if not chat.created_at:
@@ -173,9 +153,7 @@ async def get_user_analytics(
         response = {
             "total_conversations": len(user_sessions),
             "messages_sent": messages_sent,
-            "average_session": format_duration(
-                average_duration
-            ),
+            "average_session": format_duration(average_duration),
             "active_days": active_days,
             "weekly_activity": weekly_activity,
             "tokens_consumed": tokens_consumed,

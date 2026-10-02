@@ -1,6 +1,5 @@
 from app.services.tools.web_search import web_search
 
-
 TOOL_REGISTRY = {
     "web_search": {
         "name": web_search.name,
@@ -9,7 +8,6 @@ TOOL_REGISTRY = {
         "tool": web_search,
         "kind": "tool",
     },
-
     "github_agent": {
         "name": "github_agent",
         "description": (

@@ -13,10 +13,7 @@ from app.services.tools.web_search import web_search
 from app.services.workflows.executor_node import executor_node
 from app.services.workflows.planner_node import planner_node
 from app.utils.config import settings
-from app.utils.rate_limiters.llm import (
-    GroqRateLimitExceeded,
-    get_groq_guard,
-)
+from app.utils.rate_limiters.llm import GroqRateLimitExceeded, get_groq_guard
 
 logger = structlog.get_logger(__name__)
 
@@ -37,14 +34,12 @@ memory_manager = MemoryManager(
 # HELPERS
 # ============================================================
 
+
 def _estimate_input_tokens(messages: list[BaseMessage]) -> int:
     """
     Rough token estimation used by the Groq rate limiter.
     """
-    total_chars = sum(
-        len(str(getattr(message, "content", "")))
-        for message in messages
-    )
+    total_chars = sum(len(str(getattr(message, "content", ""))) for message in messages)
 
     return max(10, total_chars // 4)
 
@@ -76,14 +71,13 @@ def _validate_messages(
             invalid=invalid,
         )
 
-        raise TypeError(
-            f"Invalid {context} message list: {invalid}"
-        )
+        raise TypeError(f"Invalid {context} message list: {invalid}")
 
 
 # ============================================================
 # MEMORY RETRIEVAL
 # ============================================================
+
 
 async def memory_retrieve(
     state: AgentState,
@@ -111,8 +105,7 @@ async def memory_retrieve(
 
     state["memory_context"] = "\n".join(
         [
-            f"{memory['content']} "
-            f"(context:{memory['context']})"
+            f"{memory['content']} " f"(context:{memory['context']})"
             for memory in memories
         ]
     )
@@ -133,6 +126,7 @@ def route_memory(
 # ============================================================
 # ORCHESTRATOR
 # ============================================================
+
 
 async def orchestrator(
     state: AgentState,
@@ -162,9 +156,7 @@ async def orchestrator(
     user_input = state.get("user_input", [])
 
     if not user_input:
-        raise ValueError(
-            "orchestrator received empty user_input"
-        )
+        raise ValueError("orchestrator received empty user_input")
 
     _validate_messages(
         user_input,
@@ -183,18 +175,13 @@ async def orchestrator(
         "",
     )
 
-    memory_block = (
-        "Relevant past memories:\n"
-        f"{memory_context or 'None'}"
-    )
+    memory_block = "Relevant past memories:\n" f"{memory_context or 'None'}"
 
     # --------------------------------------------------------
     # User preferences
     # --------------------------------------------------------
 
-    preference = state.get(
-        "user_preference"
-    )
+    preference = state.get("user_preference")
 
     if preference:
         user_custom_instruction = (
@@ -327,16 +314,13 @@ User Occupation:
         "orchestrator",
     )
 
-
     # --------------------------------------------------------
     # Rate limit
     # --------------------------------------------------------
 
     groq_guard = get_groq_guard()
 
-    input_tokens = _estimate_input_tokens(
-        full_messages
-    )
+    input_tokens = _estimate_input_tokens(full_messages)
 
     max_output_tokens = 2048
 
@@ -375,7 +359,6 @@ User Occupation:
     agent = create_agent(
         model=llm,
         tools=available_tools,
-
         # IMPORTANT:
         # create_agent expects the system prompt as a string.
         # Do not pass ChatPromptTemplate here.
@@ -390,9 +373,7 @@ User Occupation:
         "messages": full_messages,
     }
 
-    result = await agent.ainvoke(
-        agent_input
-    )
+    result = await agent.ainvoke(agent_input)
 
     result_messages = result.get(
         "messages",
@@ -400,9 +381,7 @@ User Occupation:
     )
 
     if not result_messages:
-        raise RuntimeError(
-            "Orchestrator returned no messages."
-        )
+        raise RuntimeError("Orchestrator returned no messages.")
 
     # --------------------------------------------------------
     # Final message
@@ -425,61 +404,61 @@ User Occupation:
     if isinstance(final_content, str):
         response_content = final_content
     else:
-        response_content = str(
-            final_content
-        )
+        response_content = str(final_content)
 
     # --------------------------------------------------------
     # Store response
     # --------------------------------------------------------
 
-    state["reasoning_kwargs"] = (
-        final_message.additional_kwargs.get(
-            "reasoning_content",
-            "",
+    state["reasoning_kwargs"] = final_message.additional_kwargs.get(
+        "reasoning_content",
+        "",
+    )
+
+    state["response_content"] = str(final_message.content)
+
+    usage_metadata = (
+        getattr(
+            final_message,
+            "usage_metadata",
+            None,
         )
+        or {}
     )
-
-    state["response_content"] = str(
-        final_message.content
-    )
-
-    usage_metadata = getattr(
-        final_message,
-        "usage_metadata",
-        None,
-    ) or {}
 
     total_tokens = usage_metadata.get(
         "total_tokens",
         0,
     )
 
-    state["tokens_consumed"] = int(
-        total_tokens or 0
+    state["tokens_consumed"] = int(total_tokens or 0)
+
+    response_metadata = (
+        getattr(
+            final_message,
+            "response_metadata",
+            None,
+        )
+        or {}
     )
 
-    response_metadata = getattr(
-        final_message,
-        "response_metadata",
-        None,
-    ) or {}
-
-    token_usage = response_metadata.get(
-        "token_usage",
-        {},
-    ) or {}
+    token_usage = (
+        response_metadata.get(
+            "token_usage",
+            {},
+        )
+        or {}
+    )
 
     state["duration"] = float(
         token_usage.get(
             "total_time",
             0.0,
-        ) or 0.0
+        )
+        or 0.0
     )
 
-    state["user_input"].append(
-        final_message
-    )
+    state["user_input"].append(final_message)
 
     return state
 
@@ -487,6 +466,7 @@ User Occupation:
 # ============================================================
 # SESSION TITLE
 # ============================================================
+
 
 async def generate_session_title(
     state: AgentState,
@@ -509,9 +489,7 @@ async def generate_session_title(
 
     groq_guard = get_groq_guard()
 
-    input_tokens = _estimate_input_tokens(
-        user_input
-    )
+    input_tokens = _estimate_input_tokens(user_input)
 
     max_output_tokens = 50
 
@@ -556,13 +534,9 @@ async def generate_session_title(
         "session title",
     )
 
-    response = await client.ainvoke(
-        title_messages
-    )
+    response = await client.ainvoke(title_messages)
 
-    state["session_title"] = str(
-        response.content
-    ).strip()
+    state["session_title"] = str(response.content).strip()
 
     if not state["session_title"]:
         state["session_title"] = "New Session"
@@ -573,6 +547,7 @@ async def generate_session_title(
 # ============================================================
 # MEMORY STORE
 # ============================================================
+
 
 async def memory_store(
     state: AgentState,
@@ -589,9 +564,7 @@ async def memory_store(
     )
 
     if len(user_input) < 2:
-        logger.warning(
-            "Not enough messages for memory storage"
-        )
+        logger.warning("Not enough messages for memory storage")
         return state
 
     user_msg = user_input[-2]
@@ -617,6 +590,7 @@ Assistant: {assistant_msg.content}
 # ROUTING
 # ============================================================
 
+
 def route_memory_store(
     state: AgentState,
 ) -> str:
@@ -631,9 +605,7 @@ def route_memory_store(
 # GRAPH
 # ============================================================
 
-builder = StateGraph(
-    AgentState
-)
+builder = StateGraph(AgentState)
 
 
 # ============================================================
