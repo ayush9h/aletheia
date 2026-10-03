@@ -1,8 +1,16 @@
 import { UserPrefProps } from "@/app/types/user-pref";
 
+type AgentEvent = {
+  step_id: number;
+  agent_name: string;
+  status: "running" | "success" | "failed";
+  task?: string;
+};
+
 type StreamHandlers = {
   onPlan?: (plan: unknown) => void;
   onToken?: (token: string) => void;
+  onAgent?: (agent: AgentEvent) => void;
   onFinal?: (payload: {
     service_output: {
       reasoning_content: string;
@@ -34,14 +42,16 @@ export async function streamChatMessage(
 
   const response = await fetch(`${baseURL}/chat/stream`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+    },
     body: JSON.stringify({
       model: selectedModel,
       query: question,
-      userPref: userPref,
-      selectedSessionId: selectedSessionId,
-      userId: userId,
-      tools: tools,
+      userPref,
+      selectedSessionId,
+      userId,
+      tools,
     }),
     signal,
   });
@@ -56,6 +66,7 @@ export async function streamChatMessage(
 
   while (true) {
     const { value, done } = await reader.read();
+
     if (done) break;
 
     buffer += decoder.decode(value, { stream: true });
@@ -67,6 +78,7 @@ export async function streamChatMessage(
       if (!block.trim()) continue;
 
       const lines = block.split("\n");
+
       let eventType = "message";
       let dataLine = "";
 
@@ -81,6 +93,7 @@ export async function streamChatMessage(
       if (!dataLine) continue;
 
       let parsed: unknown;
+
       try {
         parsed = JSON.parse(dataLine);
       } catch {
@@ -89,18 +102,35 @@ export async function streamChatMessage(
 
       switch (eventType) {
         case "plan":
-          handlers.onPlan?.((parsed as { plan: unknown }).plan);
-          break;
-        case "token":
-          handlers.onToken?.((parsed as { token: string }).token);
-          break;
-        case "final":
-          handlers.onFinal?.(
-            parsed as Parameters<NonNullable<StreamHandlers["onFinal"]>>[0]
+          handlers.onPlan?.(
+            (parsed as { plan: unknown }).plan
           );
           break;
+
+        case "agent":
+          handlers.onAgent?.(
+            parsed as AgentEvent
+          );
+          break;
+
+        case "token":
+          handlers.onToken?.(
+            (parsed as { token: string }).token
+          );
+          break;
+
+        case "final":
+          handlers.onFinal?.(
+            parsed as Parameters<
+              NonNullable<StreamHandlers["onFinal"]>
+            >[0]
+          );
+          break;
+
         case "error":
-          handlers.onError?.((parsed as { message: string }).message);
+          handlers.onError?.(
+            (parsed as { message: string }).message
+          );
           break;
       }
     }

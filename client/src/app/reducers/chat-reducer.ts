@@ -102,6 +102,33 @@ export const ChatReducer = (state: ChatState, action: ChatAction) => {
       }
       return { ...state, messages };
     }
+
+    case "UPDATE_LAST_ASSISTANT_PLAN_STEP": {
+      return {
+        ...state,
+        messages: state.messages.map((message, index) => {
+          if (index !== state.messages.length - 1 || !message.plan) {
+            return message;
+          }
+
+          return {
+            ...message,
+            plan: {
+              ...message.plan,
+              steps: message.plan.steps.map((step) =>
+                step.step_id === action.payload.step_id
+                  ? {
+                      ...step,
+                      agent_name: action.payload.agent_name,
+                      status: action.payload.status,
+                    }
+                  : step
+              ),
+            },
+          };
+        }),
+      };
+    }
     default:
       return state;
   }

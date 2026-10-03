@@ -1,22 +1,27 @@
 /**
- * Represents a single conversational message unit.
+ * Represents a single execution step in a generated plan.
  */
-
 export type PlanStep = {
   step_id: number;
   plan: string;
+  agent_name: string | null;
+  agent_input: Record<string, unknown>;
   evidence: {
-    id: string;
+    id: string | null;
     content: string | null;
-    tool_name: string | null;
-    tool_input: Record<string, unknown>;
   };
-  status: string;
+  status:
+    | "pending"
+    | "running"
+    | "success"
+    | "failed"
+    | "pending_human_approval";
 };
 
 export type Plan = {
   steps: PlanStep[];
 };
+
 export type Message = {
   id: string;
   role: "user" | "assistant";
@@ -27,9 +32,6 @@ export type Message = {
   isStreaming?: boolean;
 };
 
-/**
- * Represents a persisted chat session container.
- */
 export type Session = {
   session_id: number;
   session_title: string;

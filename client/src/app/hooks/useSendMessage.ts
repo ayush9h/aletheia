@@ -1,10 +1,3 @@
-/**
- * Hook responsible for sending chat messages and reconciling chat state.
- *
- * @param params - Aggregated chat execution context and reducer references
- *
- * @returns sendMessage mutation handler
- */
 import { useCallback } from "react";
 import { streamChatMessage } from "../lib/api/chatService";
 import { ChatAction } from "../types/chats/chat-action";
@@ -34,14 +27,12 @@ export function useSendMessage(params: Params) {
     dispatch,
   } = params;
 
-  const messageId = crypto.randomUUID();
-
-  /**
-   * Sends user message to backend and updates reducer state via SSE stream.
-   */
   return useCallback(async () => {
     const trimmed = input.trim();
+
     if (!trimmed || !userId) return;
+
+    const messageId = crypto.randomUUID();
 
     dispatch({
       type: "ADD_MESSAGE",
@@ -53,10 +44,10 @@ export function useSendMessage(params: Params) {
         tokens_consumed: 0,
       },
     });
+
     dispatch({ type: "CLEAR_INPUT" });
     dispatch({ type: "SET_TOOLS", payload: [] });
 
-    // Placeholder assistant message, progressively filled in as events arrive
     dispatch({
       type: "ADD_MESSAGE",
       payload: {
@@ -81,24 +72,46 @@ export function useSendMessage(params: Params) {
         tools,
         {
           onPlan: (plan) => {
-            dispatch({ type: "SET_CURRENT_PLAN", payload: plan as Plan });
+            dispatch({
+              type: "UPDATE_LAST_ASSISTANT_MESSAGE",
+              payload: {
+                plan: plan as Plan,
+              },
+            });
+          },
+
+          onAgent: (agent) => {
+            dispatch({
+              type: "UPDATE_LAST_ASSISTANT_PLAN_STEP",
+              payload: {
+                step_id: agent.step_id,
+                agent_name: agent.agent_name,
+                status: agent.status,
+              },
+            });
           },
 
           onToken: (token) => {
             streamedText += token;
+
             dispatch({
               type: "UPDATE_LAST_ASSISTANT_MESSAGE",
-              payload: { text: streamedText, isStreaming: true },
+              payload: {
+                text: streamedText,
+                isStreaming: true,
+              },
             });
           },
 
           onFinal: (payload) => {
             const newSession = payload.session;
+
             if (!selectedSessionId && newSession) {
               dispatch({
                 type: "SET_SELECTED_SESSION",
                 payload: newSession.session_id,
               });
+
               dispatch({
                 type: "SET_SESSIONS",
                 payload: [newSession, ...sessions],
@@ -109,9 +122,9 @@ export function useSendMessage(params: Params) {
               type: "UPDATE_LAST_ASSISTANT_MESSAGE",
               payload: {
                 text: payload.service_output.response_content,
-                reasoning: payload.service_output.reasoning_content,
                 duration: payload.service_output.duration,
-                tokens_consumed: payload.service_output.tokens_consumed,
+                tokens_consumed:
+                  payload.service_output.tokens_consumed,
                 isStreaming: false,
               },
             });
