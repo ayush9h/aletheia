@@ -2287,6 +2287,18 @@ wheels = [
 ]
 
 [[package]]
+name = "serpapi"
+version = "1.1.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "requests" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/d7/cb/9b20af90c3481b424d988104be3a8ec096971b0fa2aaa6b4263e27e92503/serpapi-1.1.2.tar.gz", hash = "sha256:c4a16b5c99c3b34469cef12a3c9c74be18912324baad74d67d1d8820d4401b24", size = 76556, upload-time = "2026-09-22T05:40:13.884Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/8b/3f/543ef4d3f5004134ce2bdc3f79313cfae37e739a29db4477febed918e55d/serpapi-1.1.2-py3-none-any.whl", hash = "sha256:446943df71e8afde69906be7e918b44c8d6cdcb84e69c37d01112c313945b384", size = 11288, upload-time = "2026-09-22T05:40:12.733Z" },
+]
+
+[[package]]
 name = "server"
 version = "0.1.0"
 source = { virtual = "." }
@@ -2368,6 +2380,7 @@ dependencies = [
     { name = "requests-toolbelt" },
     { name = "rich" },
     { name = "scipy" },
+    { name = "serpapi" },
     { name = "shellingham" },
     { name = "six" },
     { name = "sniffio" },
@@ -2474,6 +2487,7 @@ requires-dist = [
     { name = "requests-toolbelt", specifier = "==1.0.0" },
     { name = "rich", specifier = "==14.3.3" },
     { name = "scipy", specifier = "==1.17.1" },
+    { name = "serpapi", specifier = ">=1.1.2" },
     { name = "shellingham", specifier = "==1.5.4" },
     { name = "six", specifier = "==1.17.0" },
     { name = "sniffio", specifier = "==1.3.1" },

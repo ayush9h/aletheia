@@ -20,8 +20,7 @@ from app.schemas.chat_schema import ChatRequest
 from app.services.agent import graph
 from app.utils.config import settings
 from app.utils.core.dependencies import get_rate_limiter
-from app.utils.rate_limiters.core import (RateLimitPolicy,
-                                          RedisSlidingWindowLimiter)
+from app.utils.rate_limiters.core import RateLimitPolicy, RedisSlidingWindowLimiter
 
 chat_router = APIRouter(prefix="/v1")
 logger = structlog.get_logger(__name__)
@@ -144,6 +143,7 @@ async def chat_stream(
         "session_id": chat_session.session_id,
         "tools": payload.tools,
         "use_memory": payload.userPref.memoryEnabled if payload.userPref else False,
+        "is_new_session": is_new_session,
     }
 
     async def event_generator() -> AsyncGenerator[str, None]:
@@ -219,6 +219,30 @@ async def chat_stream(
                             if token:
                                 yield sse_event("token", {"token": token})
 
+                        elif kind == "on_custom_event":
+                            event_name = event.get("name")
+                            event_data = event.get("data", {})
+
+                            if event_name == "agent_start":
+                                yield sse_event(
+                                    "agent",
+                                    {
+                                        "step_id": event_data.get("step_id"),
+                                        "agent_name": event_data.get("agent_name"),
+                                        "status": "running",
+                                        "task": event_data.get("task"),
+                                    },
+                                )
+
+                            elif event_name == "agent_end":
+                                yield sse_event(
+                                    "agent",
+                                    {
+                                        "step_id": event_data.get("step_id"),
+                                        "agent_name": event_data.get("agent_name"),
+                                        "status": event_data.get("status"),
+                                    },
+                                )
                         elif kind == "on_chain_end":
                             output = event["data"].get("output", {})
 
@@ -232,9 +256,6 @@ async def chat_stream(
                             }:
                                 final_state.update(output)
 
-                            if not parent_ids:
-                                final_state.clear()
-                                final_state.update(output)
 
                     final_state["duration"] = duration
                     if is_new_session:

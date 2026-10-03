@@ -6,77 +6,98 @@ from langchain_groq import ChatGroq
 
 from app.prompts.workflows.planner_prompt import planner_prompt_parser
 from app.services.agent_state import AgentState
-from app.services.tools import TOOL_REGISTRY
+from app.services.agents import AGENT_REGISTRY
 from app.utils.config import settings
 from app.utils.rate_limiters.llm import get_groq_guard
 
 logger = structlog.get_logger(__name__)
+
+PLANNER_MODEL = "qwen/qwen3.8-27b"
+PLANNER_MAX_TOKENS = 512
+
 planner_llm = ChatGroq(
-    api_key=settings.GROQ_API_KEY, model="qwen/qwen3.8-27b", max_tokens=512
+    api_key=settings.GROQ_API_KEY,
+    model=PLANNER_MODEL,
+    max_tokens=PLANNER_MAX_TOKENS,
 )
 
 
-def est_tokens(
+def estimate_tokens(
     messages: list[BaseMessage],
 ) -> int:
-    total_characters = sum(len(str(message.content)) for message in messages)
-
-    return max(1, total_characters // 3) + 128
-
-
-async def planner_node(state: AgentState) -> AgentState:
-    """
-    Returns Plan Object with list of steps for an llm to take to fulfill the user query
-
-    Input:
-        - state: AgentState
-
-    Return:
-        - state: AgentState with Plan Object generated
-    """
-
-    # Load the tools
-    # TODO: Instead of loading all the tools at once, load based on the query
-    tools_for_prompt = [
-        {
-            "name": t["name"],
-            "description": t["description"],
-            "input_schema": t["input_schema"],
-        }
-        for t in TOOL_REGISTRY.values()
-    ]
-
-    # Define the planner prompt
-    planner_prompt, planner_parser = planner_prompt_parser()
-
-    # Format the prompt
-    planner_prompt = planner_prompt.format(
-        query=(
-            state.get("user_input")[-1].content
-            if isinstance(state.get("user_input"), list)
-            else ""
-        ),
-        tools=json.dumps(tools_for_prompt, indent=2),
+    total_characters = sum(
+        len(str(message.content))
+        for message in messages
     )
 
-    # list of messages
+    return max(
+        1,
+        total_characters // 3,
+    ) + 128
+
+
+async def planner_node(
+    state: AgentState,
+) -> AgentState:
+    user_input = state.get("user_input", [])
+
+    if not user_input:
+        raise ValueError(
+            "Planner received empty user_input."
+        )
+
+    user_message = user_input[-1]
+
+    agents_for_prompt = [
+        {
+            "name": agent["name"],
+            "description": agent["description"],
+        }
+        for agent in AGENT_REGISTRY.values()
+    ]
+
+    planner_prompt, planner_parser = planner_prompt_parser()
+
+    memory_context = state.get(
+        "memory_context",
+        "",
+    )
+
+    formatted_prompt = planner_prompt.format(
+        query=user_message.content,
+        agents=json.dumps(
+            agents_for_prompt,
+            indent=2,
+        ),
+        memory_context=memory_context or "None",
+    )
+
     messages = [
-        SystemMessage(content=planner_prompt),
-        *state.get("user_input", ""),
+        SystemMessage(
+            content=formatted_prompt,
+        ),
+        user_message,
     ]
 
     groq_guard = get_groq_guard()
 
     await groq_guard.acquire(
-        model="qwen/qwen3.8-27b",
-        input_tokens=est_tokens(messages),
-        max_output_tokens=512,
+        model=PLANNER_MODEL,
+        input_tokens=estimate_tokens(messages),
+        max_output_tokens=PLANNER_MAX_TOKENS,
     )
 
     output = await planner_llm.ainvoke(messages)
-    generated_plan = planner_parser.parse(output.content)  # type: ignore
 
-    logger.info(f"Generated Plan:{generated_plan}")
-    # store the generated plan in the global state
+    generated_plan = planner_parser.parse(
+        output.content,
+    )
+
+    logger.info(
+        "Generated execution plan",
+        plan=generated_plan.model_dump(),
+    )
+
     state["plan"] = generated_plan
+
     return state

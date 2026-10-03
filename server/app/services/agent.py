@@ -1,26 +1,18 @@
 from datetime import datetime
 
 import structlog
-from langchain.agents import create_agent
-from langchain_core.messages import BaseMessage, SystemMessage
+from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
 from langchain_groq import ChatGroq
 from langgraph.graph import END, START, StateGraph
 
 from app.memory.manager import MemoryManager
-from app.prompts.orchestrator_prompt import ORCHESTRATOR_BASE_PROMPT
 from app.services.agent_state import AgentState
-from app.services.tools.web_search import web_search
 from app.services.workflows.executor_node import executor_node
 from app.services.workflows.planner_node import planner_node
 from app.utils.config import settings
 from app.utils.rate_limiters.llm import GroqRateLimitExceeded, get_groq_guard
 
 logger = structlog.get_logger(__name__)
-
-
-# ============================================================
-# MEMORY MANAGER
-# ============================================================
 
 memory_manager = MemoryManager(
     llm_client=ChatGroq(
@@ -30,15 +22,7 @@ memory_manager = MemoryManager(
 )
 
 
-# ============================================================
-# HELPERS
-# ============================================================
-
-
 def _estimate_input_tokens(messages: list[BaseMessage]) -> int:
-    """
-    Rough token estimation used by the Groq rate limiter.
-    """
     total_chars = sum(len(str(getattr(message, "content", ""))) for message in messages)
 
     return max(10, total_chars // 4)
@@ -48,12 +32,6 @@ def _validate_messages(
     messages: list[BaseMessage],
     context: str,
 ) -> None:
-    """
-    Ensure every item is a LangChain BaseMessage.
-
-    This prevents ChatPromptTemplate or other arbitrary objects
-    from reaching the ChatGroq API.
-    """
     invalid = [
         (
             index,
@@ -74,15 +52,9 @@ def _validate_messages(
         raise TypeError(f"Invalid {context} message list: {invalid}")
 
 
-# ============================================================
-# MEMORY RETRIEVAL
-# ============================================================
-
-
 async def memory_retrieve(
     state: AgentState,
 ) -> AgentState:
-
     user_input = state.get("user_input", [])
 
     _validate_messages(
@@ -116,42 +88,19 @@ async def memory_retrieve(
 def route_memory(
     state: AgentState,
 ) -> str:
-
     if state.get("use_memory", False):
         return "memory_retrieve"
 
     return "planner_node"
 
 
-# ============================================================
-# ORCHESTRATOR
-# ============================================================
-
-
 async def orchestrator(
     state: AgentState,
 ) -> AgentState:
-    """
-    Final reasoning node.
-
-    It receives:
-    - current user message
-    - relevant memories
-    - user preferences
-    - execution plan
-    - tool results
-
-    It then asks the orchestrator agent to produce the final answer.
-    """
-
     model_name = state.get(
         "user_model",
         "qwen/qwen3.8-27b",
     )
-
-    # --------------------------------------------------------
-    # Validate state input
-    # --------------------------------------------------------
 
     user_input = state.get("user_input", [])
 
@@ -163,23 +112,17 @@ async def orchestrator(
         "orchestrator user_input",
     )
 
-    # The last message should be the current user message.
     user_message = user_input[-1]
-
-    # --------------------------------------------------------
-    # Memory
-    # --------------------------------------------------------
 
     memory_context = state.get(
         "memory_context",
         "",
     )
 
-    memory_block = "Relevant past memories:\n" f"{memory_context or 'None'}"
-
-    # --------------------------------------------------------
-    # User preferences
-    # --------------------------------------------------------
+    memory_block = (
+        "Relevant past memories:\n"
+        f"{memory_context or 'None'}"
+    )
 
     preference = state.get("user_preference")
 
@@ -239,20 +182,12 @@ User Occupation:
 {occupation or "None"}
 """.strip()
 
-    # --------------------------------------------------------
-    # Plan
-    # --------------------------------------------------------
-
     plan = state.get("plan")
 
     plan_block = (
         "Plan to follow for fulfilling the user query:\n"
         f"{plan if plan else 'No plan was generated.'}"
     )
-
-    # --------------------------------------------------------
-    # Tool results
-    # --------------------------------------------------------
 
     tool_results = state.get(
         "tool_results",
@@ -263,28 +198,6 @@ User Occupation:
         "Results from executed plan:\n"
         f"{tool_results if tool_results else 'No tool results.'}"
     )
-
-    # --------------------------------------------------------
-    # Available tools
-    # --------------------------------------------------------
-
-    available_tools = [
-        web_search,
-    ]
-
-    available_tools_block = (
-        "Available tool for this request:\n"
-        "- web_search: use when current web information is required."
-    )
-
-    # --------------------------------------------------------
-    # Build final message list
-    #
-    # IMPORTANT:
-    # This must be a FLAT list[BaseMessage].
-    # Never wrap this in another list.
-    # Never concatenate a message with a list.
-    # --------------------------------------------------------
 
     full_messages: list[BaseMessage] = [
         SystemMessage(
@@ -299,28 +212,19 @@ User Occupation:
         SystemMessage(
             content=tool_results_block,
         ),
-        SystemMessage(
-            content=available_tools_block,
-        ),
         user_message,
     ]
-
-    # --------------------------------------------------------
-    # Validate again before sending to Groq
-    # --------------------------------------------------------
 
     _validate_messages(
         full_messages,
         "orchestrator",
     )
 
-    # --------------------------------------------------------
-    # Rate limit
-    # --------------------------------------------------------
-
     groq_guard = get_groq_guard()
 
-    input_tokens = _estimate_input_tokens(full_messages)
+    input_tokens = _estimate_input_tokens(
+        full_messages,
+    )
 
     max_output_tokens = 2048
 
@@ -332,7 +236,6 @@ User Occupation:
         )
 
     except GroqRateLimitExceeded as exc:
-
         logger.error(
             "Groq rate limit exceeded",
             model=exc.model,
@@ -344,10 +247,6 @@ User Occupation:
             f"Retry in {exc.retry_after_seconds}s"
         ) from exc
 
-    # --------------------------------------------------------
-    # Create orchestrator agent
-    # --------------------------------------------------------
-
     llm = ChatGroq(
         api_key=settings.GROQ_API_KEY,
         model=model_name,
@@ -356,43 +255,9 @@ User Occupation:
         max_tokens=max_output_tokens,
     )
 
-    agent = create_agent(
-        model=llm,
-        tools=available_tools,
-        # IMPORTANT:
-        # create_agent expects the system prompt as a string.
-        # Do not pass ChatPromptTemplate here.
-        system_prompt=ORCHESTRATOR_BASE_PROMPT,
-    )
+    final_message = await llm.ainvoke(full_messages)
 
-    # --------------------------------------------------------
-    # Invoke
-    # --------------------------------------------------------
-
-    agent_input = {
-        "messages": full_messages,
-    }
-
-    result = await agent.ainvoke(agent_input)
-
-    result_messages = result.get(
-        "messages",
-        [],
-    )
-
-    if not result_messages:
-        raise RuntimeError("Orchestrator returned no messages.")
-
-    # --------------------------------------------------------
-    # Final message
-    # --------------------------------------------------------
-
-    final_message = result_messages[-1]
-
-    if not isinstance(
-        final_message,
-        BaseMessage,
-    ):
+    if not isinstance(final_message, BaseMessage):
         raise TypeError(
             "Orchestrator final response is not "
             f"a BaseMessage: {type(final_message)}"
@@ -400,22 +265,19 @@ User Occupation:
 
     final_content = final_message.content
 
-    # Normalize content for state.
     if isinstance(final_content, str):
         response_content = final_content
     else:
         response_content = str(final_content)
 
-    # --------------------------------------------------------
-    # Store response
-    # --------------------------------------------------------
-
-    state["reasoning_kwargs"] = final_message.additional_kwargs.get(
-        "reasoning_content",
-        "",
+    state["reasoning_kwargs"] = (
+        final_message.additional_kwargs.get(
+            "reasoning_content",
+            "",
+        )
     )
 
-    state["response_content"] = str(final_message.content)
+    state["response_content"] = response_content
 
     usage_metadata = (
         getattr(
@@ -431,7 +293,9 @@ User Occupation:
         0,
     )
 
-    state["tokens_consumed"] = int(total_tokens or 0)
+    state["tokens_consumed"] = int(
+        total_tokens or 0
+    )
 
     response_metadata = (
         getattr(
@@ -462,16 +326,9 @@ User Occupation:
 
     return state
 
-
-# ============================================================
-# SESSION TITLE
-# ============================================================
-
-
 async def generate_session_title(
     state: AgentState,
 ) -> AgentState:
-
     user_input = state.get(
         "user_input",
         [],
@@ -482,77 +339,92 @@ async def generate_session_title(
         "session title",
     )
 
-    model_name = state.get(
-        "user_model",
-        "qwen/qwen3.8-27b",
+    user_message = next(
+        (
+            message
+            for message in user_input
+            if isinstance(message, HumanMessage)
+        ),
+        None,
     )
 
-    groq_guard = get_groq_guard()
+    if user_message is None:
+        state["session_title"] = "New Chat"
+        return state
 
-    input_tokens = _estimate_input_tokens(user_input)
+
+    title_messages: list[BaseMessage] = [
+        SystemMessage(
+            content=(
+                "Generate a concise title for the user's request.\n"
+                "Maximum 8 words.\n"
+                "Use the actual subject of the request.\n"
+                "Do not use generic titles such as "
+                "'New Chat', 'New Session', 'Chat', or 'Conversation'.\n"
+                "Return only the title.\n"
+                "Do not use quotes."
+            ),
+        ),
+        HumanMessage(
+            content=str(user_message.content),
+        ),
+    ]
+
+    input_tokens = _estimate_input_tokens(
+        title_messages,
+    )
 
     max_output_tokens = 50
 
+    groq_guard = get_groq_guard()
+
     try:
         await groq_guard.acquire(
-            model=model_name,
+            model="qwen/qwen3.8-27b",
             input_tokens=input_tokens,
             max_output_tokens=max_output_tokens,
         )
 
-    except GroqRateLimitExceeded as exc:
+        client = ChatGroq(
+            api_key=settings.GROQ_API_KEY,
+            model="qwen/qwen3.8-27b",
+            max_tokens=max_output_tokens,
+        )
 
-        logger.error(
-            "Rate limit hit while generating session title",
+        response = await client.ainvoke(
+            title_messages,
+        )
+
+        title = str(response.content).strip()
+        state["session_title"] = title
+        logger.info(
+            "Generated session title",
+            title=title,
+            session_id=state["session_id"],
+        )
+
+    except GroqRateLimitExceeded as exc:
+        logger.warning(
+            "Session title generation rate limited",
             model=exc.model,
             retry_after_seconds=exc.retry_after_seconds,
         )
 
-        state["session_title"] = "New Session"
+        state["session_title"] = "New Chat"
 
-        return state
-
-    client = ChatGroq(
-        api_key=settings.GROQ_API_KEY,
-        model=model_name,
-        max_tokens=max_output_tokens,
-    )
-
-    title_messages: list[BaseMessage] = [
-        *user_input,
-        SystemMessage(
-            content=(
-                "Generate a short session title. "
-                "Maximum 15 words. "
-                "Return only the title."
-            )
-        ),
-    ]
-
-    _validate_messages(
-        title_messages,
-        "session title",
-    )
-
-    response = await client.ainvoke(title_messages)
-
-    state["session_title"] = str(response.content).strip()
-
-    if not state["session_title"]:
-        state["session_title"] = "New Session"
+    except Exception as exc:
+        logger.exception(
+            "Session title generation failed",
+            error=str(exc),
+        )
+        state["session_title"] = "New Chat"
 
     return state
-
-
-# ============================================================
-# MEMORY STORE
-# ============================================================
 
 
 async def memory_store(
     state: AgentState,
 ) -> AgentState:
-
     user_input = state.get(
         "user_input",
         [],
@@ -586,31 +458,25 @@ Assistant: {assistant_msg.content}
     return state
 
 
-# ============================================================
-# ROUTING
-# ============================================================
-
-
 def route_memory_store(
     state: AgentState,
 ) -> str:
-
     if state.get("use_memory", False):
         return "memory_store"
 
     return "__end__"
 
 
-# ============================================================
-# GRAPH
-# ============================================================
+def route_session_title(
+    state: AgentState,
+) -> str:
+    if state.get("is_new_session", False):
+        return "generate_session_title"
+
+    return "memory_store" if state.get("use_memory", False) else "__end__"
+
 
 builder = StateGraph(AgentState)
-
-
-# ============================================================
-# NODES
-# ============================================================
 
 builder.add_node(
     "memory_retrieve",
@@ -642,11 +508,6 @@ builder.add_node(
     memory_store,
 )
 
-
-# ============================================================
-# START → MEMORY / PLANNER
-# ============================================================
-
 builder.add_conditional_edges(
     START,
     route_memory,
@@ -656,50 +517,30 @@ builder.add_conditional_edges(
     },
 )
 
-
-# ============================================================
-# MEMORY → PLANNER
-# ============================================================
-
 builder.add_edge(
     "memory_retrieve",
     "planner_node",
 )
 
-
-# ============================================================
-# PLANNER → EXECUTOR
-# ============================================================
-
 builder.add_edge(
     "planner_node",
     "executor_node",
 )
 
-
-# ============================================================
-# EXECUTOR → ORCHESTRATOR
-# ============================================================
-
 builder.add_edge(
     "executor_node",
     "orchestrator",
 )
 
-
-# ============================================================
-# ORCHESTRATOR → SESSION TITLE
-# ============================================================
-
-builder.add_edge(
+builder.add_conditional_edges(
     "orchestrator",
-    "generate_session_title",
+    route_session_title,
+    {
+        "generate_session_title": "generate_session_title",
+        "memory_store": "memory_store",
+        "__end__": END,
+    },
 )
-
-
-# ============================================================
-# SESSION TITLE → MEMORY STORE / END
-# ============================================================
 
 builder.add_conditional_edges(
     "generate_session_title",
@@ -710,19 +551,9 @@ builder.add_conditional_edges(
     },
 )
 
-
-# ============================================================
-# MEMORY STORE → END
-# ============================================================
-
 builder.add_edge(
     "memory_store",
     END,
 )
-
-
-# ============================================================
-# COMPILE
-# ============================================================
 
 graph = builder.compile()

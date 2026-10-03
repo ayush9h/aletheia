@@ -6,21 +6,21 @@ from app.utils.rate_limiters.core import RateLimitPolicy, RedisSlidingWindowLimi
 
 
 @dataclass(frozen=True)
-class TavilyLimit:
+class SerpApiLimit:
     rpm: int
 
 
-class TavilyLimitExceeded(Exception):
-    def __init__(self, message: str = "Tavily Limit exceeded") -> None:
+class SerpAPILimitExceeded(Exception):
+    def __init__(self, message: str = "SerpAPI Limit exceeded") -> None:
         super().__init__(message)
 
 
-class TavilyGuard:
+class SerpApiGuard:
     def __init__(
         self,
         *,
         limiter: RedisSlidingWindowLimiter,
-        model_limits: dict[str, TavilyLimit],
+        model_limits: dict[str, SerpApiLimit],
     ) -> None:
         self.limiter = limiter
         self.model_limits = model_limits
@@ -28,25 +28,25 @@ class TavilyGuard:
     async def acquire(
         self,
         *,
-        tavily_exec_type: str,
+        serp_type: str,
         credit_usage_by_type: int = 1,
         project_id: str = "default",
     ) -> None:
-        limit = self.model_limits.get(tavily_exec_type)
+        limit = self.model_limits.get(serp_type)
 
         if limit is None:
             raise ValueError(
-                f"No rate limit configured for execution type '{tavily_exec_type}'"
+                f"No rate limit configured for execution type '{serp_type}'"
             )
 
         if credit_usage_by_type > limit.rpm:
             raise ValueError(
                 f"Request requires {credit_usage_by_type} credits, "
-                f"but '{tavily_exec_type}' has an RPM limit of {limit.rpm}"
+                f"but '{serp_type}' has an RPM limit of {limit.rpm}"
             )
 
         decision = await self.limiter.acquire(
-            group=f"tavily:{project_id}:{tavily_exec_type}",
+            group=f"serpapi:{project_id}:{serp_type}",
             policies=[
                 RateLimitPolicy(
                     name="rpm",
@@ -58,22 +58,22 @@ class TavilyGuard:
         )
 
         if not decision.allowed:
-            raise TavilyLimitExceeded(
-                f"Rate limit exceeded for Tavily '{tavily_exec_type}' operation."
+            raise SerpAPILimitExceeded(
+                f"Rate limit exceeded for SerpAPI '{serp_type}' operation."
             )
 
 
-_guard: TavilyGuard | None = None
+_guard: SerpApiGuard | None = None
 
 
-def set_tavily_guard(
-    guard: TavilyGuard | None,
+def set_serp_guard(
+    guard: SerpApiGuard | None,
 ) -> None:
     global _guard
     _guard = guard
 
 
-def get_tavily_guard() -> TavilyGuard:
+def get_serp_guard() -> SerpApiGuard:
     if _guard is None:
         raise RuntimeError("Tavily guard has not been initialized")
 

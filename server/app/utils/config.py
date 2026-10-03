@@ -28,6 +28,8 @@ class Settings(BaseSettings):
     LANGFUSE_PUBLIC_KEY: str
     LANGFUSE_BASE_URL: str
     CONNECTOR_SECRET: str
+    SERPAPI_RPM: int
+    SERPAPI_API_KEY: str
 
     model_config = SettingsConfigDict(
         env_file=ENV_FILE,

@@ -8,12 +8,12 @@ class Evidence(BaseModel):
         default=None,
         description=(
             "Identifier of the evidence in the form of #E1, #E2 etc. "
-            "Null if this step does not produce any evidence."
+            "Null before execution."
         ),
     )
     content: str | None = Field(
         default=None,
-        description="Output from the worker after running the tool, if present.",
+        description="Result produced by the agent during execution.",
     )
 
 
@@ -22,19 +22,23 @@ class Step(BaseModel):
         description="Step number.",
     )
     plan: str = Field(
-        description="Instruction for the worker to execute.",
+        description="Instruction describing what the agent should accomplish.",
     )
-    tool_name: str | None = Field(
+    agent_name: str | None = Field(
         default=None,
-        description="Name of the tool or agent to execute. Null when no tool is required.",
+        description=(
+            "Name of the specialist agent to execute, such as "
+            "github_agent or web_search_agent. "
+            "Null when no agent is required."
+        ),
     )
-    tool_input: dict[str, Any] = Field(
+    agent_input: dict[str, Any] = Field(
         default_factory=dict,
-        description="Input arguments for the selected tool or agent.",
+        description="Input provided to the selected specialist agent.",
     )
     evidence: Evidence = Field(
         default_factory=Evidence,
-        description="Placeholder for the execution result.",
+        description="Execution result produced by the agent.",
     )
     status: Literal[
         "pending",

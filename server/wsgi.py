@@ -5,21 +5,29 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from langfuse import Langfuse, get_client
 
-from app.api.analytics import analytics_router
-from app.api.chats import chat_router
-from app.api.connectors import connector_router
-from app.api.health import health_router
-from app.api.sessions import session_router
-from app.api.user_settings import user_router
+from app.api import (
+    analytics_router,
+    chat_router,
+    connector_router,
+    health_router,
+    session_router,
+    user_router,
+)
 from app.db_service.db import engine
+from app.utils import create_redis_client, setup_logging, shutdown_logging
 from app.utils.config import settings
-from app.utils.core.redis import create_redis_client
-from app.utils.logger import setup_logging, shutdown_logging
-from app.utils.rate_limiters.core import RedisSlidingWindowLimiter
-from app.utils.rate_limiters.llm import (GroqGuard, GroqModelLimit,
-                                         set_groq_guard)
-from app.utils.rate_limiters.tavily import (TavilyGuard, TavilyLimit,
-                                            set_tavily_guard)
+from app.utils.rate_limiters import (
+    GroqGuard,
+    GroqModelLimit,
+    RedisSlidingWindowLimiter,
+    SerpApiGuard,
+    SerpApiLimit,
+    TavilyGuard,
+    TavilyLimit,
+    set_groq_guard,
+    set_serp_guard,
+    set_tavily_guard,
+)
 
 logger = structlog.get_logger(__name__)
 origins = [
@@ -79,12 +87,23 @@ async def lifespan(app: FastAPI):
         },
     )
 
+    logger.info("serpapi guard init", status="startup")
+    serpapi_guard = SerpApiGuard(
+        limiter=rate_limiter,
+        model_limits={
+            "search": SerpApiLimit(rpm=settings.SERPAPI_RPM),
+        },
+    )
+
     app.state.rate_limiter = rate_limiter
     app.state.groq_guard = groq_guard
     app.state.tavily_guard = tavily_guard
+    app.state.serpapi_guard = serpapi_guard
 
     set_groq_guard(groq_guard)
     set_tavily_guard(tavily_guard)
+    set_serp_guard(serpapi_guard)
+
     try:
         yield
     finally:
