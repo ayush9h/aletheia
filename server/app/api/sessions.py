@@ -5,12 +5,13 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.exc import DatabaseError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import delete, select
-from urllib3.connection import HTTPException
 
 from app.db_service.db import get_session
 from app.db_service.models import UserChats, UserSessions
+from app.utils.rate_limiters.endpoints.sessions import session_rate_limit
 
 logger = structlog.get_logger(__name__)
+
 session_router = APIRouter(prefix="/v1")
 
 
@@ -21,6 +22,7 @@ session_router = APIRouter(prefix="/v1")
 )
 async def users_session(
     user_id: str,
+    _: None = Depends(session_rate_limit),
     session: AsyncSession = Depends(get_session),
 ) -> list[dict]:
     try:
@@ -33,20 +35,29 @@ async def users_session(
         result = await session.execute(stmt)
         sessions = result.scalars().all()
 
-        logger.info("Successfully fetched sessions")
+        logger.info(
+            "Successfully fetched sessions",
+            user_id=user_id,
+        )
 
         return [
             {
-                "session_id": s.session_id,
-                "session_title": s.session_title,
-                "created_at": s.created_at,
-                "is_pinned": s.is_pinned,
+                "session_id": item.session_id,
+                "session_title": item.session_title,
+                "created_at": item.created_at,
+                "is_pinned": item.is_pinned,
             }
-            for s in sessions
+            for item in sessions
         ]
-    except (DatabaseError, HTTPException) as e:
+
+    except DatabaseError:
         await session.rollback()
-        logger.error(f"Error occurred in fetching session due to {e}")
+
+        logger.exception(
+            "Error occurred while fetching sessions",
+            user_id=user_id,
+        )
+
         return []
 
 
@@ -58,6 +69,7 @@ async def users_session(
 async def delete_session(
     session_id: int,
     user_id: str,
+    _: None = Depends(session_rate_limit),
     session: AsyncSession = Depends(get_session),
 ):
     try:
@@ -65,6 +77,7 @@ async def delete_session(
             UserSessions.session_id == session_id,
             UserSessions.user_id == user_id,
         )
+
         result = await session.execute(stmt)
         db_session = result.scalar_one_or_none()
 
@@ -74,18 +87,43 @@ async def delete_session(
                 "message": "Exception occurred : Session not found",
                 "code": 404,
             }
+
         await session.delete(db_session)
-        logger.info("Session deleted")
         await session.commit()
-    except (DatabaseError, HTTPException) as e:
+
+        logger.info(
+            "Session deleted",
+            user_id=user_id,
+            session_id=session_id,
+        )
+
+        return {
+            "status": "success",
+            "message": "Session deleted successfully",
+        }
+
+    except DatabaseError:
         await session.rollback()
-        logger.error(f"Error occurred while deleting a session: {e}")
+
+        logger.exception(
+            "Error occurred while deleting a session",
+            user_id=user_id,
+            session_id=session_id,
+        )
+
+        return {
+            "status": "error",
+            "message": "Unable to delete session",
+        }
 
 
-@session_router.post("/sessions/{session_id}/toggle-pin-session")
+@session_router.post(
+    "/sessions/{session_id}/toggle-pin-session",
+)
 async def pin_session(
     session_id: int,
     user_id: str,
+    _: None = Depends(session_rate_limit),
     session: AsyncSession = Depends(get_session),
 ):
     try:
@@ -107,14 +145,30 @@ async def pin_session(
             db_session.is_pinned = True
             db_session.pinned_at = datetime.utcnow()
 
-        logger.info("Session pinned")
         await session.commit()
 
-        return await users_session(user_id, session)
+        logger.info(
+            "Session pin state updated",
+            user_id=user_id,
+            session_id=session_id,
+            is_pinned=db_session.is_pinned,
+        )
 
-    except (DatabaseError, HTTPException) as e:
+        return await users_session(
+            user_id=user_id,
+            session=session,
+        )
+
+    except DatabaseError:
         await session.rollback()
-        logger.error(f"Pinning chat failed due to {e}")
+
+        logger.exception(
+            "Pinning chat failed",
+            user_id=user_id,
+            session_id=session_id,
+        )
+
+        return []
 
 
 @session_router.delete(
@@ -124,33 +178,54 @@ async def pin_session(
 )
 async def all_chats(
     user_id: str,
+    _: None = Depends(session_rate_limit),
     session: AsyncSession = Depends(get_session),
 ):
-
     try:
         result = await session.execute(
-            select(UserSessions.session_id).where(UserSessions.user_id == user_id)
+            select(UserSessions.session_id).where(
+                UserSessions.user_id == user_id
+            )
         )
+
         session_ids = result.scalars().all()
 
         if not session_ids:
-            return {"message": "No sessions found"}
-
-        session_ids = [sid for sid in session_ids]
+            return {
+                "message": "No sessions found",
+            }
 
         await session.execute(
-            delete(UserChats).where(UserChats.session_id.in_(session_ids))
+            delete(UserChats).where(
+                UserChats.session_id.in_(session_ids)
+            )
         )
 
         await session.execute(
-            delete(UserSessions).where(UserSessions.user_id == user_id)  # type: ignore
+            delete(UserSessions).where(
+                UserSessions.user_id == user_id
+            )
         )
 
-        logger.info("All Sessions deleted")
         await session.commit()
 
-        return {"message": "All chats deleted successfully"}
+        logger.info(
+            "All sessions deleted",
+            user_id=user_id,
+        )
 
-    except (DatabaseError, HTTPException) as e:
+        return {
+            "message": "All chats deleted successfully",
+        }
+
+    except DatabaseError:
         await session.rollback()
-        logger.error(f"Error deleting chats: {e}")
+
+        logger.exception(
+            "Error deleting chats",
+            user_id=user_id,
+        )
+
+        return {
+            "message": "Unable to delete chats",
+        }
