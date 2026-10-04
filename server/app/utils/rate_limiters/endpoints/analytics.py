@@ -1,9 +1,7 @@
 from fastapi import HTTPException, status
-
 from throttled.asyncio import RateLimiterType, Throttled, store
 
 from app.utils.config import settings
-
 
 ANALYTICS_RATE_LIMIT = "60/m"
 

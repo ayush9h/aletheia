@@ -8,9 +8,7 @@ from app.db_service.db import get_session
 from app.db_service.models import UserPrefs
 from app.schemas.user_pref import UserPref
 from app.utils.rate_limiters.endpoints.user_preferences import (
-    user_preferences_read_rate_limit,
-    user_preferences_write_rate_limit,
-)
+    user_preferences_read_rate_limit, user_preferences_write_rate_limit)
 
 logger = structlog.get_logger(__name__)
 
@@ -28,9 +26,7 @@ async def store_user_pref(
     session: AsyncSession = Depends(get_session),
 ):
     try:
-        stmt = select(UserPrefs).where(
-            UserPrefs.user_id == payload.userId
-        )
+        stmt = select(UserPrefs).where(UserPrefs.user_id == payload.userId)
 
         result = await session.execute(stmt)
         pref = result.scalar_one_or_none()
@@ -100,9 +96,7 @@ async def get_user_pref(
     session: AsyncSession = Depends(get_session),
 ):
     try:
-        stmt = select(UserPrefs).where(
-            UserPrefs.user_id == user_id
-        )
+        stmt = select(UserPrefs).where(UserPrefs.user_id == user_id)
 
         result = await session.execute(stmt)
         pref = result.scalar_one_or_none()

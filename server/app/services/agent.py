@@ -119,10 +119,7 @@ async def orchestrator(
         "",
     )
 
-    memory_block = (
-        "Relevant past memories:\n"
-        f"{memory_context or 'None'}"
-    )
+    memory_block = "Relevant past memories:\n" f"{memory_context or 'None'}"
 
     preference = state.get("user_preference")
 
@@ -270,11 +267,9 @@ User Occupation:
     else:
         response_content = str(final_content)
 
-    state["reasoning_kwargs"] = (
-        final_message.additional_kwargs.get(
-            "reasoning_content",
-            "",
-        )
+    state["reasoning_kwargs"] = final_message.additional_kwargs.get(
+        "reasoning_content",
+        "",
     )
 
     state["response_content"] = response_content
@@ -293,9 +288,7 @@ User Occupation:
         0,
     )
 
-    state["tokens_consumed"] = int(
-        total_tokens or 0
-    )
+    state["tokens_consumed"] = int(total_tokens or 0)
 
     response_metadata = (
         getattr(
@@ -326,6 +319,7 @@ User Occupation:
 
     return state
 
+
 async def generate_session_title(
     state: AgentState,
 ) -> AgentState:
@@ -340,18 +334,13 @@ async def generate_session_title(
     )
 
     user_message = next(
-        (
-            message
-            for message in user_input
-            if isinstance(message, HumanMessage)
-        ),
+        (message for message in user_input if isinstance(message, HumanMessage)),
         None,
     )
 
     if user_message is None:
         state["session_title"] = "New Chat"
         return state
-
 
     title_messages: list[BaseMessage] = [
         SystemMessage(

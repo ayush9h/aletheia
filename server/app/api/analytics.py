@@ -10,6 +10,7 @@ from sqlmodel import select
 from app.db_service.db import get_session
 from app.db_service.models import UserChats, UserSessions
 from app.utils.rate_limiters.endpoints.analytics import analytics_rate_limit
+
 logger = structlog.get_logger(__name__)
 
 analytics_router = APIRouter(prefix="/v1")
@@ -34,10 +35,7 @@ def format_duration(seconds: float) -> str:
 
 
 def get_week_dates(today):
-    return [
-        today - timedelta(days=offset)
-        for offset in range(WEEK_DAYS - 1, -1, -1)
-    ]
+    return [today - timedelta(days=offset) for offset in range(WEEK_DAYS - 1, -1, -1)]
 
 
 def build_weekly_tokens(chats, week_dates):
@@ -98,30 +96,22 @@ async def get_user_analytics(
             }
 
         chat_result = await session.execute(
-            select(UserChats).where(
-                UserChats.session_id.in_(session_ids)
-            )
+            select(UserChats).where(UserChats.session_id.in_(session_ids))
         )
 
         chats = chat_result.scalars().all()
 
         messages_sent = len(chats)
 
-        tokens_consumed = sum(
-            int(chat.tokens_consumed or 0)
-            for chat in chats
-        )
+        tokens_consumed = sum(int(chat.tokens_consumed or 0) for chat in chats)
 
         session_durations: dict[int, float] = defaultdict(float)
 
         for chat in chats:
-            session_durations[chat.session_id] += float(
-                chat.duration or 0
-            )
+            session_durations[chat.session_id] += float(chat.duration or 0)
 
         average_duration = (
-            sum(session_durations.values())
-            / len(session_durations)
+            sum(session_durations.values()) / len(session_durations)
             if session_durations
             else 0
         )

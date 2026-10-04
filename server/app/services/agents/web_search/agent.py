@@ -1,6 +1,7 @@
 from langchain.agents import create_agent
 
-from app.services.agents.web_search.tools import serpapi_web_search, tavily_web_search
+from app.services.agents.web_search.tools import (serpapi_web_search,
+                                                  tavily_web_search)
 
 
 def create_web_search_agent(llm):

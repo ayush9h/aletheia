@@ -1,9 +1,7 @@
 from langchain.agents import create_agent
 
-from app.services.agents.github.tools import (
-    create_pull_request_tools,
-    create_repository_tools,
-)
+from app.services.agents.github.tools import (create_pull_request_tools,
+                                              create_repository_tools)
 
 
 def create_github_agent(

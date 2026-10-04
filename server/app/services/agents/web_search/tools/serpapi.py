@@ -6,10 +6,8 @@ from langchain.tools import tool
 
 from app.services.agents.web_search.schema import WebSearchSchema
 from app.utils.config import settings
-from app.utils.rate_limiters.serpapi import (
-    SerpAPILimitExceeded,
-    get_serp_guard,
-)
+from app.utils.rate_limiters.serpapi import (SerpAPILimitExceeded,
+                                             get_serp_guard)
 
 logger = structlog.get_logger(__name__)
 
@@ -39,10 +37,7 @@ async def serpapi_web_search(
             credit_usage_by_type=1,
         )
     except SerpAPILimitExceeded:
-        return (
-            "Error: Web search rate limit exceeded. "
-            "Please try again in a minute."
-        )
+        return "Error: Web search rate limit exceeded. " "Please try again in a minute."
 
     engine_map = {
         "general": "google",
@@ -57,13 +52,7 @@ async def serpapi_web_search(
     }
 
     if domains:
-        params["q"] = (
-            f"{query} "
-            + " ".join(
-                f"site:{domain}"
-                for domain in domains
-            )
-        )
+        params["q"] = f"{query} " + " ".join(f"site:{domain}" for domain in domains)
 
     try:
         client = serpapi.Client(
@@ -92,10 +81,7 @@ async def serpapi_web_search(
 
         return "Error: SerpAPI search timed out."
 
-    results = response.get(
-        "organic_results",
-        []
-    )[:MAX_SEARCH_RESULTS]
+    results = response.get("organic_results", [])[:MAX_SEARCH_RESULTS]
 
     contents = []
 
@@ -104,11 +90,7 @@ async def serpapi_web_search(
         snippet = result.get("snippet", "")
         link = result.get("link", "")
 
-        contents.append(
-            f"Title: {title}\n"
-            f"URL: {link}\n"
-            f"Content: {snippet}"
-        )
+        contents.append(f"Title: {title}\n" f"URL: {link}\n" f"Content: {snippet}")
 
     if not contents:
         return "No search results found."

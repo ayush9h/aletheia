@@ -20,7 +20,8 @@ from app.schemas.chat_schema import ChatRequest
 from app.services.agent import graph
 from app.utils.config import settings
 from app.utils.core.dependencies import get_rate_limiter
-from app.utils.rate_limiters.core import RateLimitPolicy, RedisSlidingWindowLimiter
+from app.utils.rate_limiters.core import (RateLimitPolicy,
+                                          RedisSlidingWindowLimiter)
 
 chat_router = APIRouter(prefix="/v1")
 logger = structlog.get_logger(__name__)
@@ -255,7 +256,6 @@ async def chat_stream(
                                 "memory_store",
                             }:
                                 final_state.update(output)
-
 
                     final_state["duration"] = duration
                     if is_new_session:

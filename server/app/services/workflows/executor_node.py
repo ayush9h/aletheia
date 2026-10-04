@@ -1,10 +1,10 @@
 from typing import Any
 
 import structlog
+from langchain_core.callbacks.manager import adispatch_custom_event
 from langchain_core.messages import BaseMessage
 from langchain_core.runnables import RunnableConfig
 from langchain_groq import ChatGroq
-from langchain_core.callbacks.manager import adispatch_custom_event
 
 from app.db_service.db import get_session
 from app.services.agent_state import AgentState
@@ -13,7 +13,6 @@ from app.services.agents.web_search.agent import create_web_search_agent
 from app.utils.config import settings
 
 logger = structlog.get_logger(__name__)
-
 
 
 async def executor_node(
@@ -35,11 +34,7 @@ async def executor_node(
 
     results = []
 
-    required_agents = {
-        step.agent_name
-        for step in plan.steps
-        if step.agent_name
-    }
+    required_agents = {step.agent_name for step in plan.steps if step.agent_name}
 
     async for session in get_session():
         agents = {}
@@ -135,9 +130,7 @@ async def executor_node(
                 )
 
                 if not messages:
-                    raise RuntimeError(
-                        "Agent returned no messages"
-                    )
+                    raise RuntimeError("Agent returned no messages")
 
                 final_message = messages[-1]
 

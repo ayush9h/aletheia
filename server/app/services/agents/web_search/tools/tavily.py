@@ -5,12 +5,14 @@ from tavily import AsyncTavilyClient
 
 from app.services.agents.web_search.schema import WebSearchSchema
 from app.utils.config import settings
-from app.utils.rate_limiters.tavily import TavilyLimitExceeded, get_tavily_guard
+from app.utils.rate_limiters.tavily import (TavilyLimitExceeded,
+                                            get_tavily_guard)
 
 
 @tool(
     "tavily_web_search",
-    description=  ( "Use this tool for ordinary web searches when the user did not "
+    description=(
+        "Use this tool for ordinary web searches when the user did not "
         "explicitly request Google Search or SerpAPI. "
         "Do not use this tool when Google Search or SerpAPI is explicitly requested."
     ),

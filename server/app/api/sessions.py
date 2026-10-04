@@ -183,9 +183,7 @@ async def all_chats(
 ):
     try:
         result = await session.execute(
-            select(UserSessions.session_id).where(
-                UserSessions.user_id == user_id
-            )
+            select(UserSessions.session_id).where(UserSessions.user_id == user_id)
         )
 
         session_ids = result.scalars().all()
@@ -196,15 +194,11 @@ async def all_chats(
             }
 
         await session.execute(
-            delete(UserChats).where(
-                UserChats.session_id.in_(session_ids)
-            )
+            delete(UserChats).where(UserChats.session_id.in_(session_ids))
         )
 
         await session.execute(
-            delete(UserSessions).where(
-                UserSessions.user_id == user_id
-            )
+            delete(UserSessions).where(UserSessions.user_id == user_id)
         )
 
         await session.commit()

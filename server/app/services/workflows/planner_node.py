@@ -25,15 +25,15 @@ planner_llm = ChatGroq(
 def estimate_tokens(
     messages: list[BaseMessage],
 ) -> int:
-    total_characters = sum(
-        len(str(message.content))
-        for message in messages
-    )
+    total_characters = sum(len(str(message.content)) for message in messages)
 
-    return max(
-        1,
-        total_characters // 3,
-    ) + 128
+    return (
+        max(
+            1,
+            total_characters // 3,
+        )
+        + 128
+    )
 
 
 async def planner_node(
@@ -42,9 +42,7 @@ async def planner_node(
     user_input = state.get("user_input", [])
 
     if not user_input:
-        raise ValueError(
-            "Planner received empty user_input."
-        )
+        raise ValueError("Planner received empty user_input.")
 
     user_message = user_input[-1]
 

@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from app.utils.rate_limiters.core import RateLimitPolicy, RedisSlidingWindowLimiter
+from app.utils.rate_limiters.core import (RateLimitPolicy,
+                                          RedisSlidingWindowLimiter)
 
 
 @dataclass(frozen=True)
