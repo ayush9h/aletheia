@@ -257,8 +257,8 @@ export default function Sidebar({
             <Image
               src="/logo.png"
               alt="Logo"
-              width={32}
-              height={32}
+              width={28}
+              height={28}
               priority
             />
           </button>
