@@ -14,6 +14,8 @@ logger = structlog.get_logger(__name__)
 
 analytics_router = APIRouter(prefix="/v1")
 
+WEEK_DAYS = 7
+
 
 def format_duration(seconds: float) -> str:
     seconds = max(0, int(seconds))
@@ -31,18 +33,31 @@ def format_duration(seconds: float) -> str:
     return f"{minutes}m {remaining_seconds}s"
 
 
-def empty_weekly_activity():
+def get_week_dates(today):
     return [
-        {"day": day, "messages": 0}
-        for day in [
-            "Mon",
-            "Tue",
-            "Wed",
-            "Thu",
-            "Fri",
-            "Sat",
-            "Sun",
-        ]
+        today - timedelta(days=offset)
+        for offset in range(WEEK_DAYS - 1, -1, -1)
+    ]
+
+
+def build_weekly_tokens(chats, week_dates):
+    token_by_date = dict.fromkeys(week_dates, 0)
+
+    for chat in chats:
+        if not chat.created_at:
+            continue
+
+        chat_date = chat.created_at.date()
+
+        if chat_date in token_by_date:
+            token_by_date[chat_date] += int(chat.tokens_consumed or 0)
+
+    return [
+        {
+            "day": date.strftime("%a"),
+            "tokens": token_by_date[date],
+        }
+        for date in week_dates
     ]
 
 
@@ -56,107 +71,74 @@ async def get_user_analytics(
     session: AsyncSession = Depends(get_session),
 ):
     try:
-
         session_result = await session.execute(
             select(UserSessions).where(UserSessions.user_id == user_id)
         )
 
         user_sessions = session_result.scalars().all()
-
         session_ids = [item.session_id for item in user_sessions]
 
-        logger.info(
-            "Analytics sessions fetched",
-            user_id=user_id,
-            session_count=len(user_sessions),
-            session_ids=session_ids,
-        )
-
         if not session_ids:
-            logger.warning(
-                "No sessions found for analytics",
-                user_id=user_id,
-            )
+            today = datetime.utcnow().date()
+            week_dates = get_week_dates(today)
 
             return {
                 "total_conversations": 0,
                 "messages_sent": 0,
                 "average_session": "0s",
-                "active_days": 0,
-                "weekly_activity": empty_weekly_activity(),
+                "tokens_consumed": 0,
+                "weekly_tokens": [
+                    {
+                        "day": date.strftime("%a"),
+                        "tokens": 0,
+                    }
+                    for date in week_dates
+                ],
             }
 
         chat_result = await session.execute(
-            select(UserChats).where(UserChats.session_id.in_(session_ids))
+            select(UserChats).where(
+                UserChats.session_id.in_(session_ids)
+            )
         )
 
         chats = chat_result.scalars().all()
 
-        logger.info(
-            "Analytics chats fetched",
-            user_id=user_id,
-            session_count=len(session_ids),
-            chat_count=len(chats),
-        )
-
         messages_sent = len(chats)
-        tokens_consumed = sum(int(chat.tokens_consumed or 0) for chat in chats)
+
+        tokens_consumed = sum(
+            int(chat.tokens_consumed or 0)
+            for chat in chats
+        )
 
         session_durations: dict[int, float] = defaultdict(float)
 
         for chat in chats:
-            duration = chat.duration or 0
+            session_durations[chat.session_id] += float(
+                chat.duration or 0
+            )
 
-            session_durations[chat.session_id] += float(duration)
+        average_duration = (
+            sum(session_durations.values())
+            / len(session_durations)
+            if session_durations
+            else 0
+        )
 
-        if session_durations:
-            average_duration = sum(session_durations.values()) / len(session_durations)
-        else:
-            average_duration = 0
+        today = datetime.utcnow().date()
+        week_dates = get_week_dates(today)
 
-        now = datetime.utcnow()
-
-        thirty_days_ago = now - timedelta(days=30)
-
-        active_dates = set()
-
-        for chat in chats:
-            if not chat.created_at:
-                continue
-
-            if chat.created_at >= thirty_days_ago:
-                active_dates.add(chat.created_at.date())
-
-        active_days = len(active_dates)
-
-        weekly_dates = [(now - timedelta(days=i)).date() for i in range(6, -1, -1)]
-
-        weekly_counts = {date: 0 for date in weekly_dates}
-
-        for chat in chats:
-            if not chat.created_at:
-                continue
-
-            chat_date = chat.created_at.date()
-
-            if chat_date in weekly_counts:
-                weekly_counts[chat_date] += 1
-
-        weekly_activity = [
-            {
-                "day": date.strftime("%a"),
-                "messages": weekly_counts[date],
-            }
-            for date in weekly_dates
-        ]
+        weekly_tokens = build_weekly_tokens(
+            chats,
+            week_dates,
+        )
 
         response = {
             "total_conversations": len(user_sessions),
             "messages_sent": messages_sent,
             "average_session": format_duration(average_duration),
-            "active_days": active_days,
-            "weekly_activity": weekly_activity,
             "tokens_consumed": tokens_consumed,
+            "weekly_tokens": weekly_tokens,
         }
 
         logger.info(
@@ -165,20 +147,18 @@ async def get_user_analytics(
             total_conversations=response["total_conversations"],
             messages_sent=response["messages_sent"],
             average_session=response["average_session"],
-            active_days=response["active_days"],
-            weekly_activity=response["weekly_activity"],
             tokens_consumed=response["tokens_consumed"],
+            weekly_tokens=response["weekly_tokens"],
         )
 
         return response
 
-    except DatabaseError as error:
+    except DatabaseError:
         await session.rollback()
 
         logger.exception(
             "Failed to fetch user analytics",
             user_id=user_id,
-            error=str(error),
         )
 
         raise HTTPException(

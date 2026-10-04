@@ -56,25 +56,23 @@ export async function deleteUserSession(sessionId: number, userId: string) {
 export async function deleteUserChatsAll(userId: string) {
   return api.delete(`/sessions/all-chats/${userId}`);
 }
-
-
 export interface AnalyticsResponse {
   total_conversations: number;
   messages_sent: number;
   average_session: string;
-  active_days: number;
   tokens_consumed: number;
-  weekly_activity: {
+  weekly_tokens: {
     day: string;
-    messages: number;
+    tokens: number;
   }[];
 }
 
 export async function getUserAnalytics(
   userId: string,
-){
-  const response = await api.get(
+): Promise<AnalyticsResponse> {
+  const response = await api.get<AnalyticsResponse>(
     `/analytics?user_id=${encodeURIComponent(userId)}`,
   );
+
   return response.data;
 }

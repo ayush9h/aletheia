@@ -13,6 +13,8 @@ AGENT_REGISTRY = {
             "Searches the public web for current information. "
             "Can use supported search providers such as SerpAPI or Tavily."
             "use SerpAPI when user ask through Google Search or SerpAPI else use Tavily."
+            "Call any one of the above search providers to get the latest information for a given query."
+            "Do not call both SerpAPI and Tavily at the same time."
         ),
     },
 }
