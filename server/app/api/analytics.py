@@ -9,7 +9,7 @@ from sqlmodel import select
 
 from app.db_service.db import get_session
 from app.db_service.models import UserChats, UserSessions
-
+from app.utils.rate_limiters.endpoints.analytics import analytics_rate_limit
 logger = structlog.get_logger(__name__)
 
 analytics_router = APIRouter(prefix="/v1")
@@ -68,6 +68,7 @@ def build_weekly_tokens(chats, week_dates):
 )
 async def get_user_analytics(
     user_id: str,
+    _: None = Depends(analytics_rate_limit),
     session: AsyncSession = Depends(get_session),
 ):
     try:
