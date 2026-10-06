@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
-import {  Poiret_One, Varela } from "next/font/google";
+import { Poiret_One } from "next/font/google";
+import localFont from "next/font/local";
+
 import "./globals.css";
 import { SessionProvider } from "next-auth/react";
 import { auth } from "./auth";
@@ -15,11 +17,10 @@ const headerFont = Poiret_One({
   display: "swap",
 });
 
-const paragraphFont = Varela({
-  subsets: ["latin"],
+const paragraphFont = localFont({
+  src: "./fonts/AlkesRegular.ttf",
   variable: "--font-paragraph",
   display: "swap",
-  weight: "400",
 });
 
 export const metadata: Metadata = {

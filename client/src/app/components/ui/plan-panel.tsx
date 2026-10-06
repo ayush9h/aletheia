@@ -9,7 +9,7 @@ type PlanPanelProps = {
 };
 
 export default function PlanPanel({ plan }: PlanPanelProps) {
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     if (plan?.steps?.some((step) => step.status === "running")) {
@@ -26,7 +26,7 @@ export default function PlanPanel({ plan }: PlanPanelProps) {
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className="flex items-center gap-1.5 text-muted-foreground transition-colors hover:text-foreground"
+        className="text-muted-foreground hover:text-foreground flex cursor-pointer items-center gap-1.5 transition-all"
       >
         <span>
           Planned {totalSteps} step{totalSteps > 1 ? "s" : ""}

@@ -7,7 +7,7 @@ import {
   DropdownMenuTrigger,
 } from "@/app/components/ui/dropdown-menu";
 import { PlusIcon, GlobeIcon } from "@radix-ui/react-icons";
-// import { BookOpenTextIcon } from "lucide-react";
+import { GitHubLogoIcon } from "@radix-ui/react-icons";
 
 /** Options available to users (tools) */
 export const options = [
@@ -16,11 +16,11 @@ export const options = [
     toolLabel: "Web Search",
     toolIcon: GlobeIcon,
   },
-  // {
-  //     key:"url_extractor",
-  //     toolLabel:"URL Extractor",
-  //     toolIcon: BookOpenTextIcon,
-  // }
+  {
+    key: "github",
+    toolLabel: "GitHub",
+    toolIcon: GitHubLogoIcon,
+  },
 ];
 
 function InputOptions({
