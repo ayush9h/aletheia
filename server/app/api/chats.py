@@ -212,7 +212,7 @@ async def chat_stream(
 
                         elif (
                             kind == "on_chat_model_stream"
-                            and checkpoint_ns.startswith("orchestrator:")
+                            and checkpoint_ns.startswith("consolidator:")
                         ):
                             chunk = event["data"]["chunk"]  # type: ignore
                             token = getattr(chunk, "content", "")
@@ -250,7 +250,7 @@ async def chat_stream(
                                 continue
 
                             if node_name in {
-                                "orchestrator",
+                                "consolidator",
                                 "generate_session_title",
                                 "memory_store",
                             }:
