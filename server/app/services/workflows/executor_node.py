@@ -1,5 +1,3 @@
-from typing import Any
-
 import structlog
 from langchain_core.callbacks.manager import adispatch_custom_event
 from langchain_core.messages import BaseMessage
@@ -8,8 +6,7 @@ from langchain_groq import ChatGroq
 
 from app.db_service.db import get_session
 from app.services.agent_state import AgentState
-from app.services.agents.github.agent import create_github_agent
-from app.services.agents.web_search.agent import create_web_search_agent
+from app.services.agents import AgentContext, build_agents
 from app.utils.config import settings
 
 logger = structlog.get_logger(__name__)
@@ -37,19 +34,8 @@ async def executor_node(
     required_agents = {step.agent_name for step in plan.steps if step.agent_name}
 
     async for session in get_session():
-        agents = {}
-
-        if "github_agent" in required_agents:
-            agents["github_agent"] = create_github_agent(
-                llm=llm,
-                session=session,
-                user_id=state["user_id"],
-            )
-
-        if "web_search_agent" in required_agents:
-            agents["web_search_agent"] = create_web_search_agent(
-                llm=llm,
-            )
+        ctx = AgentContext(llm=llm, session=session, user_id=state.get("user_id", ""))
+        agents = build_agents(required_agents, ctx)
 
         for step in plan.steps:
             agent_name = step.agent_name

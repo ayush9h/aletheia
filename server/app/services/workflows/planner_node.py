@@ -1,7 +1,7 @@
 import json
 
 import structlog
-from langchain_core.messages import BaseMessage, SystemMessage
+from langchain_core.messages import SystemMessage
 from langchain_groq import ChatGroq
 
 from app.prompts.workflows.planner_prompt import planner_prompt_parser
@@ -9,6 +9,7 @@ from app.services.agent_state import AgentState
 from app.services.agents import AGENT_REGISTRY
 from app.utils.config import settings
 from app.utils.rate_limiters.llm import get_groq_guard
+from app.utils.token_estimator import tokens_from_string
 
 logger = structlog.get_logger(__name__)
 
@@ -20,20 +21,6 @@ planner_llm = ChatGroq(
     model=PLANNER_MODEL,
     max_tokens=PLANNER_MAX_TOKENS,
 )
-
-
-def estimate_tokens(
-    messages: list[BaseMessage],
-) -> int:
-    total_characters = sum(len(str(message.content)) for message in messages)
-
-    return (
-        max(
-            1,
-            total_characters // 3,
-        )
-        + 128
-    )
 
 
 async def planner_node(
@@ -48,8 +35,8 @@ async def planner_node(
 
     agents_for_prompt = [
         {
-            "name": agent["name"],
-            "description": agent["description"],
+            "name": agent.name,
+            "description": agent.description,
         }
         for agent in AGENT_REGISTRY.values()
     ]
@@ -81,14 +68,16 @@ async def planner_node(
 
     await groq_guard.acquire(
         model=PLANNER_MODEL,
-        input_tokens=estimate_tokens(messages),
+        input_tokens=tokens_from_string(
+            "\n".join(str(message.content) for message in messages)
+        ),
         max_output_tokens=PLANNER_MAX_TOKENS,
     )
 
     output = await planner_llm.ainvoke(messages)
 
     generated_plan = planner_parser.parse(
-        output.content,
+        output.content,  # type: ignore
     )
 
     logger.info(

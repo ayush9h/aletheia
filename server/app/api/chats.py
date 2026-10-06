@@ -17,11 +17,10 @@ from starlette import status
 from app.db_service.db import get_session
 from app.db_service.models import UserChats, UserSessions
 from app.schemas.chat_schema import ChatRequest
-from app.services.agent import graph
+from app.services.workflows.orch import graph
 from app.utils.config import settings
 from app.utils.core.dependencies import get_rate_limiter
-from app.utils.rate_limiters.core import (RateLimitPolicy,
-                                          RedisSlidingWindowLimiter)
+from app.utils.rate_limiters.core import RateLimitPolicy, RedisSlidingWindowLimiter
 
 chat_router = APIRouter(prefix="/v1")
 logger = structlog.get_logger(__name__)
@@ -198,7 +197,7 @@ async def chat_stream(
                         checkpoint_ns = event.get("metadata", {}).get(
                             "langgraph_checkpoint_ns", ""
                         )
-                        parent_ids = event.get("parent_ids", [])
+
 
                         if kind == "on_chain_end" and node_name == "planner_node":
                             output = event["data"].get("output", {})
