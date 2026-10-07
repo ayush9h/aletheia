@@ -13,7 +13,7 @@ export default function PlanPanel({ plan }: PlanPanelProps) {
 
   useEffect(() => {
     if (plan?.steps?.some((step) => step.status === "running")) {
-      setIsOpen(true);
+      setIsOpen(false);
     }
   }, [plan]);
 
