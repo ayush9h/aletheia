@@ -24,8 +24,7 @@ async def generate_session_title(
     )
 
     if user_message is None:
-        state["session_title"] = "New Chat"
-        return state
+        return {"session_title": "New Chat"}
 
     title_messages: list[BaseMessage] = [
         SystemMessage(

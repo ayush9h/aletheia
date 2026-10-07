@@ -51,6 +51,13 @@ class Step(BaseModel):
         description="Current execution status of the step.",
     )
 
+    depends_on: list[int] = Field(
+        default_factory=list,
+        description=(
+            "step_ids that must finish before this step starts. "
+            "Empty list if the step needs no other step's output."
+        ),
+    )
 
 class Plan(BaseModel):
     steps: list[Step] = Field(

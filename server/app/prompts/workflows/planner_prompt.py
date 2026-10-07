@@ -44,6 +44,10 @@ Available Agents:
 - `evidence.content` must always be null or empty.
 - `evidence.id` must be null.
 - Set every new step's status to `"pending"`.
+- For each step, set depends_on to the step_ids whose output it needs.
+If a step does not need another step's output, depends_on MUST be [].
+Independent steps run in parallel, so do not chain steps unnecessarily.
+To use an earlier result in a task, write its evidence ID, e.g. #E1.
 
 ## Agent selection
 
