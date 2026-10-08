@@ -36,5 +36,4 @@ jobs:
 
       - name: Run tests with coverage
         run: |
-          cd server
-          uv run pytest --cov=app
+            pytest --cov=app --cov-report=xml

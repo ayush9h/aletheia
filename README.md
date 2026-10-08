@@ -9,6 +9,8 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.128-009688?logo=fastapi)](https://fastapi.tiangolo.com/)
 [![Python](https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Tests](https://github.com/ayush9h/aletheia/actions/workflows/tests.yml/badge.svg)](https://github.com/ayush9h/aletheia/actions/workflows/tests.yml)
+[![Coverage](https://codecov.io/gh/ayush9h/aletheia/branch/main/graph/badge.svg)](https://codecov.io/gh/ayush9h/aletheia)
 
 [Live Demo](https://aletheiagpt.vercel.app) ·
 [DeepWiki](https://deepwiki.com/ayush9h/aletheia) ·

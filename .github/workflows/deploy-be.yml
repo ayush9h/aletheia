@@ -36,10 +36,15 @@ jobs:
           cd server 
           uv pip install -r requirements.txt
 
-      - name: Running Tests
+      - name: Run tests with coverage
         run: |
-          cd server
-          uv run pytest --cov=app
+            pytest --cov=app --cov-report=xml
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: ./coverage.xml
+          fail_ci_if_error: true
 
       
   deploy:
