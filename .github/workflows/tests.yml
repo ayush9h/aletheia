@@ -1,3 +1,4 @@
+
 name: Tests
 
 on:
@@ -12,6 +13,10 @@ jobs:
     name: Pytest & Coverage
     runs-on: ubuntu-latest
 
+    defaults:
+      run:
+        working-directory: server
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -20,23 +25,25 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-          cache: "pip"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Create virtual environment
+        run: uv venv
 
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pytest pytest-cov
+        run: uv pip install -r requirements.txt
 
       - name: Run tests with coverage
         run: |
-          pytest \
+          uv run pytest \
             --cov=app \
             --cov-report=term-missing \
-            --cov-report=xml \
+            --cov-report=xml
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
-          files: ./coverage.xml
+          files: server/coverage.xml
           fail_ci_if_error: true
