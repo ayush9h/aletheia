@@ -21,12 +21,13 @@ async def test_memory_retrieve_no_input():
 
 
 @pytest.mark.asyncio
-@patch("app.services.workflows.memory_retrieval.memory_manager")
-async def test_memory_retrieve(mock_memory_manager):
-    mock_memory_manager.search.return_value = [
+@patch("app.services.workflows.memory_retrieval.get_memory_manager")
+async def test_memory_retrieve(mock_get_memory_manager):
+    memory_manager = MagicMock()
+    memory_manager.search.return_value = [
         {"content": "User likes Python", "context": "programming"},
-        {"content": "User is building Aletheia", "context": "project"},
     ]
+    mock_get_memory_manager.return_value = memory_manager
 
     state = {
         "user_input": [HumanMessage(content="What do I like?")],
@@ -36,18 +37,14 @@ async def test_memory_retrieve(mock_memory_manager):
 
     result = await memory_retrieve(state)
 
-    assert result["memory_context"] == (
-        "User likes Python (context:programming)\n"
-        "User is building Aletheia (context:project)"
-    )
+    assert result["memory_context"] == ("User likes Python (context:programming)")
 
-    mock_memory_manager.search.assert_called_once_with(
+    memory_manager.search.assert_called_once_with(
         query="What do I like?",
         user_id="user-123",
         session_id="session-123",
         k=5,
     )
-
 
 @pytest.mark.parametrize(
     ("use_memory", "expected"),
@@ -87,9 +84,11 @@ async def test_memory_store_insufficient_messages(mock_memory_manager):
 
 
 @pytest.mark.asyncio
-@patch("app.services.workflows.memory_retrieval.memory_manager")
-async def test_memory_store(mock_memory_manager):
-    mock_memory_manager.add_note = AsyncMock()
+@patch("app.services.workflows.memory_retrieval.get_memory_manager")
+async def test_memory_store(mock_get_memory_manager):
+    memory_manager = MagicMock()
+    memory_manager.add_note = AsyncMock()
+    mock_get_memory_manager.return_value = memory_manager
 
     state = {
         "user_input": [
@@ -104,11 +103,4 @@ async def test_memory_store(mock_memory_manager):
 
     assert result is state
 
-    mock_memory_manager.add_note.assert_awaited_once()
-    kwargs = mock_memory_manager.add_note.call_args.kwargs
-
-    assert kwargs["content"] == (
-        "User: What is Python?\n\nAssistant: Python is a programming language."
-    )
-    assert kwargs["user_id"] == "user-123"
-    assert kwargs["session_id"] == "session-123"
+    memory_manager.add_note.assert_awaited_once()

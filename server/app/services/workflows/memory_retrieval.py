@@ -9,12 +9,21 @@ from app.utils.config import settings
 
 logger = structlog.getLogger(__name__)
 
-memory_manager = MemoryManager(
-    llm_client=ChatGroq(
-        api_key=settings.GROQ_API_KEY,
-        model="qwen/qwen3.8-27b",
-    )
-)
+memory_manager: MemoryManager | None = None
+
+
+def get_memory_manager() -> MemoryManager:
+    global memory_manager
+
+    if memory_manager is None:
+        memory_manager = MemoryManager(
+            llm_client=ChatGroq(
+                api_key=settings.GROQ_API_KEY,
+                model="qwen/qwen3.8-27b",
+            )
+        )
+
+    return memory_manager
 
 
 # Node to retrieve relevant memories
@@ -29,7 +38,7 @@ async def memory_retrieve(state: AgentState) -> AgentState:
     query = user_input[-1].content
 
     # Search for relevant memories
-    memories = memory_manager.search(
+    memories = get_memory_manager().search(
         query=str(query),
         user_id=state["user_id"],
         session_id=state["session_id"],
@@ -86,7 +95,7 @@ User: {user_msg.content}
 Assistant: {assistant_msg.content}
 """.strip()
 
-    await memory_manager.add_note(
+    await get_memory_manager().add_note(
         content=content,
         time=str(datetime.now),
         user_id=state["user_id"],
