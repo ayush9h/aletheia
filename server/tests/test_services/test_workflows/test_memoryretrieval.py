@@ -11,6 +11,34 @@ from app.services.workflows.memory_retrieval import (
 )
 
 
+@patch("app.services.workflows.memory_retrieval.MemoryManager")
+@patch("app.services.workflows.memory_retrieval.ChatGroq")
+def test_get_memory_manager_initializes(mock_chat_groq, mock_memory_manager):
+    import app.services.workflows.memory_retrieval as memory_module
+
+    memory_module.memory_manager = None
+
+    llm = MagicMock()
+    manager = MagicMock()
+
+    mock_chat_groq.return_value = llm
+    mock_memory_manager.return_value = manager
+
+    result = memory_module.get_memory_manager()
+
+    assert result is manager
+
+    mock_chat_groq.assert_called_once_with(
+        api_key=memory_module.settings.GROQ_API_KEY,
+        model="qwen/qwen3.8-27b",
+    )
+
+    mock_memory_manager.assert_called_once_with(
+        llm_client=llm,
+    )
+
+    assert memory_module.memory_manager is manager
+
 @pytest.mark.asyncio
 async def test_memory_retrieve_no_input():
     state = {}
