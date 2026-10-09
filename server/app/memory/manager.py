@@ -232,7 +232,7 @@ class MemoryManager:
                     actions = resp_json["actions"]
                     for action in actions:
                         if action == "strengthen":
-                            print("strengthen")
+
                             suggest_connections = resp_json["suggested_connections"]
                             new_tags = resp_json["tags_to_update"]
 
@@ -240,7 +240,7 @@ class MemoryManager:
                             note.tags = new_tags
 
                         elif action == "update_neighbor":
-                            print("In update neighbour")
+
                             new_context_neighborhood = resp_json[
                                 "new_context_neighborhood"
                             ]
@@ -275,5 +275,5 @@ class MemoryManager:
                 return False, note
 
         except Exception as e:
-            logger.error(f"Error occured in processing memory : {e}")
+            logger.error(f"Error occured in `ocessing memory : {e}")
             return False, note
