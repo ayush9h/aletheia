@@ -244,14 +244,15 @@ export default function Sidebar({
           <button
             type="button"
             aria-label={open ? "Application home" : "Open sidebar"}
-            className="flex shrink-0 cursor-pointer items-center justify-center"
+            className="group flex shrink-0 cursor-pointer items-center justify-center"
             onClick={(event) => {
               event.stopPropagation();
 
               if (!open) {
                 onToggle(true);
               }
-              router.push('/chat')
+
+              router.push("/chat");
             }}
           >
             <Image
@@ -260,6 +261,7 @@ export default function Sidebar({
               width={28}
               height={28}
               priority
+              className="transition-transform duration-500 ease-in-out group-hover:rotate-180"
             />
           </button>
 

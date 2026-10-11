@@ -27,12 +27,18 @@ import { userChats } from "../lib/api/userData";
 
 import Navbar from "../components/navigation/navbar";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export default function ChatPage() {
-  const { data: session } = useSession();
-
+  const { data: session, status } = useSession();
+  const router = useRouter()
   const userId = session?.user?.id;
 
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.replace("/");
+    }
+  }, [status, router])
   /**
    * Global chat state container.
    */
