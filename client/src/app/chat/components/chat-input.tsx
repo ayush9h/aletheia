@@ -166,7 +166,7 @@ export default function ChatInput(props: ChatInputProps) {
                 <DropdownMenuTrigger asChild>
                   <button
                     type="button"
-                    className="font-paragraph max-w-28 flex h-8 shrink-0 cursor-pointer items-center gap-1 rounded-md bg-stone-100 px-2 text-sm text-stone-600 transition-colors hover:bg-stone-200 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700 sm:max-w-none sm:px-2.5"
+                    className="font-paragraph max-w-28 flex h-8 shrink-0 cursor-pointer items-center gap-1 rounded-md px-2 text-sm text-stone-600 transition-colors hover:bg-stone-200 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700 sm:max-w-none sm:px-2.5"
                   >
                     <span className="truncate">{currentModel}</span>
 
