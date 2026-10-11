@@ -7,12 +7,13 @@
  * - Controlled multiline input with auto-resize
  * - Submit on Enter (Shift+Enter for newline)
  * - Tool selection
+ * - File attachments
  * - Model selection
  * - Voice input
  * - Responsive mobile layout
  */
 
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
 import {
   ArrowRightIcon,
   Cross2Icon,
@@ -24,8 +25,9 @@ import Image from "next/image";
 
 import { inputProps } from "@/app/types/chats/chats.type";
 import { useSpeechToText } from "@/app/components/voice/speech-text";
-import { options } from "@/app/components/input-options";
-import InputOptions from "@/app/components/input-options";
+import InputOptions, {
+  options,
+} from "@/app/components/input-options";
 import { MODEL_GROUPS } from "@/app/config/models";
 import {
   DropdownMenu,
@@ -39,15 +41,21 @@ import { Button } from "@/app/components/ui/button";
 import StarterPrompts from "./starterPrompts/starterPrompts";
 
 export default function ChatInput(inputProps: inputProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const optionList = inputProps.tools;
 
-  const setOptionList = (tools: string[]) =>
-    inputProps.dispatch({ type: "SET_TOOLS", payload: tools });
+  const setOptionList = (tools: string[]) => {
+    inputProps.dispatch({
+      type: "SET_TOOLS",
+      payload: tools,
+    });
+  };
 
   const currentModel = useMemo(() => {
     return (
-      MODEL_GROUPS.flatMap((g) => g.models).find(
-        (m) => m.value === inputProps.selectedModel,
+      MODEL_GROUPS.flatMap((group) => group.models).find(
+        (model) => model.value === inputProps.selectedModel,
       )?.label ?? "Select model"
     );
   }, [inputProps.selectedModel]);
@@ -70,6 +78,14 @@ export default function ChatInput(inputProps: inputProps) {
 
     cancelSpeechRecognition();
     inputProps.onSend();
+  };
+
+  const handleFilesSelected = (files: File[]) => {
+    if (!files.length) {
+      return;
+    }
+
+    inputProps.onFilesSelected?.(files);
   };
 
   return (
@@ -106,11 +122,18 @@ export default function ChatInput(inputProps: inputProps) {
               <InputOptions
                 tools={optionList}
                 setTools={setOptionList}
+                onFilesSelected={handleFilesSelected}
               />
             </div>
 
             {optionList.map((item) => {
-              const tool = options.find((o) => o.key === item);
+              const tool = options.find(
+                (option) => option.key === item,
+              );
+
+              if (!tool) {
+                return null;
+              }
 
               return (
                 <div
@@ -118,18 +141,18 @@ export default function ChatInput(inputProps: inputProps) {
                   className="flex shrink-0 items-center gap-1 rounded-lg bg-blue-100 px-2 py-1 text-xs text-blue-600 dark:bg-blue-950/50 dark:text-blue-400"
                 >
                   <span className="max-w-24 truncate sm:max-w-none">
-                    {tool?.toolLabel}
+                    {tool.toolLabel}
                   </span>
 
                   <button
                     type="button"
                     onClick={() =>
                       setOptionList(
-                        optionList.filter((i) => i !== item),
+                        optionList.filter((toolKey) => toolKey !== item),
                       )
                     }
                     className="ml-1 shrink-0 cursor-pointer text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
-                    aria-label={`Remove ${tool?.toolLabel ?? "tool"}`}
+                    aria-label={`Remove ${tool.toolLabel}`}
                   >
                     <Cross2Icon className="h-4 w-4" />
                   </button>
@@ -146,7 +169,7 @@ export default function ChatInput(inputProps: inputProps) {
                 <DropdownMenuTrigger asChild>
                   <button
                     type="button"
-                    className="font-paragraph flex h-8 max-w-28 shrink-0 items-center gap-1 rounded-lg px-2 text-sm text-stone-600 transition-colors hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800 sm:max-w-none sm:px-2.5"
+                    className="font-paragraph flex h-8 max-w-28 shrink-0 cursor-pointer items-center gap-1 rounded-md bg-stone-100 px-2 text-sm text-stone-600 transition-colors dark:text-stone-300 dark:hover:bg-stone-800 sm:max-w-none sm:px-2.5"
                   >
                     <span className="truncate">{currentModel}</span>
 
@@ -229,9 +252,11 @@ export default function ChatInput(inputProps: inputProps) {
             {/* Send */}
             <AppTooltip label="Send message">
               <Button
+                type="button"
                 onClick={handleSend}
                 disabled={!inputProps.value.trim()}
                 className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md bg-blue-600 hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                aria-label="Send message"
               >
                 <ArrowRightIcon className="h-4 w-4 text-white" />
               </Button>
@@ -239,6 +264,22 @@ export default function ChatInput(inputProps: inputProps) {
           </div>
         </div>
       </div>
+
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        multiple
+        className="hidden"
+        onChange={(event) => {
+          const files = Array.from(event.target.files ?? []);
+
+          handleFilesSelected(files);
+
+          // Allows selecting the same file again later.
+          event.target.value = "";
+        }}
+      />
 
       {/* Disclaimer */}
       <p className="font-paragraph mt-2 text-center text-[11px] leading-4 text-stone-500 dark:text-stone-400 sm:text-xs">

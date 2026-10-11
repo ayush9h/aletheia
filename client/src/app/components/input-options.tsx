@@ -11,11 +11,10 @@ import {
 import { FileIcon, GlobeIcon, PlusIcon } from "@radix-ui/react-icons";
 import { GitHubLogoIcon } from "@radix-ui/react-icons";
 
-/** Options available to users */
 export const options = [
   {
     key: "web_search",
-    toolLabel: "Web Search",
+    toolLabel: "Web search",
     toolIcon: GlobeIcon,
     section: "tools",
   },
@@ -25,30 +24,33 @@ export const options = [
     toolIcon: GitHubLogoIcon,
     section: "tools",
   },
-];
+] as const;
 
-/** Attachment options */
-const attachmentOptions = [
-  {
-    key: "file_attachment",
-    toolLabel: "Add file",
-    toolIcon: FileIcon,
-  },
-];
-
-function InputOptions({
-  tools,
-  setTools,
-}: {
+type InputOptionsProps = {
   tools: string[];
   setTools: (tools: string[]) => void;
-}) {
+  onFilesSelected?: (files: File[]) => void;
+};
+
+function InputOptions({ tools, setTools, onFilesSelected }: InputOptionsProps) {
   const addOption = (optionKey: string) => {
     if (tools.includes(optionKey)) {
       setTools(tools.filter((item) => item !== optionKey));
-    } else {
-      setTools([...tools, optionKey]);
+      return;
     }
+
+    setTools([...tools, optionKey]);
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files ?? []);
+
+    if (files.length > 0) {
+      onFilesSelected?.(files);
+    }
+
+    // Allows selecting the same file again.
+    event.target.value = "";
   };
 
   return (
@@ -72,20 +74,32 @@ function InputOptions({
           Attachments
         </DropdownMenuLabel>
 
-        {attachmentOptions.map((option) => {
-          const Icon = option.toolIcon;
+        <DropdownMenuItem
+          onSelect={(event) => {
+            event.preventDefault();
 
-          return (
-            <DropdownMenuItem
-              key={option.key}
-              disabled
-              className="flex items-center gap-2 text-stone-400 dark:text-stone-600"
-            >
-              <Icon className="h-4 w-4 shrink-0" />
-              <span className="text-xs">{option.toolLabel}</span>
-            </DropdownMenuItem>
-          );
-        })}
+            // Open the native file picker.
+            const input = document.createElement("input");
+
+            input.type = "file";
+            input.multiple = true;
+
+            input.onchange = () => {
+              const files = Array.from(input.files ?? []);
+
+              if (files.length > 0) {
+                onFilesSelected?.(files);
+              }
+            };
+
+            input.click();
+          }}
+          className="flex cursor-pointer items-center gap-2 dark:text-stone-200 dark:focus:bg-stone-800"
+        >
+          <FileIcon className="h-4 w-4 shrink-0 text-stone-500 dark:text-stone-400" />
+
+          <span className="text-xs">Add file</span>
+        </DropdownMenuItem>
 
         <DropdownMenuSeparator className="dark:bg-stone-700" />
 
@@ -96,6 +110,7 @@ function InputOptions({
 
         {options.map((option) => {
           const Icon = option.toolIcon;
+          const isSelected = tools.includes(option.key);
 
           return (
             <DropdownMenuItem
@@ -104,7 +119,17 @@ function InputOptions({
               className="flex cursor-pointer items-center gap-2 dark:text-stone-200 dark:focus:bg-stone-800"
             >
               <Icon className="h-4 w-4 shrink-0 text-stone-500 dark:text-stone-400" />
-              <span className="text-xs">{option.toolLabel}</span>
+
+              <span className="flex-1 text-xs">{option.toolLabel}</span>
+
+              {isSelected && (
+                <span
+                  className="text-xs text-blue-600 dark:text-blue-400"
+                  aria-hidden="true"
+                >
+                  ✓
+                </span>
+              )}
             </DropdownMenuItem>
           );
         })}
