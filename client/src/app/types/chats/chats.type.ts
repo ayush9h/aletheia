@@ -13,6 +13,7 @@ export interface inputProps {
   selectedModel: string;
   setSelectedModel: (model: string) => void;
   showStarterPrompts?: boolean;
+  onFilesSelected?: (files: File[]) => void;
 }
 
 /* Chat Window Props */

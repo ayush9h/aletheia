@@ -13,7 +13,7 @@
  * - Responsive mobile layout
  */
 
-import { useMemo, useRef } from "react";
+import { Fragment, useMemo, useRef } from "react";
 import {
   ArrowRightIcon,
   Cross2Icon,
@@ -23,30 +23,29 @@ import { Mic, Square } from "lucide-react";
 import TextareaAutosize from "react-textarea-autosize";
 import Image from "next/image";
 
-import { inputProps } from "@/app/types/chats/chats.type";
+import type { inputProps as ChatInputProps } from "@/app/types/chats/chats.type";
 import { useSpeechToText } from "@/app/components/voice/speech-text";
-import InputOptions, {
-  options,
-} from "@/app/components/input-options";
+import InputOptions, { options } from "@/app/components/input-options";
 import { MODEL_GROUPS } from "@/app/config/models";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/app/components/ui/dropdown-menu";
 import AppTooltip from "@/app/components/ui/app-tooltip";
 import { Button } from "@/app/components/ui/button";
 import StarterPrompts from "./starterPrompts/starterPrompts";
 
-export default function ChatInput(inputProps: inputProps) {
+export default function ChatInput(props: ChatInputProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const optionList = inputProps.tools;
+  const optionList = props.tools;
 
   const setOptionList = (tools: string[]) => {
-    inputProps.dispatch({
+    props.dispatch({
       type: "SET_TOOLS",
       payload: tools,
     });
@@ -55,10 +54,10 @@ export default function ChatInput(inputProps: inputProps) {
   const currentModel = useMemo(() => {
     return (
       MODEL_GROUPS.flatMap((group) => group.models).find(
-        (model) => model.value === inputProps.selectedModel,
+        (model) => model.value === props.selectedModel
       )?.label ?? "Select model"
     );
-  }, [inputProps.selectedModel]);
+  }, [props.selectedModel]);
 
   const {
     isListening,
@@ -66,18 +65,18 @@ export default function ChatInput(inputProps: inputProps) {
     toggle: toggleSpeechRecognition,
     cancel: cancelSpeechRecognition,
   } = useSpeechToText({
-    value: inputProps.value,
-    onChange: inputProps.onChange,
+    value: props.value,
+    onChange: props.onChange,
     language: "en-US",
   });
 
   const handleSend = () => {
-    if (!inputProps.value.trim()) {
+    if (!props.value.trim()) {
       return;
     }
 
     cancelSpeechRecognition();
-    inputProps.onSend();
+    props.onSend();
   };
 
   const handleFilesSelected = (files: File[]) => {
@@ -85,7 +84,7 @@ export default function ChatInput(inputProps: inputProps) {
       return;
     }
 
-    inputProps.onFilesSelected?.(files);
+    props.onFilesSelected?.(files);
   };
 
   return (
@@ -93,9 +92,9 @@ export default function ChatInput(inputProps: inputProps) {
       <div className="flex flex-col rounded-xl border border-stone-200 bg-white shadow-[0_1px_6px_rgba(0,0,0,0.025)] focus-within:border-blue-500 dark:border-stone-700/50 dark:bg-stone-800/50 dark:shadow-none dark:focus-within:border-blue-500">
         {/* User Input */}
         <TextareaAutosize
-          value={inputProps.value}
+          value={props.value}
           onChange={(event) => {
-            inputProps.onChange(event.target.value);
+            props.onChange(event.target.value);
           }}
           onKeyDown={(event) => {
             if (
@@ -107,7 +106,7 @@ export default function ChatInput(inputProps: inputProps) {
               handleSend();
             }
           }}
-          className="max-h-[10rem] w-full resize-none overflow-y-auto bg-transparent px-3 py-3 text-sm text-stone-900 outline-none placeholder:text-stone-400 dark:text-stone-100 dark:placeholder:text-stone-500 sm:px-4"
+          className="w-full resize-none overflow-y-auto bg-transparent px-3 py-3 text-sm text-stone-900 outline-none placeholder:text-stone-400 dark:text-stone-100 dark:placeholder:text-stone-500 sm:px-4"
           minRows={1}
           maxRows={6}
           placeholder={isListening ? "Listening…" : "Ask anything"}
@@ -122,14 +121,12 @@ export default function ChatInput(inputProps: inputProps) {
               <InputOptions
                 tools={optionList}
                 setTools={setOptionList}
-                onFilesSelected={handleFilesSelected}
+                onAddFileClick={() => fileInputRef.current?.click()}
               />
             </div>
 
             {optionList.map((item) => {
-              const tool = options.find(
-                (option) => option.key === item,
-              );
+              const tool = options.find((option) => option.key === item);
 
               if (!tool) {
                 return null;
@@ -169,7 +166,7 @@ export default function ChatInput(inputProps: inputProps) {
                 <DropdownMenuTrigger asChild>
                   <button
                     type="button"
-                    className="font-paragraph flex h-8 max-w-28 shrink-0 cursor-pointer items-center gap-1 rounded-md bg-stone-100 px-2 text-sm text-stone-600 transition-colors dark:text-stone-300 dark:hover:bg-stone-800 sm:max-w-none sm:px-2.5"
+                    className="font-paragraph max-w-28 flex h-8 shrink-0 cursor-pointer items-center gap-1 rounded-md bg-stone-100 px-2 text-sm text-stone-600 transition-colors hover:bg-stone-200 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700 sm:max-w-none sm:px-2.5"
                   >
                     <span className="truncate">{currentModel}</span>
 
@@ -182,8 +179,12 @@ export default function ChatInput(inputProps: inputProps) {
                 align="end"
                 className="font-paragraph w-56 dark:border-stone-700 dark:bg-stone-900"
               >
-                {MODEL_GROUPS.map((group) => (
-                  <div key={group.provider}>
+                {MODEL_GROUPS.map((group, index) => (
+                  <Fragment key={group.provider}>
+                    {index > 0 && (
+                      <DropdownMenuSeparator className="dark:bg-stone-700" />
+                    )}
+
                     <DropdownMenuLabel className="flex items-center gap-2 text-xs text-stone-500 dark:text-stone-400">
                       <Image
                         src={group.url}
@@ -200,14 +201,14 @@ export default function ChatInput(inputProps: inputProps) {
                       <DropdownMenuItem
                         key={model.value}
                         onSelect={() => {
-                          inputProps.setSelectedModel(model.value);
+                          props.setSelectedModel(model.value);
                         }}
                         className="cursor-pointer pl-8 text-xs dark:text-stone-200 dark:focus:bg-stone-800 dark:focus:text-stone-100"
                       >
                         {model.label}
                       </DropdownMenuItem>
                     ))}
-                  </div>
+                  </Fragment>
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
@@ -215,19 +216,13 @@ export default function ChatInput(inputProps: inputProps) {
             {/* Microphone */}
             {isSpeechSupported && (
               <AppTooltip
-                label={
-                  isListening
-                    ? "Stop voice input"
-                    : "Start voice input"
-                }
+                label={isListening ? "Stop voice input" : "Start voice input"}
               >
                 <button
                   type="button"
                   onClick={toggleSpeechRecognition}
                   aria-label={
-                    isListening
-                      ? "Stop voice input"
-                      : "Start voice input"
+                    isListening ? "Stop voice input" : "Start voice input"
                   }
                   aria-pressed={isListening}
                   className={[
@@ -238,10 +233,7 @@ export default function ChatInput(inputProps: inputProps) {
                   ].join(" ")}
                 >
                   {isListening ? (
-                    <Square
-                      className="h-3.5 w-3.5"
-                      fill="currentColor"
-                    />
+                    <Square className="h-3.5 w-3.5" fill="currentColor" />
                   ) : (
                     <Mic className="h-4 w-4" />
                   )}
@@ -254,7 +246,7 @@ export default function ChatInput(inputProps: inputProps) {
               <Button
                 type="button"
                 onClick={handleSend}
-                disabled={!inputProps.value.trim()}
+                disabled={!props.value.trim()}
                 className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md bg-blue-600 hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
                 aria-label="Send message"
               >
@@ -265,7 +257,7 @@ export default function ChatInput(inputProps: inputProps) {
         </div>
       </div>
 
-      {/* Hidden file input */}
+      {/* Hidden file input (triggered from the "Add file" menu item) */}
       <input
         ref={fileInputRef}
         type="file"
@@ -288,9 +280,9 @@ export default function ChatInput(inputProps: inputProps) {
       </p>
 
       <StarterPrompts
-        show={inputProps.showStarterPrompts ?? false}
+        show={props.showStarterPrompts ?? false}
         onPromptSelect={(prompt) => {
-          inputProps.onChange(prompt);
+          props.onChange(prompt);
         }}
       />
     </div>

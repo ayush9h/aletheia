@@ -8,9 +8,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/app/components/ui/dropdown-menu";
-import { FileIcon, GlobeIcon, PlusIcon } from "@radix-ui/react-icons";
-import { GitHubLogoIcon } from "@radix-ui/react-icons";
+import {
+  FileIcon,
+  GitHubLogoIcon,
+  GlobeIcon,
+  PlusIcon,
+} from "@radix-ui/react-icons";
 
+// Exported so ChatInput can render the selected-tool chips.
 export const options = [
   {
     key: "web_search",
@@ -29,28 +34,22 @@ export const options = [
 type InputOptionsProps = {
   tools: string[];
   setTools: (tools: string[]) => void;
-  onFilesSelected?: (files: File[]) => void;
+  /** Opens the file picker owned by the parent (ChatInput). */
+  onAddFileClick: () => void;
 };
 
-function InputOptions({ tools, setTools, onFilesSelected }: InputOptionsProps) {
-  const addOption = (optionKey: string) => {
+export default function InputOptions({
+  tools,
+  setTools,
+  onAddFileClick,
+}: InputOptionsProps) {
+  const toggleTool = (optionKey: string) => {
     if (tools.includes(optionKey)) {
       setTools(tools.filter((item) => item !== optionKey));
       return;
     }
 
     setTools([...tools, optionKey]);
-  };
-
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.target.files ?? []);
-
-    if (files.length > 0) {
-      onFilesSelected?.(files);
-    }
-
-    // Allows selecting the same file again.
-    event.target.value = "";
   };
 
   return (
@@ -75,25 +74,7 @@ function InputOptions({ tools, setTools, onFilesSelected }: InputOptionsProps) {
         </DropdownMenuLabel>
 
         <DropdownMenuItem
-          onSelect={(event) => {
-            event.preventDefault();
-
-            // Open the native file picker.
-            const input = document.createElement("input");
-
-            input.type = "file";
-            input.multiple = true;
-
-            input.onchange = () => {
-              const files = Array.from(input.files ?? []);
-
-              if (files.length > 0) {
-                onFilesSelected?.(files);
-              }
-            };
-
-            input.click();
-          }}
+          onSelect={onAddFileClick}
           className="flex cursor-pointer items-center gap-2 dark:text-stone-200 dark:focus:bg-stone-800"
         >
           <FileIcon className="h-4 w-4 shrink-0 text-stone-500 dark:text-stone-400" />
@@ -115,7 +96,7 @@ function InputOptions({ tools, setTools, onFilesSelected }: InputOptionsProps) {
           return (
             <DropdownMenuItem
               key={option.key}
-              onSelect={() => addOption(option.key)}
+              onSelect={() => toggleTool(option.key)}
               className="flex cursor-pointer items-center gap-2 dark:text-stone-200 dark:focus:bg-stone-800"
             >
               <Icon className="h-4 w-4 shrink-0 text-stone-500 dark:text-stone-400" />
@@ -137,5 +118,3 @@ function InputOptions({ tools, setTools, onFilesSelected }: InputOptionsProps) {
     </DropdownMenu>
   );
 }
-
-export default InputOptions;
