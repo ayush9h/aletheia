@@ -14,6 +14,8 @@ import { useReadAloud } from "@/app/components/voice/read-aloud";
 import type { Message } from "@/app/types/user-message";
 import PlanPanel from "@/app/components/ui/plan-panel";
 import ThinkingStatus from "@/app/components/ui/randomizer";
+import CodeBlock from "./code-block";
+
 
 const MessageBubble = memo(function MessageBubble({
   message,
@@ -60,6 +62,24 @@ const MessageBubble = memo(function MessageBubble({
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
                 components={{
+                  code({ className, children, ...props }) {
+                    const match = /language-([\w-]+)/.exec(className || "");
+
+                    const code = String(children).replace(/\n$/, "");
+
+                    if (!className) {
+                      return (
+                        <code
+                          className="font-paragraph rounded bg-stone-200 px-1.5 py-0.5 text-[0.9em] text-stone-800 dark:bg-stone-800 dark:text-stone-200"
+                          {...props}
+                        >
+                          {children}
+                        </code>
+                      );
+                    }
+                    return <CodeBlock code={code} language={match?.[1]} />;
+                  },
+
                   table: ({ children }) => (
                     <div className="my-3 w-full overflow-x-auto">
                       <table className="min-w-[800px] border-collapse text-sm">

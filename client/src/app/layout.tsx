@@ -18,7 +18,7 @@ const headerFont = Poiret_One({
 });
 
 const paragraphFont = localFont({
-  src: "./fonts/AlkesRegular.ttf",
+  src: "./fonts/Bookerly.ttf",
   variable: "--font-paragraph",
   display: "swap",
 });

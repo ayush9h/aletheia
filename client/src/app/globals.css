@@ -18,6 +18,30 @@
   }
 }
 
+/* Code Block styling */
+.shiki-wrapper pre {
+  margin: 0;
+  min-width: max-content;
+  overflow: visible;
+  padding: 1rem;
+  font-size: 0.8rem;
+  line-height: 1.5rem;
+}
+
+.shiki-wrapper code {
+  display: block;
+}
+
+.shiki-wrapper code span {
+  color: var(--shiki-light);
+}
+
+.dark .shiki-wrapper code span {
+  color: var(--shiki-dark);
+  background-color: var(--shiki-dark-bg);
+}
+/* End of Code Block styling*/
+
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
