@@ -7,6 +7,7 @@ from sqlalchemy.exc import DatabaseError
 from app.api.sessions import (
     all_chats,
     delete_session,
+    rename_session,
     users_session,
 )
 
@@ -342,3 +343,108 @@ async def test_all_chats_handles_database_error():
     }
 
     session.rollback.assert_awaited_once()
+
+
+# Renaming session tests
+@pytest.mark.asyncio
+@pytest.mark.parametrize("title", ["", "   "])
+async def test_rename_session_rejects_empty_title(title):
+    session = AsyncMock()
+
+    result = await rename_session(
+        session_id=123,
+        payload=MagicMock(session_title=title),
+        user_id="user-123",
+        session=session,
+    )
+
+    assert result == {
+        "status": "error",
+        "message": "Session title cannot be empty",
+        "code": 400,
+    }
+
+    session.execute.assert_not_awaited()
+    session.commit.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_rename_session_returns_not_found():
+    session = AsyncMock()
+    session.execute.return_value = make_session_result(scalar=None)
+
+    result = await rename_session(
+        session_id=123,
+        payload=MagicMock(session_title="New Title"),
+        user_id="user-123",
+        session=session,
+    )
+
+    assert result == {
+        "status": "error",
+        "message": "Session not found",
+        "code": 404,
+    }
+
+    session.commit.assert_not_awaited()
+    session.refresh.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_rename_session_success_strips_title():
+    db_session = MagicMock()
+    db_session.session_id = 123
+    db_session.session_title = "Old Title"
+    db_session.created_at = datetime(2026, 10, 1, 10, 0)
+    db_session.is_pinned = False
+
+    session = AsyncMock()
+    session.execute.return_value = make_session_result(scalar=db_session)
+
+    result = await rename_session(
+        session_id=123,
+        payload=MagicMock(session_title="  New Title  "),
+        user_id="user-123",
+        session=session,
+    )
+
+    assert db_session.session_title == "New Title"
+
+    assert result == {
+        "status": "success",
+        "message": "Session renamed successfully",
+        "session": {
+            "session_id": 123,
+            "session_title": "New Title",
+            "created_at": datetime(2026, 10, 1, 10, 0),
+            "is_pinned": False,
+        },
+    }
+
+    session.commit.assert_awaited_once()
+    session.refresh.assert_awaited_once_with(db_session)
+
+
+@pytest.mark.asyncio
+async def test_rename_session_handles_database_error():
+    session = AsyncMock()
+    session.execute.side_effect = DatabaseError(
+        "database error",
+        None,
+        None,
+    )
+
+    result = await rename_session(
+        session_id=123,
+        payload=MagicMock(session_title="New Title"),
+        user_id="user-123",
+        session=session,
+    )
+
+    assert result == {
+        "status": "error",
+        "message": "Unable to rename session",
+    }
+
+    session.rollback.assert_awaited_once()
+    session.commit.assert_not_awaited()

@@ -8,6 +8,7 @@ from sqlmodel import delete, select
 
 from app.db_service.db import get_session
 from app.db_service.models import UserChats, UserSessions
+from app.schemas.session_schema import RenameSessionRequest
 from app.utils.rate_limiters.endpoints.sessions import session_rate_limit
 
 logger = structlog.get_logger(__name__)
@@ -222,4 +223,80 @@ async def all_chats(
 
         return {
             "message": "Unable to delete chats",
+        }
+
+
+# Rename a session
+@session_router.patch(
+    "/sessions/{session_id}/rename",
+    tags=["Sessions for a particular user"],
+    description="Rename a session for a given user",
+)
+async def rename_session(
+    session_id: int,
+    payload: RenameSessionRequest,
+    user_id: str,
+    _: None = Depends(session_rate_limit),
+    session: AsyncSession = Depends(get_session),
+):
+    title = payload.session_title.strip()
+
+    if not title:
+        return {
+            "status": "error",
+            "message": "Session title cannot be empty",
+            "code": 400,
+        }
+
+    try:
+        stmt = select(UserSessions).where(
+            UserSessions.session_id == session_id,
+            UserSessions.user_id == user_id,
+        )
+
+        result = await session.execute(stmt)
+        db_session = result.scalar_one_or_none()
+
+        if not db_session:
+            return {
+                "status": "error",
+                "message": "Session not found",
+                "code": 404,
+            }
+
+        db_session.session_title = title
+
+        await session.commit()
+        await session.refresh(db_session)
+
+        logger.info(
+            "Session renamed",
+            user_id=user_id,
+            session_id=session_id,
+            session_title=title,
+        )
+
+        return {
+            "status": "success",
+            "message": "Session renamed successfully",
+            "session": {
+                "session_id": db_session.session_id,
+                "session_title": db_session.session_title,
+                "created_at": db_session.created_at,
+                "is_pinned": db_session.is_pinned,
+            },
+        }
+
+    except DatabaseError:
+        await session.rollback()
+
+        logger.exception(
+            "Error occurred while renaming session",
+            user_id=user_id,
+            session_id=session_id,
+        )
+
+        return {
+            "status": "error",
+            "message": "Unable to rename session",
         }
