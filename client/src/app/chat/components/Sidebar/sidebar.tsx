@@ -37,7 +37,7 @@ import {
 
 import { SessionItem } from "@/app/components/session-item";
 import { useChatSession } from "@/app/hooks/useChatSession";
-import { pinSession } from "@/app/lib/api/userData";
+import { pinSession, renameUserSession } from "@/app/lib/api/userData";
 
 import type { ChatAction } from "@/app/types/chats/chat-action";
 import type { Session } from "@/app/types/user-message";
@@ -167,6 +167,34 @@ export default function Sidebar({
     auth?.user?.id,
     dispatch,
     selectedSessionId,
+  );
+
+  const handleRenameSession = useCallback(
+    async (sessionId: number, title: string) => {
+      const userId = auth?.user?.id;
+
+      if (!userId) {
+        return;
+      }
+
+      try {
+        await renameUserSession(sessionId, userId, title);
+
+        dispatch({
+          type: "UPDATE_SESSION_TITLE",
+          payload: {
+            sessionId,
+            title,
+          },
+        });
+      } catch (error) {
+        console.error("Unable to rename session", {
+          sessionId,
+          error,
+        });
+      }
+    },
+    [auth?.user?.id, dispatch]
   );
 
   const handlePinSession = useCallback(
@@ -393,6 +421,7 @@ export default function Sidebar({
                         onSelectSession={onSelectSession}
                         handlePinSession={handlePinSession}
                         handleDeleteSession={handleDeleteSession}
+                        handleRenameSession={handleRenameSession}
                       />
                     </div>
                   );

@@ -76,3 +76,10 @@ export async function getUserAnalytics(
 
   return response.data;
 }
+
+// Rename a user specific sesssion
+export async function renameUserSession(sessionId: number, userId: string, sessionTitle: string) {
+  return api.patch(`/sessions/${sessionId}/rename`, {
+    session_title: sessionTitle
+  },{params:{user_id:userId},})
+}

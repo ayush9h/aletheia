@@ -64,6 +64,17 @@ export const ChatReducer = (state: ChatState, action: ChatAction) => {
         sessions: state.sessions.filter((s) => s.session_id !== action.payload),
       };
 
+    // Updates the title of the specific session
+    case "UPDATE_SESSION_TITLE":
+      return {
+        ...state,
+        sessions: state.sessions.map((session) =>
+          session.session_id === action.payload.sessionId
+            ? { ...session, session_title: action.payload.title }
+            : session
+        ),
+      };
+
     // Set user preferences
     case "SET_USER_PREF":
       return {

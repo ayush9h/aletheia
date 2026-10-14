@@ -53,6 +53,14 @@ export type ChatAction =
   | { type: "DELETE_SESSION"; payload: number }
 
   /**
+   * Updates the current session title
+   */
+  | {
+      type: "UPDATE_SESSION_TITLE";
+      payload: { sessionId: number; title: string };
+    }
+
+  /**
    * Sets or clears personalization preferences.
    */
   | { type: "SET_USER_PREF"; payload?: UserPrefProps }

@@ -1,5 +1,9 @@
 import { Session } from "./user-message";
-/** Session Handling */
+/*
+   Session Handling
+
+*/
+
 export type SessionItemProps = {
   s: Session;
   open: boolean;
@@ -7,4 +11,5 @@ export type SessionItemProps = {
   onSelectSession: (id: number) => void;
   handlePinSession: (sessionId: number) => void | Promise<void>;
   handleDeleteSession: (sessionId: number) => void | Promise<void>;
+  handleRenameSession: (sessionId: number) => void | Promise<void>;
 };
