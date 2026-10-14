@@ -11,5 +11,8 @@ export type SessionItemProps = {
   onSelectSession: (id: number) => void;
   handlePinSession: (sessionId: number) => void | Promise<void>;
   handleDeleteSession: (sessionId: number) => void | Promise<void>;
-  handleRenameSession: (sessionId: number) => void | Promise<void>;
+  handleRenameSession: (
+    sessionId: number,
+    title: string
+  ) => void | Promise<void>;
 };
