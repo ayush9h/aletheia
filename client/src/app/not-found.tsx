@@ -30,7 +30,7 @@ export default function NotFound() {
 
         <Link
           href="/"
-          className="inline-block rounded-md  bg-blue-600 px-6 py-3 font-semibold text-white transition-colors hover:bg-blue-700 focus-visible:outline-offset-[3px] focus-visible:outline-blue-500"
+          className="inline-block rounded-md  bg-brand-600 px-6 py-3 font-semibold text-white transition-colors hover:bg-brand-700 focus-visible:outline-offset-[3px] focus-visible:outline-brand-500"
         >
           Go to home
         </Link>

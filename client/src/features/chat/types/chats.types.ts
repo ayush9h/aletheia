@@ -1,0 +1,28 @@
+import { Message } from "@/types/user-message";
+import { ChatAction } from "@/features/chat/types/chat-action";
+import { UserPrefProps } from "@/types/user-pref";
+// Chat Input Props
+export interface inputProps {
+  value: string;
+  onChange: (v: string) => void;
+  onSend: () => void;
+  tools: string[];
+  dispatch: React.Dispatch<ChatAction>;
+  selectedModel: string;
+  setSelectedModel: (model: string) => void;
+  showStarterPrompts?: boolean;
+  onFilesSelected?: (files: File[]) => void;
+}
+
+/* Chat Window Props */
+
+export interface ChatWindowProps {
+  messages: Message[];
+  input: string;
+  selectedModel: string;
+  dispatch: React.Dispatch<ChatAction>;
+  userPref: UserPrefProps;
+  onSend: () => void;
+  userName: string;
+  tools: string[];
+}

@@ -1,0 +1,22 @@
+// User-level personalization preferences
+export type UserPrefProps = {
+  userId?: string;
+
+  // Preferred conversational tone shaping
+  nickname: string;
+
+  // Professional context used to bias explanations,
+  occupation: string;
+
+  // Baseline conversational tone profile
+  baseTone: string;
+
+  // Free-form persistent instruction
+  userCustomInstruction: string;
+
+  // Interest signals used for recommendation
+  userHobbies: string;
+
+  // Store memory on the basis of user permission
+  memoryEnabled: boolean;
+};

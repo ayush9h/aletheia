@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { auth } from "@/app/auth";
+import { auth } from "@/auth";
 
 function connectorResult(
   status: "connected" | "error"

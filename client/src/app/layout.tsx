@@ -4,11 +4,11 @@ import localFont from "next/font/local";
 
 import "./globals.css";
 import { SessionProvider } from "next-auth/react";
-import { auth } from "./auth";
-import { TooltipProvider } from "./components/ui/tooltip";
-import { Toaster } from 'sonner'
+import { auth } from "@/auth";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "sonner";
 import { ThemeProvider } from "next-themes";
-import ThemeShortcuts from "./reducers/theme-shortcut";
+import ThemeShortcuts from "@/components/theme-shortcuts";
 
 const headerFont = Poiret_One({
   subsets: ["latin"],
@@ -39,7 +39,7 @@ export default async function RootLayout({
       <body
         className={`${headerFont.variable} ${paragraphFont.variable} antialiased`}
       >
-        <ThemeProvider  attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <TooltipProvider>
             <SessionProvider session={session}>
               <ThemeShortcuts />

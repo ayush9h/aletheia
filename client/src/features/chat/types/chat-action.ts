@@ -1,0 +1,58 @@
+import { Session, Message } from "@/types/user-message";
+import { UserPrefProps } from "@/types/user-pref";
+import { Plan } from "@/types/user-message";
+// Valid actions performed on the chat page
+export type ChatAction =
+  // Updates current input buffer (controlled input state)
+  | { type: "SET_INPUT"; payload: string }
+
+  // Clears input buffer after successful send
+  | { type: "CLEAR_INPUT" }
+
+  // Switches active LLM model
+  | { type: "SET_MODEL"; payload: string }
+
+  // Appends a single message to current session timeline
+  | { type: "ADD_MESSAGE"; payload: Message }
+
+  // Replaces entire message list
+  | { type: "SET_MESSAGES"; payload: Message[] }
+
+  // Adds a newly created chat session to state
+  | { type: "ADD_SESSION"; payload: Session }
+
+  // Replaces full session collection
+  | { type: "SET_SESSIONS"; payload: Session[] }
+
+  // Marks currently active session
+  | { type: "SET_SELECTED_SESSION"; payload: number | null }
+
+  // Removes session and associated state references
+  | { type: "DELETE_SESSION"; payload: number }
+
+  // Updates the current session title
+  | {
+      type: "UPDATE_SESSION_TITLE";
+      payload: { sessionId: number; title: string };
+    }
+
+  // Sets or clears personalization preferences
+  | { type: "SET_USER_PREF"; payload?: UserPrefProps }
+  | {
+    // Updates selected tool list for current message composer
+    type: "SET_TOOLS";
+    payload: string[];
+  }
+  | {
+    type: "UPDATE_LAST_ASSISTANT_MESSAGE";
+    payload: Partial<{
+      text: string;
+      reasoning: string;
+      duration: number;
+      tokens_consumed: number;
+      isStreaming: boolean;
+      plan: Plan;
+    }>;
+  }
+  | { type: "SET_CURRENT_PLAN"; payload: Plan }
+  | { type: "UPDATE_LAST_ASSISTANT_PLAN_STEP"; payload: { step_id: number; agent_name: string; status: "running" | "success" | "failed" } };
