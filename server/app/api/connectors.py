@@ -9,6 +9,7 @@ from sqlmodel import select
 from app.db_service.db import get_session
 from app.db_service.models import UserConnectors
 from app.schemas.connectors.github import GitHubConnectorRequest
+from app.schemas.connectors.slack import SlackConnectorRequest
 from app.utils.config import settings
 
 logger = structlog.get_logger(__name__)
@@ -26,6 +27,33 @@ async def store_github_connector(
     x_connector_secret: str | None = Header(default=None),
     session: AsyncSession = Depends(get_session),
 ):
+    return await store_connector(
+        "github", "GitHub", payload, x_connector_secret, session
+    )
+
+
+@connector_router.post(
+    "/slack",
+    tags=["connectors"],
+    description="Store or update a user's Slack connector",
+)
+async def store_slack_connector(
+    payload: SlackConnectorRequest,
+    x_connector_secret: str | None = Header(default=None),
+    session: AsyncSession = Depends(get_session),
+):
+    return await store_connector(
+        "slack", "Slack", payload, x_connector_secret, session
+    )
+
+
+async def store_connector(
+    provider: str,
+    label: str,
+    payload: GitHubConnectorRequest | SlackConnectorRequest,
+    x_connector_secret: str | None,
+    session: AsyncSession,
+):
     if not x_connector_secret or not secrets.compare_digest(
         x_connector_secret,
         settings.CONNECTOR_SECRET,
@@ -38,7 +66,7 @@ async def store_github_connector(
     try:
         stmt = select(UserConnectors).where(
             UserConnectors.user_id == payload.userId,
-            UserConnectors.provider == "github",
+            UserConnectors.provider == provider,
         )
 
         result = await session.execute(stmt)
@@ -51,14 +79,14 @@ async def store_github_connector(
             connector.status = "connected"
 
             logger.info(
-                "GitHub connector updated",
+                f"{label} connector updated",
                 user_id=payload.userId,
             )
 
         else:
             connector = UserConnectors(
                 user_id=payload.userId,
-                provider="github",
+                provider=provider,
                 provider_user_id=payload.providerUserId,
                 provider_username=payload.providerUsername,
                 access_token=payload.accessToken,
@@ -68,7 +96,7 @@ async def store_github_connector(
             session.add(connector)
 
             logger.info(
-                "GitHub connector created",
+                f"{label} connector created",
                 user_id=payload.userId,
             )
 
@@ -76,7 +104,7 @@ async def store_github_connector(
 
         return {
             "status": "success",
-            "message": "GitHub connector stored successfully",
+            "message": f"{label} connector stored successfully",
             "code": 200,
         }
 
@@ -84,13 +112,13 @@ async def store_github_connector(
         await session.rollback()
 
         logger.exception(
-            "Failed to store GitHub connector",
+            f"Failed to store {label} connector",
             user_id=payload.userId,
         )
 
         raise HTTPException(
             status_code=500,
-            detail="Failed to store GitHub connector",
+            detail=f"Failed to store {label} connector",
         ) from e
 
 

@@ -6,6 +6,7 @@ from langchain_core.language_models import BaseChatModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .github.agent import create_github_agent
+from .slack.agent import create_slack_agent
 from .web_search.agent import create_web_search_agent
 
 
@@ -34,6 +35,16 @@ AGENT_REGISTRY: dict[str, AgentSpec] = {
                 "with pull requests."
             ),
             factory=lambda ctx: create_github_agent(
+                llm=ctx.llm, session=ctx.session, user_id=ctx.user_id
+            ),
+        ),
+        AgentSpec(
+            name="slack_agent",
+            description=(
+                "Interacts with the user's connected Slack workspace. "
+                "Can list channels, read channel history, and search messages."
+            ),
+            factory=lambda ctx: create_slack_agent(
                 llm=ctx.llm, session=ctx.session, user_id=ctx.user_id
             ),
         ),

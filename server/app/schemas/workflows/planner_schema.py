@@ -28,7 +28,7 @@ class Step(BaseModel):
         default=None,
         description=(
             "Name of the specialist agent to execute, such as "
-            "github_agent or web_search_agent. "
+            "github_agent, slack_agent or web_search_agent. "
             "Null when no agent is required."
         ),
     )
