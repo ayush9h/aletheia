@@ -1,49 +1,9 @@
-import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { auth } from "@/auth";
+import { connectorResult as sharedConnectorResult } from "@/features/connectors/utils/connector-result";
 
-function connectorResult(
-  status: "connected" | "error"
-) {
-  return new NextResponse(
-    `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>GitHub</title>
-        </head>
-
-        <body>
-          <script>
-            window.opener?.postMessage(
-              {
-                type: "connector",
-                connector: "github",
-                status: "${status}"
-              },
-              window.location.origin
-            );
-
-            window.close();
-          </script>
-
-          <p>
-            ${
-              status === "connected"
-                ? "GitHub connected successfully."
-                : "Unable to connect GitHub."
-            }
-          </p>
-        </body>
-      </html>
-    `,
-    {
-      headers: {
-        "Content-Type": "text/html",
-      },
-    }
-  );
-}
+const connectorResult = (status: "connected" | "error") =>
+  sharedConnectorResult("github", "GitHub", status);
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);

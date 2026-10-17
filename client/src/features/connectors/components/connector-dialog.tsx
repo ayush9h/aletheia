@@ -108,8 +108,6 @@ export default function ConnectorsDialog({ open, onOpenChange, userId }: Connect
   };
 
   const handleConnect = (connectorId: string) => {
-    if (connectorId !== "github") return;
-
     setConnectingId(connectorId);
 
     const width = 600;
