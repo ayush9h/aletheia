@@ -31,11 +31,46 @@
   }
 }
 
-body {
+html:root:root {
   --font-paragraph: var(--font-bookerly);
+  --c15t-font-family: var(--font-paragraph);
+  --c15t-font-size-sm: 0.75rem;
+  --c15t-font-size-base: 0.875rem;
+  --c15t-font-size-lg: 1rem;
+  --c15t-radius-md: 0.5rem;
+  --c15t-radius-lg: 0.75rem;
+  --c15t-shadow-lg: 0 10px 30px -10px rgb(28 25 23 / 0.2);
+  --c15t-primary: var(--color-brand-600);
+  --c15t-primary-hover: var(--color-brand-700);
+  --c15t-text-on-primary: var(--color-white);
+  --c15t-surface: var(--color-white);
+  --c15t-surface-hover: var(--color-stone-50);
+  --c15t-border: var(--color-stone-200);
+  --c15t-border-hover: var(--color-stone-300);
+  --c15t-text: var(--color-stone-900);
+  --c15t-text-muted: var(--color-stone-500);
+  --c15t-overlay: rgb(12 10 9 / 0.5);
+  --c15t-switch-track: var(--color-stone-300);
+  --c15t-switch-track-active: var(--color-brand-600);
+  --c15t-switch-thumb: var(--color-white);
 }
 
-:root[data-font="dyslexic"] body {
+html:root:root.dark {
+  --c15t-shadow-lg: 0 10px 30px -10px rgb(0 0 0 / 0.6);
+  --c15t-primary: var(--color-brand-500);
+  --c15t-primary-hover: var(--color-brand-600);
+  --c15t-surface: var(--color-stone-900);
+  --c15t-surface-hover: var(--color-stone-800);
+  --c15t-border: var(--color-stone-700);
+  --c15t-border-hover: var(--color-stone-600);
+  --c15t-text: var(--color-stone-100);
+  --c15t-text-muted: var(--color-stone-400);
+  --c15t-switch-track: var(--color-stone-700);
+  --c15t-switch-track-active: var(--color-brand-500);
+  --c15t-switch-thumb: var(--color-stone-100);
+}
+
+:root:root[data-font="dyslexic"] {
   --font-paragraph: var(--font-dyslexic);
 }
 

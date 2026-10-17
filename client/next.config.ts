@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import {withConsentManifest} from "c15t/next/build"
 
 const nextConfig: NextConfig = {
   images: {
@@ -13,6 +14,6 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-};
+} satisfies NextConfig;
 
-export default nextConfig;
+export default withConsentManifest(nextConfig);

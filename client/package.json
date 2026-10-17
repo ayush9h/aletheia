@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@c15t/integrations": "^3.1.0",
     "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-dropdown-menu": "^2.1.16",
@@ -16,6 +17,7 @@
     "@radix-ui/react-slot": "^1.2.4",
     "@radix-ui/react-tooltip": "^1.2.12",
     "axios": "^1.18.0",
+    "c15t": "^3.1.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",

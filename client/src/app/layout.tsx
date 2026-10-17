@@ -9,6 +9,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "next-themes";
 import ThemeShortcuts from "@/components/theme-shortcuts";
+import {ConsentBanner, ConsentDialog, ConsentDialogLink, ConsentRoot} from 'c15t/next'
+import {resolveConsent} from 'c15t/next/server'
 
 const headerFont = Poiret_One({
   subsets: ["latin"],
@@ -44,22 +46,41 @@ export default async function RootLayout({
 }>) {
   const session = await auth();
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html
+      lang="en"
+      className={`${headerFont.variable} ${paragraphFont.variable} ${dyslexicFont.variable}`}
+      suppressHydrationWarning
+    >
       <head>
         <script dangerouslySetInnerHTML={{ __html: appearanceScript }} />
       </head>
       <body
-        className={`${headerFont.variable} ${paragraphFont.variable} ${dyslexicFont.variable} antialiased`}
+        className="antialiased"
       >
+        <ConsentRoot state={resolveConsent()}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <TooltipProvider>
             <SessionProvider session={session}>
+              
               <ThemeShortcuts />
+              
               {children}
+
+              <ConsentBanner/>
+              <ConsentDialog/>
+              
+              <footer>
+                <ConsentDialogLink>Privacy settings</ConsentDialogLink>
+              </footer>
+
               <Toaster position="bottom-right" />
+
             </SessionProvider>
+
           </TooltipProvider>
         </ThemeProvider>
+
+        </ConsentRoot>
       </body>
     </html>
   );
