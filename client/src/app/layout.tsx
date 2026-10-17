@@ -9,7 +9,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "next-themes";
 import ThemeShortcuts from "@/components/theme-shortcuts";
-import {ConsentBanner, ConsentDialog, ConsentDialogLink, ConsentRoot} from 'c15t/next'
+import {ConsentBanner, ConsentDialog, ConsentRoot} from 'c15t/next'
 import {resolveConsent} from 'c15t/next/server'
 
 const headerFont = Poiret_One({
@@ -69,10 +69,6 @@ export default async function RootLayout({
               <ConsentBanner/>
               <ConsentDialog/>
               
-              <footer>
-                <ConsentDialogLink>Privacy settings</ConsentDialogLink>
-              </footer>
-
               <Toaster position="bottom-right" />
 
             </SessionProvider>

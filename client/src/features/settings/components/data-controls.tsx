@@ -10,6 +10,7 @@ import { deleteUserChatsAll } from "@/lib/api/user-data";
 import type { ChatAction } from "@/features/chat/types/chat-action";
 import { Button } from "@/components/ui/button";
 
+import { ConsentDialogLink } from "c15t/next";
 type DataControlsProps = {
   userId: string;
   dispatch: Dispatch<ChatAction>;
@@ -48,7 +49,7 @@ export default function DataControls({
       </DialogHeader>
 
       <div className="mt-8">
-        <div className="flex flex-col gap-5 sm:grid sm:grid-cols-[minmax(0,1fr)_7rem] sm:items-center sm:gap-6">
+        <div className="flex flex-col gap-5 sm:grid sm:grid-cols-[minmax(0,1fr)_8rem] sm:items-center sm:gap-6">
           <div className="min-w-0 text-left">
             <h3 className="text-sm font-medium text-stone-800 dark:text-stone-200">
               Delete all chats
@@ -65,6 +66,22 @@ export default function DataControls({
           >
             {isDeletingChats ? "Deleting..." : "Delete all"}
           </Button>
+
+
+          <div className="min-w-0 text-left">
+            <h3 className="text-sm font-medium text-stone-800 dark:text-stone-200">
+              Change Privacy settings
+            </h3>
+            <p className="mt-1 max-w-lg text-xs leading-5 text-stone-500 dark:text-stone-400">
+              Change privacy options for personalized content, or opt-out of it.
+            </p>
+          </div>
+
+          <ConsentDialogLink>
+            <p className="w-fit cursor-pointer whitespace-nowrap rounded-md px-4 py-2 text-xs bg-stone-100 hover:bg-stone-200 dark:border-stone-900 dark:bg-stone-950/30 dark:stone-red-400 dark:hover:bg-stone-950/50 sm:justify-self-end">
+              Modify 
+            </p></ConsentDialogLink>
+
         </div>
       </div>
     </div>
