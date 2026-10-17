@@ -20,6 +20,16 @@ import type { Message } from "@/types/user-message";
 const REMARK_PLUGINS = [remarkGfm];
 
 const MARKDOWN_COMPONENTS: Components = {
+  a: ({ href, children }) => (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="break-all text-brand-600 underline decoration-current/40 underline-offset-2 transition-colors hover:decoration-current dark:text-brand-400"
+    >
+      {children}
+    </a>
+  ),
   code({ className, children, ...props }) {
     if (!className) {
       return (
@@ -75,7 +85,7 @@ const MessageBubble = memo(function MessageBubble({ message }: { message: Messag
     <div>
       <div className={`font-paragraph flex ${isUser ? "justify-end" : "justify-start"}`}>
         <div
-          className={`rounded-md text-sm ${isUser ? "max-h-64 max-w-[60%] overflow-y-auto whitespace-pre-wrap break-words bg-brand-500 px-4 py-2 text-stone-100" : "w-full min-w-0 overflow-hidden text-stone-800 dark:text-stone-200"}`}
+          className={`rounded-md text-sm ${isUser ? "max-h-64 max-w-[60%] overflow-y-auto whitespace-pre-wrap break-words bg-brand-500 px-4 py-2 text-stone-100 [&_a]:text-white" : "w-full min-w-0 overflow-hidden text-stone-800 dark:text-stone-200"}`}
         >
           {!isUser && message.plan && <PlanPanel plan={message.plan} />}
 
