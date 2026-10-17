@@ -11,6 +11,8 @@ export default defineConsentConfig({
     scripts:[
         posthog({
             id: process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN as string,
+            region: "eu",
+            apiHost: "/ingest",
             initOptions:{cookieless_mode: 'never'},
             loadMode:"after-consent"
         })
