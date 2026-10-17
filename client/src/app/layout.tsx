@@ -19,9 +19,18 @@ const headerFont = Poiret_One({
 
 const paragraphFont = localFont({
   src: "./fonts/Bookerly.ttf",
-  variable: "--font-paragraph",
+  variable: "--font-bookerly",
   display: "swap",
 });
+
+const dyslexicFont = localFont({
+  src: "./fonts/OpenDyslexic-Regular.otf",
+  variable: "--font-dyslexic",
+  display: "swap",
+  preload: false,
+});
+
+const appearanceScript = `try{for(const k of ["accent","font"]){const v=localStorage.getItem("aletheia-"+k);if(v)document.documentElement.dataset[k]=v}}catch{}`;
 
 export const metadata: Metadata = {
   title: { default: "Aletheia", template: "%s | Aletheia" },
@@ -36,8 +45,11 @@ export default async function RootLayout({
   const session = await auth();
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: appearanceScript }} />
+      </head>
       <body
-        className={`${headerFont.variable} ${paragraphFont.variable} antialiased`}
+        className={`${headerFont.variable} ${paragraphFont.variable} ${dyslexicFont.variable} antialiased`}
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <TooltipProvider>
