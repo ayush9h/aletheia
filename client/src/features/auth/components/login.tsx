@@ -1,4 +1,9 @@
+import Link from "next/link";
+
 import ProviderButtons from "@/features/auth/components/provider-buttons";
+
+const LINK_CLASS =
+  "text-stone-700 underline decoration-stone-300 underline-offset-2 transition-colors hover:text-brand-600 hover:decoration-current dark:text-stone-300 dark:decoration-stone-600 dark:hover:text-brand-400";
 
 export default function LoginPage() {
   return (
@@ -16,7 +21,9 @@ export default function LoginPage() {
           <ProviderButtons />
 
           <p className="font-paragraph mt-6 max-w-[17rem] text-[13px] leading-5 text-stone-500">
-            By continuing, you agree to Aletheia&apos;s terms and privacy practices.
+            By continuing, you agree to Aletheia&apos;s{" "}
+            <Link href="/terms" className={LINK_CLASS}>Terms of Service</Link> and{" "}
+            <Link href="/privacy" className={LINK_CLASS}>Privacy Policy</Link>.
           </p>
         </section>
       </div>

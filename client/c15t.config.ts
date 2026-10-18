@@ -8,6 +8,12 @@ export default defineConsentConfig({
             { id: "world-opt-in", match: { isDefault: true }, model: "opt-in", prompt: "choice" },
         ],
     }),
+    options: {
+        legalLinks: {
+            privacyPolicy: { href: "/privacy" },
+            termsOfService: { href: "/terms" },
+        },
+    },
     scripts:[
         posthog({
             id: process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN as string,

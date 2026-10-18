@@ -9,6 +9,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "next-themes";
 import ThemeShortcuts from "@/components/theme-shortcuts";
+import { SITE } from "@/lib/site";
 import {ConsentBanner, ConsentDialog, ConsentRoot} from 'c15t/next'
 import {resolveConsent} from 'c15t/next/server'
 
@@ -35,8 +36,26 @@ const dyslexicFont = localFont({
 const appearanceScript = `try{for(const k of ["accent","font"]){const v=localStorage.getItem("aletheia-"+k);if(v)document.documentElement.dataset[k]=v}}catch{}`;
 
 export const metadata: Metadata = {
-  title: { default: "Aletheia", template: "%s | Aletheia" },
-  description: "Your assistant for your daily tasks",
+  metadataBase: new URL(SITE.url),
+  title: { default: SITE.name, template: `%s | ${SITE.name}` },
+  description: SITE.description,
+  applicationName: SITE.name,
+  keywords: ["AI assistant", "chat", "GitHub", "Slack", "web search", "productivity"],
+  alternates: { canonical: "/" },
+  icons: { icon: "/favicon.ico", apple: "/logo.png" },
+  openGraph: {
+    type: "website",
+    url: "/",
+    siteName: SITE.name,
+    title: SITE.name,
+    description: SITE.description,
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE.name,
+    description: SITE.description,
+  },
 };
 
 export default async function RootLayout({
@@ -66,8 +85,8 @@ export default async function RootLayout({
               
               {children}
 
-              <ConsentBanner/>
-              <ConsentDialog/>
+              <ConsentBanner legalLinks={["privacyPolicy", "termsOfService"]} />
+              <ConsentDialog legalLinks={["privacyPolicy", "termsOfService"]} />
               
               <Toaster position="bottom-right" />
 

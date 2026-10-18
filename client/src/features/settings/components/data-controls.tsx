@@ -9,6 +9,8 @@ import {
 import { deleteUserChatsAll } from "@/lib/api/user-data";
 import type { ChatAction } from "@/features/chat/types/chat-action";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { LEGAL_LINKS } from "@/features/legal/constants/legal-links";
 
 import { ConsentDialogLink } from "c15t/next";
 type DataControlsProps = {
@@ -79,8 +81,30 @@ export default function DataControls({
 
           <ConsentDialogLink>
             <p className="w-fit cursor-pointer whitespace-nowrap rounded-md px-4 py-2 text-xs bg-stone-100 hover:bg-stone-200 dark:border-stone-900 dark:bg-stone-950/30 dark:stone-red-400 dark:hover:bg-stone-950/50 sm:justify-self-end">
-              Modify 
+              Modify
             </p></ConsentDialogLink>
+
+          <div className="min-w-0 text-left">
+            <h3 className="text-sm font-medium text-stone-800 dark:text-stone-200">
+              Legal
+            </h3>
+            <p className="mt-1 max-w-lg text-xs leading-5 text-stone-500 dark:text-stone-400">
+              How we handle your data and the terms of using Aletheia.
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-1 text-xs sm:items-end">
+            {LEGAL_LINKS.map(({ href, label }) => (
+              <Link
+                key={href}
+                href={href}
+                target="_blank"
+                className="whitespace-nowrap text-brand-600 underline decoration-current/40 underline-offset-2 hover:decoration-current dark:text-brand-400"
+              >
+                {label}
+              </Link>
+            ))}
+          </div>
 
         </div>
       </div>
