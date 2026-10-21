@@ -1,5 +1,5 @@
-import { memo, useCallback, useState } from "react";
-import ReactMarkdown, { type Components } from "react-markdown";
+import { memo, useCallback, useLayoutEffect, useRef, useState, type ComponentProps } from "react";
+import ReactMarkdown, { type Components, type ExtraProps } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import {
   CheckIcon,
@@ -10,6 +10,7 @@ import {
   StopIcon,
 } from "@radix-ui/react-icons";
 
+import ChartBlock, { parseChartSpec } from "@/features/chat/components/chart-block";
 import CodeBlock from "@/features/chat/components/code-block";
 import PlanPanel from "@/features/chat/components/plan-panel";
 import ThinkingStatus from "@/features/chat/components/thinking-status";
@@ -18,6 +19,28 @@ import type { Message } from "@/types/user-message";
 
 // Module-level so markdown config isn't recreated on every streamed chunk
 const REMARK_PLUGINS = [remarkGfm];
+
+function MarkdownCode({ className, children, ...props }: ComponentProps<"code"> & ExtraProps) {
+  if (!className) {
+    return (
+      <code
+        className="font-paragraph rounded bg-stone-200 px-1.5 py-0.5 text-[0.9em] text-stone-800 dark:bg-stone-800 dark:text-stone-200"
+        {...props}
+      >
+        {children}
+      </code>
+    );
+  }
+  const language = /language-([\w-]+)/.exec(className)?.[1];
+  const code = String(children).replace(/\n$/, "");
+  if (language === "chart") {
+    const chart = parseChartSpec(code);
+    if (chart) return <ChartBlock spec={chart} />;
+    // Shiki lacks chart grammar
+    return <CodeBlock code={code} language="json" />;
+  }
+  return <CodeBlock code={code} language={language} />;
+}
 
 const MARKDOWN_COMPONENTS: Components = {
   a: ({ href, children }) => (
@@ -30,20 +53,7 @@ const MARKDOWN_COMPONENTS: Components = {
       {children}
     </a>
   ),
-  code({ className, children, ...props }) {
-    if (!className) {
-      return (
-        <code
-          className="font-paragraph rounded bg-stone-200 px-1.5 py-0.5 text-[0.9em] text-stone-800 dark:bg-stone-800 dark:text-stone-200"
-          {...props}
-        >
-          {children}
-        </code>
-      );
-    }
-    const language = /language-([\w-]+)/.exec(className)?.[1];
-    return <CodeBlock code={String(children).replace(/\n$/, "")} language={language} />;
-  },
+  code: MarkdownCode,
   table: ({ children }) => (
     <div className="my-3 w-full overflow-x-auto">
       <table className="min-w-[800px] border-collapse text-sm">{children}</table>
@@ -61,6 +71,21 @@ const MARKDOWN_COMPONENTS: Components = {
   ),
 };
 
+// Placeholder for partial charts
+const STREAMING_COMPONENTS: Components = {
+  ...MARKDOWN_COMPONENTS,
+  code(props) {
+    if (/language-chart\b/.test(props.className ?? "") && !parseChartSpec(String(props.children))) {
+      return (
+        <span className="my-4 flex h-72 items-center justify-center rounded-lg border border-stone-200 text-xs text-stone-500 dark:border-stone-800 dark:text-stone-400">
+          Rendering chart…
+        </span>
+      );
+    }
+    return <MarkdownCode {...props} />;
+  },
+};
+
 const ACTION_BUTTON =
   "flex h-7 w-7 cursor-pointer items-center justify-center rounded-md hover:bg-stone-100 hover:text-stone-800 dark:hover:bg-stone-800 dark:hover:text-stone-200";
 
@@ -68,6 +93,15 @@ const MessageBubble = memo(function MessageBubble({ message }: { message: Messag
   const isUser = message.role === "user";
   const [copied, setCopied] = useState(false);
   const text = String(message.text ?? "");
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [expanded, setExpanded] = useState(false);
+  const [overflows, setOverflows] = useState(false);
+
+  // Measure while collapsed
+  useLayoutEffect(() => {
+    const el = contentRef.current;
+    if (isUser && el && !expanded) setOverflows(el.scrollHeight > el.clientHeight + 1);
+  }, [isUser, text, expanded]);
 
   const { isReading, isSupported, toggle: handleReadAloud } = useReadAloud(text);
 
@@ -85,7 +119,7 @@ const MessageBubble = memo(function MessageBubble({ message }: { message: Messag
     <div>
       <div className={`font-paragraph flex ${isUser ? "justify-end" : "justify-start"}`}>
         <div
-          className={`rounded-md text-sm ${isUser ? "max-h-64 max-w-[60%] overflow-y-auto whitespace-pre-wrap break-words bg-brand-500 px-4 py-2 text-stone-100 [&_a]:text-white" : "w-full min-w-0 overflow-hidden text-stone-800 dark:text-stone-200"}`}
+          className={`rounded-md text-sm ${isUser ? "max-w-[60%] whitespace-pre-wrap break-words bg-brand-500 px-4 py-2 text-stone-100 [&_a]:text-white" : "w-full min-w-0 overflow-hidden text-stone-800 dark:text-stone-200"}`}
         >
           {!isUser && message.plan && <PlanPanel plan={message.plan} />}
 
@@ -96,11 +130,32 @@ const MessageBubble = memo(function MessageBubble({ message }: { message: Messag
           )}
 
           {Boolean(message.text) && (
-            <div className="min-w-0 max-w-full break-words leading-6 [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&>p]:my-2 [&_pre]:max-w-full [&_pre]:overflow-x-auto">
-              <ReactMarkdown remarkPlugins={REMARK_PLUGINS} components={MARKDOWN_COMPONENTS}>
+            <div
+              ref={contentRef}
+              className={`relative min-w-0 max-w-full break-words leading-6 [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&>p]:my-2 [&_pre]:max-w-full [&_pre]:overflow-x-auto ${isUser && !expanded ? "max-h-64 overflow-hidden" : ""}`}
+            >
+              <ReactMarkdown
+                remarkPlugins={REMARK_PLUGINS}
+                components={message.isStreaming ? STREAMING_COMPONENTS : MARKDOWN_COMPONENTS}
+              >
                 {text}
               </ReactMarkdown>
+              {/* Hints hidden content */}
+              {overflows && !expanded && (
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-linear-to-t from-brand-500" />
+              )}
             </div>
+          )}
+
+          {overflows && (
+            <button
+              type="button"
+              onClick={() => setExpanded((value) => !value)}
+              aria-expanded={expanded}
+              className="mt-1 cursor-pointer text-xs font-medium text-white/80 underline-offset-2 hover:text-white hover:underline"
+            >
+              {expanded ? "Show less" : "Show more"}
+            </button>
           )}
         </div>
       </div>

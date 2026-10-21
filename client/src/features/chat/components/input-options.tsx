@@ -9,6 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
+  BarChartIcon,
   FileIcon,
   GitHubLogoIcon,
   GlobeIcon,
@@ -36,6 +37,13 @@ export const options = [
     key: "github",
     toolLabel: "GitHub",
     toolIcon: GitHubLogoIcon,
+    section: "tools",
+    disabled: false,
+  },
+  {
+    key: "visualize",
+    toolLabel: "Visualize data",
+    toolIcon: BarChartIcon,
     section: "tools",
     disabled: false,
   },
