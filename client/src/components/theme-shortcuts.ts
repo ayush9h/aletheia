@@ -14,15 +14,6 @@ export default function ThemeShortcuts() {
 
       const target = event.target as HTMLElement | null;
 
-      // Never interfere with typing.
-      if (
-        target?.tagName === "INPUT" ||
-        target?.tagName === "TEXTAREA" ||
-        target?.isContentEditable
-      ) {
-        return;
-      }
-
       switch (event.key.toLowerCase()) {
         case "d":
           event.preventDefault();
