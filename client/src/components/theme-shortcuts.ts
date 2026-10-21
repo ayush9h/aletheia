@@ -12,8 +12,6 @@ export default function ThemeShortcuts() {
         return;
       }
 
-      const target = event.target as HTMLElement | null;
-
       switch (event.key.toLowerCase()) {
         case "d":
           event.preventDefault();
