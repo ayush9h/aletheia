@@ -99,7 +99,8 @@ User Occupation:
 
     tool_results_block = (
         "Results from executed plan:\n"
-        f"{tool_results if tool_results else 'No tool results.'}"
+        f"{tool_results if tool_results else 'No tool results.'}\n"
+        "Copy any ```chart block from the results into your answer unchanged."
     )
 
     full_messages: list[BaseMessage] = [
@@ -191,6 +192,11 @@ builder.add_conditional_edges(
     START,
     route_memory_retrieve,
     {"memory_retriever": "memory_retriever", "planner_node": "planner_node"},
+)
+
+builder.add_edge(
+    "memory_retriever",
+    "planner_node",
 )
 
 builder.add_edge(

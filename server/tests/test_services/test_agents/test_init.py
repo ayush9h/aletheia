@@ -8,6 +8,8 @@ from app.services.agents import AGENT_REGISTRY, AgentContext, build_agents
 def test_agent_registry_contains_expected_agents() -> None:
     assert "github_agent" in AGENT_REGISTRY
     assert "web_search_agent" in AGENT_REGISTRY
+    assert AGENT_REGISTRY["visualize_agent"].include_query
+    assert not AGENT_REGISTRY["github_agent"].include_query
 
 
 @patch("app.services.agents.create_github_agent")

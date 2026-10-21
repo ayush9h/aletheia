@@ -124,6 +124,7 @@ async def test_consolidator_with_user_preferences(
     assert "Alex" in messages[0].content
     assert "Developer" in messages[0].content
     assert "Search result" in messages[1].content
+    assert "```chart" in messages[1].content
 
 
 @pytest.mark.asyncio
@@ -156,6 +157,7 @@ async def test_consolidator_empty_preferences_and_tools(
 
     assert "None" in messages[0].content
     assert "No tool results." in messages[1].content
+
 
 
 @pytest.mark.asyncio

@@ -11,7 +11,7 @@ from langchain_groq import ChatGroq
 from app.db_service.db import get_session
 from app.schemas.workflows.planner_schema import Step
 from app.services.agent_state import AgentState
-from app.services.agents import AgentContext, build_agents
+from app.services.agents import AGENT_REGISTRY, AgentContext, build_agents
 from app.utils.config import settings
 
 logger = structlog.get_logger(__name__)
@@ -58,6 +58,7 @@ async def run_step(
     user_id: str,
     sem: asyncio.Semaphore,
     config: RunnableConfig,
+    query: str = "",
 ) -> dict:
     """
     Execute a step.
@@ -70,6 +71,7 @@ async def run_step(
         - user_id: str = the ID of the user executing the step
         - sem: asyncio.Semaphore = the semaphore to use for rate limiting
         - config: RunnableConfig = the configuration to use for the step
+        - query: str = the user's original message
 
     Returns:
         - dict: the result of the step execution
@@ -105,6 +107,10 @@ async def run_step(
     task = re.compile(r"#E(\d+)").sub(
         lambda m: outputs.get(int(m.group(1)), m.group(0)), task
     )
+
+    spec = AGENT_REGISTRY.get(agent_name)
+    if query and spec and spec.include_query:
+        task = f"{task}\n\nUser message:\n{query}"
 
     async with sem:
         step.status = "running"
@@ -201,6 +207,8 @@ async def executor_node(state: AgentState, config: RunnableConfig) -> AgentState
 
     sem = asyncio.Semaphore(5)
     user_id = state.get("user_id", "")
+    user_input = state.get("user_input", [])
+    query = str(user_input[-1].content) if user_input else ""
     outputs: dict[int, str] = {}
     failed: set[int] = set()
     results: list[dict] = []
@@ -209,7 +217,7 @@ async def executor_node(state: AgentState, config: RunnableConfig) -> AgentState
         for layer in layers(plan.steps):
             layer_results = await asyncio.gather(
                 *(
-                    run_step(s, outputs, failed, llm, user_id, sem, config)
+                    run_step(s, outputs, failed, llm, user_id, sem, config, query)
                     for s in layer
                 )
             )

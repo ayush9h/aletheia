@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from .github.agent import create_github_agent
 from .slack.agent import create_slack_agent
+from .visualize.agent import create_visualize_agent
 from .web_search.agent import create_web_search_agent
 
 
@@ -22,6 +23,7 @@ class AgentSpec:
     name: str
     description: str
     factory: Callable[[AgentContext], Any]
+    include_query: bool = False
 
 
 AGENT_REGISTRY: dict[str, AgentSpec] = {
@@ -59,6 +61,16 @@ AGENT_REGISTRY: dict[str, AgentSpec] = {
                 "and Tavily at the same time."
             ),
             factory=lambda ctx: create_web_search_agent(llm=ctx.llm),
+        ),
+        AgentSpec(
+            name="visualize_agent",
+            description=(
+                "Turns data into a chart (bar, line, area or pie). "
+                "Use when the user asks to visualize, chart, plot or graph "
+                "data they pasted or data returned by an earlier step."
+            ),
+            factory=lambda ctx: create_visualize_agent(llm=ctx.llm),
+            include_query=True,
         ),
     )
 }

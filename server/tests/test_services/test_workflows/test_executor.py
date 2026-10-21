@@ -62,6 +62,45 @@ async def test_run_step_no_messages(
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("agent_name", "includes_query"),
+    [("visualize_agent", True), ("github_agent", False)],
+)
+@patch("app.services.workflows.executor_node.build_agents")
+@patch("app.services.workflows.executor_node.get_session")
+@patch("app.services.workflows.executor_node.emit", new_callable=AsyncMock)
+async def test_run_step_passes_query_only_when_needed(
+    mock_emit: AsyncMock,
+    mock_get_session: MagicMock,
+    mock_build_agents: MagicMock,
+    agent_name: str,
+    includes_query: bool,
+) -> None:
+    async def sessions():
+        yield MagicMock()
+
+    mock_get_session.return_value = sessions()
+
+    agent = MagicMock()
+    agent.ainvoke = AsyncMock(return_value={"messages": ["ok"]})
+    mock_build_agents.return_value = {agent_name: agent}
+
+    await run_step(
+        step=make_step(agent_name=agent_name),
+        outputs={},
+        failed=set(),
+        llm=MagicMock(),
+        user_id="user-123",
+        sem=asyncio.Semaphore(1),
+        config=MagicMock(),
+        query="Jan,10 Feb,20",
+    )
+
+    content = agent.ainvoke.call_args.args[0]["messages"][0]["content"]
+    assert ("Jan,10" in content) is includes_query
+
+
+@pytest.mark.asyncio
 @patch("app.services.workflows.executor_node.get_session")
 @patch("app.services.workflows.executor_node.emit", new_callable=AsyncMock)
 async def test_run_step_no_db_session(
