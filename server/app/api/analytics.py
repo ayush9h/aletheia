@@ -9,6 +9,8 @@ from sqlmodel import select
 
 from app.db_service.db import get_session
 from app.db_service.models import UserChats, UserSessions
+from app.services.token_usage import get_tokens_used
+from app.utils.config import settings
 from app.utils.rate_limiters.endpoints.analytics import analytics_rate_limit
 
 logger = structlog.get_logger(__name__)
@@ -156,3 +158,22 @@ async def get_user_analytics(
             status_code=500,
             detail="Unable to fetch analytics",
         )
+
+
+@analytics_router.get(
+    "/usage",
+    tags=["Analytics"],
+    description="Get the user's token usage for the current month",
+)
+async def get_user_usage(
+    user_id: str,
+    _: None = Depends(analytics_rate_limit),
+    session: AsyncSession = Depends(get_session),
+):
+    try:
+        tokens_used = await get_tokens_used(session, user_id)
+    except DatabaseError:
+        logger.exception("Failed to fetch token usage", user_id=user_id)
+        raise HTTPException(status_code=500, detail="Unable to fetch usage")
+
+    return {"tokens_used": tokens_used, "token_limit": settings.MONTHLY_TOKEN_CAP}

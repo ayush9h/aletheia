@@ -30,6 +30,7 @@ class Settings(BaseSettings):
     CONNECTOR_SECRET: str
     SERPAPI_RPM: int
     SERPAPI_API_KEY: str
+    MONTHLY_TOKEN_CAP: int
 
     model_config = SettingsConfigDict(
         env_file=ENV_FILE,

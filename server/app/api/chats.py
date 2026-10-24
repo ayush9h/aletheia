@@ -17,6 +17,7 @@ from starlette import status
 from app.db_service.db import get_session
 from app.db_service.models import UserChats, UserSessions
 from app.schemas.chat_schema import ChatRequest
+from app.services.token_usage import add_tokens_used, get_tokens_used
 from app.services.workflows.orch import graph
 from app.utils.config import settings
 from app.utils.core.dependencies import get_rate_limiter
@@ -112,6 +113,21 @@ async def chat_stream(
                 "Retry-After": str(retry_after),
                 "X-RateLimit-Limit": str(rate_limit.limits["rpm"]),
                 "X-RateLimit-Remaining": str(rate_limit.remaining["rpm"]),
+            },
+        )
+
+    # Check before request
+    tokens_used = await get_tokens_used(session, user_id)
+    if tokens_used >= settings.MONTHLY_TOKEN_CAP:
+        logger.warning(
+            "Monthly token cap reached", user_id=user_id, tokens_used=tokens_used
+        )
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail={
+                "message": "Monthly token limit reached",
+                "tokens_used": tokens_used,
+                "token_limit": settings.MONTHLY_TOKEN_CAP,
             },
         )
 
@@ -272,6 +288,7 @@ async def chat_stream(
                         duration=round(final_state.get("duration", 0.0), 2),
                     )
                     session.add(chat)
+                    await add_tokens_used(session, user_id, chat.tokens_consumed)
                     await session.commit()
                     logger.info("Stored the details in DB")
 

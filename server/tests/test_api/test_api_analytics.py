@@ -1,5 +1,5 @@
 from datetime import date, datetime, timedelta
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from fastapi import HTTPException
@@ -10,6 +10,7 @@ from app.api.analytics import (
     build_weekly_tokens,
     format_duration,
     get_user_analytics,
+    get_user_usage,
     get_week_dates,
 )
 from app.db_service.models import UserChats, UserSessions
@@ -267,3 +268,29 @@ async def test_get_user_analytics_handles_database_error():
     assert exc_info.value.detail == "Unable to fetch analytics"
 
     session.rollback.assert_awaited_once()
+
+
+# Usage
+
+
+@pytest.mark.asyncio
+async def test_get_user_usage_returns_used_and_limit():
+    with (
+        patch("app.api.analytics.get_tokens_used", AsyncMock(return_value=16_500)),
+        patch("app.api.analytics.settings.MONTHLY_TOKEN_CAP", 20_000),
+    ):
+        response = await get_user_usage(user_id="user-1", _=None, session=MagicMock())
+
+    assert response == {"tokens_used": 16_500, "token_limit": 20_000}
+
+
+@pytest.mark.asyncio
+async def test_get_user_usage_handles_database_error():
+    with patch(
+        "app.api.analytics.get_tokens_used",
+        AsyncMock(side_effect=DatabaseError("stmt", {}, Exception("db"))),
+    ):
+        with pytest.raises(HTTPException) as exc:
+            await get_user_usage(user_id="user-1", _=None, session=MagicMock())
+
+    assert exc.value.status_code == 500
