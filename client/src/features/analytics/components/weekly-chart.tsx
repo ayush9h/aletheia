@@ -34,12 +34,6 @@ export default function WeeklyTokensChart({
 }: WeeklyTokensChartProps) {
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="mb-3 shrink-0">
-        <p className="text-xs font-medium text-stone-900 dark:text-stone-100">
-          Last 7 days
-        </p>
-      </div>
-
       <div className="min-h-0 flex-1">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
@@ -118,7 +112,7 @@ export default function WeeklyTokensChart({
             <Bar
               dataKey="tokens"
               maxBarSize={42}
-              radius={[6, 6, 2, 2]}
+              radius={[4, 4, 0, 0]}
               minPointSize={0}
             >
               {data.map((item) => (

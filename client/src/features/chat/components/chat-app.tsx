@@ -7,6 +7,7 @@ import Navbar from "@/components/layout/navbar";
 import ChatWindow from "@/features/chat/components/chat-window";
 import { useInitLoad } from "@/features/chat/hooks/useInitLoad";
 import { useSendMessage } from "@/features/chat/hooks/useSendMessage";
+import { useTokenUsage } from "@/features/chat/hooks/useTokenUsage";
 import { ChatReducer } from "@/features/chat/reducers/chat-reducer";
 import { InitialState } from "@/features/chat/types/chat-state";
 import { useConnectorToast } from "@/features/connectors/hooks/useConnectorToast";
@@ -26,7 +27,9 @@ export default function ChatApp() {
   useInitLoad(userId as string, dispatch);
   useUserPreferences(userId, dispatch);
 
-  const handleSend = useSendMessage({
+  const { usage, refresh: refreshUsage } = useTokenUsage(userId);
+
+  const sendMessage = useSendMessage({
     input: state.input,
     selectedModel: state.selectedModel,
     userPref: state.userPref,
@@ -36,6 +39,11 @@ export default function ChatApp() {
     userId,
     dispatch,
   });
+
+  const handleSend = useCallback(async () => {
+    await sendMessage();
+    refreshUsage();
+  }, [sendMessage, refreshUsage]);
 
   // Selects a session and hydrates its messages
   const handleSessionSelect = useCallback(async (sessionId: number) => {
@@ -92,6 +100,7 @@ export default function ChatApp() {
             onSend={handleSend}
             userName={session?.user?.name ?? ""}
             tools={state.selectedTools}
+            usage={usage}
           />
         </main>
       </div>

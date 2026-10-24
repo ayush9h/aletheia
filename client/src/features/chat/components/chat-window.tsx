@@ -38,6 +38,7 @@ export default function ChatWindow(props: ChatWindowProps) {
               setSelectedModel={(model) => props.dispatch({ type: "SET_MODEL", payload: model })}
               selectedModel={props.selectedModel}
               showStarterPrompts={isEmpty}
+              usage={props.usage}
             />
           </div>
         </motion.div>

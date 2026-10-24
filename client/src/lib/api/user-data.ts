@@ -83,3 +83,17 @@ export async function renameUserSession(sessionId: number, userId: string, sessi
     session_title: sessionTitle
   },{params:{user_id:userId},})
 }
+
+export interface UsageResponse {
+  tokens_used: number;
+  token_limit: number;
+}
+
+// Fetch the user's token usage for the current month
+export async function getUserUsage(userId: string): Promise<UsageResponse> {
+  const response = await api.get<UsageResponse>("/usage", {
+    params: { user_id: userId },
+  });
+
+  return response.data;
+}

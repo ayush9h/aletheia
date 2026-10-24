@@ -1,6 +1,7 @@
 import { Message } from "@/types/user-message";
 import { ChatAction } from "@/features/chat/types/chat-action";
 import { UserPrefProps } from "@/types/user-pref";
+import type { UsageResponse } from "@/lib/api/user-data";
 // Chat Input Props
 export interface inputProps {
   value: string;
@@ -12,6 +13,7 @@ export interface inputProps {
   setSelectedModel: (model: string) => void;
   showStarterPrompts?: boolean;
   onFilesSelected?: (files: File[]) => void;
+  usage?: UsageResponse | null;
 }
 
 /* Chat Window Props */
@@ -25,4 +27,5 @@ export interface ChatWindowProps {
   onSend: () => void;
   userName: string;
   tools: string[];
+  usage?: UsageResponse | null;
 }

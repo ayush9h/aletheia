@@ -25,6 +25,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import AppTooltip from "@/components/ui/app-tooltip";
+import { getMonthlyResetDate } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import StarterPrompts from "@/features/chat/components/starter-prompts";
 
@@ -59,8 +60,18 @@ export default function ChatInput(props: ChatInputProps) {
     language: "en-US",
   });
 
+  const usage = props.usage;
+  const usageRatio = usage ? usage.tokens_used / usage.token_limit : 0;
+  const capReached = usageRatio >= 1;
+  const showUsageWarning = !!usage && usageRatio >= 0.8;
+  const resetDate = getMonthlyResetDate().toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+  });
+
   const handleSend = () => {
-    if (!props.value.trim()) {
+    if (!props.value.trim() || capReached) {
       return;
     }
 
@@ -78,6 +89,23 @@ export default function ChatInput(props: ChatInputProps) {
 
   return (
     <div className="font-paragraph mx-auto w-full max-w-3xl px-3 sm:px-4 md:px-0">
+      {/* Monthly token usage warning */}
+      {showUsageWarning && (
+        <div
+          role="status"
+          className={[
+            "mx-6 rounded-t-lg border border-b-0 px-4 py-1.5 text-center text-xs sm:mx-10",
+            capReached
+              ? "border-red-200 bg-red-50 text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-400"
+              : "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-400",
+          ].join(" ")}
+        >
+          {capReached
+            ? `You've reached your monthly limit of ${usage.token_limit.toLocaleString()} tokens. It resets on ${resetDate}.`
+            : `You've used ${Math.floor(usageRatio * 100)}% of your monthly tokens (${usage.tokens_used.toLocaleString()} / ${usage.token_limit.toLocaleString()}).`}
+        </div>
+      )}
+
       <div className="flex flex-col rounded-xl border border-stone-200 bg-white shadow-[0_1px_6px_rgba(0,0,0,0.025)] focus-within:border-brand-500 dark:border-stone-700/50 dark:bg-stone-800/50 dark:shadow-none dark:focus-within:border-brand-500">
         {/* User Input */}
         <TextareaAutosize
@@ -235,7 +263,7 @@ export default function ChatInput(props: ChatInputProps) {
               <Button
                 type="button"
                 onClick={handleSend}
-                disabled={!props.value.trim()}
+                disabled={!props.value.trim() || capReached}
                 className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md bg-brand-600 hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-50"
                 aria-label="Send message"
               >
