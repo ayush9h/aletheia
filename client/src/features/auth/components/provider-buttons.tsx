@@ -33,7 +33,7 @@ export default function ProviderButtons() {
           disabled={pendingId !== null}
           aria-busy={pendingId === item.id}
           onClick={() => handleSignIn(item.id)}
-          className="font-paragraph text-stone-950 relative flex h-14 w-full cursor-pointer items-center justify-center rounded-md border-0 bg-stone-100 px-6 text-[16px] font-normal tracking-normal shadow-none transition-colors duration-150 hover:bg-stone-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-stone-800 dark:text-stone-100 dark:hover:bg-stone-700"
+          className="font-paragraph text-stone-950 focus-visible:ring-brand-500 relative flex h-14 w-full cursor-pointer items-center justify-center rounded-md border-0 bg-stone-100 px-6 text-[16px] font-normal tracking-normal shadow-none transition-colors duration-150 hover:bg-stone-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-stone-800 dark:text-stone-100 dark:hover:bg-stone-700"
         >
           <span className="flex items-center justify-center gap-3">
             <Image
