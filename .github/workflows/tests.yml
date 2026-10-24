@@ -46,6 +46,7 @@ jobs:
 
       SERPAPI_RPM: "10"
       SERPAPI_API_KEY: "test-serpapi-key"
+      MONTHLY_TOKEN_CAP: "20000"
 
     steps:
       - name: Checkout repository
