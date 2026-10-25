@@ -9,9 +9,9 @@ const LINK_CLASS =
 export default function LoginPage() {
   return (
     <main className="min-h-dvh text-stone-950 dark:bg-stone-950 flex gap-3 bg-white p-3 dark:text-white">
-      <aside className="bg-linear-to-b from-stone-950 to-brand-950 relative hidden w-[48%] max-w-3xl overflow-hidden rounded-2xl lg:block">
+      <aside className="bg-radial-[at_50%_85%] from-brand-950 via-stone-950 to-stone-950 relative hidden w-[48%] max-w-3xl overflow-hidden rounded-2xl lg:block">
         <FractalTree className="size-full absolute inset-0" />
-        <p className="font-paragraph pointer-events-none absolute inset-x-0 bottom-6 text-center text-xs tracking-wide text-stone-500/70">
+        <p className="font-paragraph pointer-events-none absolute inset-x-0 bottom-6 text-center text-xs tracking-wide text-stone-400">
           Click the tree to grow a new one
         </p>
       </aside>
@@ -24,7 +24,7 @@ export default function LoginPage() {
             </h1>
 
             <h2 className="font-paragraph mb-7 mt-14 text-xl font-extralight leading-none tracking-tight">
-              Log into your account
+              Log in to your account
             </h2>
 
             <ProviderButtons />

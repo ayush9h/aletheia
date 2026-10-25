@@ -146,6 +146,17 @@ export default function FractalTree({ className }: { className?: string }) {
       ctx.fillStyle = bloomColors[0];
       ctx.fill(motePath);
 
+      // Horizon line and faint reflection so the trunk stands on something
+      const horizon = ctx.createLinearGradient(0, 0, width, 0);
+      horizon.addColorStop(0.1, "transparent");
+      horizon.addColorStop(0.5, twig);
+      horizon.addColorStop(0.9, "transparent");
+      ctx.fillStyle = horizon;
+      ctx.globalAlpha = 0.6;
+      ctx.fillRect(0, groundY, width, 1);
+      ctx.globalAlpha = 0.06;
+      ctx.fillRect(0, groundY, width, height - groundY);
+
       ctx.globalAlpha = 0.9;
       ctx.lineCap = "round";
       branchPaths.forEach((path, d) => {
@@ -192,7 +203,7 @@ export default function FractalTree({ className }: { className?: string }) {
       aria-label="Grow a new tree"
       onClick={() => setSeed((s) => s + 1)}
       className={cn(
-        "block cursor-pointer focus-visible:outline-none",
+        "focus-visible:ring-brand-400 block cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset",
         COLOR_VARS,
         className
       )}

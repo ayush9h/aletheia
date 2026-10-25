@@ -8,8 +8,10 @@ export const authProviders = [
   },
   {
     id: "github",
-    label: "Continue with Github",
+    label: "Continue with GitHub",
     icon: "https://www.svgrepo.com/show/512317/github-142.svg",
-    title: "Github Logo",
+    title: "GitHub Logo",
+    // Black mark disappears on the dark button
+    invertOnDark: true,
   },
 ];
