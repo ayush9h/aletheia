@@ -8,7 +8,7 @@ import {
   Cross2Icon,
   CaretDownIcon,
 } from "@radix-ui/react-icons";
-import { Mic, Square } from "lucide-react";
+import { Check, Mic, Square } from "lucide-react";
 import TextareaAutosize from "react-textarea-autosize";
 import Image from "next/image";
 
@@ -25,7 +25,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import AppTooltip from "@/components/ui/app-tooltip";
-import { getMonthlyResetDate } from "@/lib/utils";
+import { cn, getMonthlyResetDate } from "@/lib/utils";
+import { MENU_CONTENT, MENU_ITEM, MENU_LABEL, MENU_SEPARATOR } from "@/lib/menu";
 import { Button } from "@/components/ui/button";
 import StarterPrompts from "@/features/chat/components/starter-prompts";
 
@@ -106,7 +107,7 @@ export default function ChatInput(props: ChatInputProps) {
         </div>
       )}
 
-      <div className="flex flex-col rounded-xl border border-stone-200 bg-white shadow-[0_1px_6px_rgba(0,0,0,0.025)] focus-within:border-brand-500 dark:border-stone-700/50 dark:bg-stone-800/50 dark:shadow-none dark:focus-within:border-brand-500">
+      <div className="flex flex-col rounded-2xl border border-stone-200/80 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.04)] transition-colors focus-within:border-stone-300 dark:border-stone-700/50 dark:bg-stone-800/50 dark:shadow-none dark:focus-within:border-stone-600">
         {/* User Input */}
         <TextareaAutosize
           value={props.value}
@@ -123,7 +124,7 @@ export default function ChatInput(props: ChatInputProps) {
               handleSend();
             }
           }}
-          className="w-full resize-none overflow-y-auto bg-transparent px-3 py-3 text-sm text-stone-900 outline-none placeholder:text-stone-400 dark:text-stone-100 dark:placeholder:text-stone-500 sm:px-4"
+          className="w-full resize-none overflow-y-auto bg-transparent px-3 pb-1 pt-3.5 text-sm text-stone-900 outline-none placeholder:text-stone-400 dark:text-stone-100 dark:placeholder:text-stone-500 sm:px-4"
           minRows={1}
           maxRows={6}
           placeholder={isListening ? "Listening…" : "Ask anything"}
@@ -131,7 +132,7 @@ export default function ChatInput(props: ChatInputProps) {
         />
 
         {/* Bottom toolbar */}
-        <div className="flex min-w-0 items-center gap-2 border-t border-stone-200 p-2 dark:border-stone-700/50">
+        <div className="flex min-w-0 items-center gap-2 px-2 pb-2 pt-1">
           {/* Tools */}
           <div className="flex min-w-0 flex-1 items-center gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <div className="shrink-0">
@@ -183,7 +184,7 @@ export default function ChatInput(props: ChatInputProps) {
                 <DropdownMenuTrigger asChild>
                   <button
                     type="button"
-                    className="font-paragraph max-w-28 flex h-8 shrink-0 cursor-pointer items-center gap-1 rounded-md px-2 text-sm text-stone-600 transition-colors hover:bg-stone-200 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700 sm:max-w-none sm:px-2.5"
+                    className="font-paragraph max-w-28 flex h-8 shrink-0 cursor-pointer items-center gap-1 rounded-md px-2 text-sm text-stone-600 transition-colors hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800 sm:max-w-none sm:px-2.5"
                   >
                     <span className="truncate">{currentModel}</span>
 
@@ -194,15 +195,16 @@ export default function ChatInput(props: ChatInputProps) {
 
               <DropdownMenuContent
                 align="end"
-                className="font-paragraph w-56 dark:border-stone-700 dark:bg-stone-900"
+                sideOffset={8}
+                className={`${MENU_CONTENT} w-60`}
               >
                 {MODEL_GROUPS.map((group, index) => (
                   <Fragment key={group.provider}>
                     {index > 0 && (
-                      <DropdownMenuSeparator className="dark:bg-stone-700" />
+                      <DropdownMenuSeparator className={MENU_SEPARATOR} />
                     )}
 
-                    <DropdownMenuLabel className="flex items-center gap-2 text-xs text-stone-500 dark:text-stone-400">
+                    <DropdownMenuLabel className={MENU_LABEL}>
                       <Image
                         src={group.url}
                         alt=""
@@ -220,9 +222,17 @@ export default function ChatInput(props: ChatInputProps) {
                         onSelect={() => {
                           props.setSelectedModel(model.value);
                         }}
-                        className="cursor-pointer pl-8 text-xs dark:text-stone-200 dark:focus:bg-stone-800 dark:focus:text-stone-100"
+                        // Indent so model names sit under the provider name, not its logo
+                        className={cn(MENU_ITEM, "pl-[1.875rem]")}
                       >
-                        {model.label}
+                        <span className="flex-1">{model.label}</span>
+
+                        {props.selectedModel === model.value && (
+                          <Check
+                            aria-hidden="true"
+                            className="size-4 text-brand-600 dark:text-brand-400"
+                          />
+                        )}
                       </DropdownMenuItem>
                     ))}
                   </Fragment>
@@ -264,7 +274,7 @@ export default function ChatInput(props: ChatInputProps) {
                 type="button"
                 onClick={handleSend}
                 disabled={!props.value.trim() || capReached}
-                className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md bg-brand-600 hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg bg-brand-600 hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-50"
                 aria-label="Send message"
               >
                 <ArrowRightIcon className="h-4 w-4 text-white" />
@@ -292,8 +302,7 @@ export default function ChatInput(props: ChatInputProps) {
 
       {/* Disclaimer */}
       <p className="font-paragraph mt-2 text-center text-[11px] leading-4 text-stone-500 dark:text-stone-400 sm:text-xs">
-        <span className="font-paragraph text-sm">Aletheia</span> can make
-        mistakes. Check important information.
+        Aletheia can make mistakes. Check important information.
       </p>
 
       <StarterPrompts

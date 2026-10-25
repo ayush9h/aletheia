@@ -7,6 +7,17 @@
   --font-header: var(--font-header);
   --font-paragraph: var(--font-paragraph);
   --animate-shine: shine 2.5s linear infinite;
+  /* Waits for most of the sidebar's 300ms width slide before showing text */
+  --animate-sidebar-in: sidebar-in 200ms ease-out 180ms both;
+
+  @keyframes sidebar-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
 
   /* Brand palette: change blue here to re-theme the whole app */
   --color-brand-50: var(--color-blue-50);
@@ -70,8 +81,27 @@ html:root:root.dark {
   --c15t-switch-thumb: var(--color-stone-100);
 }
 
+/* Dark mode swaps warm stone for cool neutral zinc; every dark:*-stone-* class follows */
+html.dark {
+  --color-stone-50: var(--color-zinc-50);
+  --color-stone-100: var(--color-zinc-100);
+  --color-stone-200: var(--color-zinc-200);
+  --color-stone-300: var(--color-zinc-300);
+  --color-stone-400: var(--color-zinc-400);
+  --color-stone-500: var(--color-zinc-500);
+  --color-stone-600: var(--color-zinc-600);
+  --color-stone-700: var(--color-zinc-700);
+  --color-stone-800: var(--color-zinc-800);
+  --color-stone-900: var(--color-zinc-900);
+  --color-stone-950: var(--color-zinc-950);
+}
+
 :root:root[data-font="dyslexic"] {
   --font-paragraph: var(--font-dyslexic);
+}
+
+:root:root[data-font="jakarta"] {
+  --font-paragraph: var(--font-jakarta);
 }
 
 :root[data-accent="red"] {

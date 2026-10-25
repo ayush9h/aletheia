@@ -72,29 +72,43 @@ export default function StarterPrompts({
       }}
       className="mt-5 w-full"
     >
-      <div className="flex flex-wrap items-center justify-center gap-2 px-1">
+      <ul
+        aria-label="Suggested prompts"
+        className="divide-y divide-stone-200/70 px-1 dark:divide-stone-800"
+      >
         {STARTER_PROMPTS.map((item, index) => {
           const Icon = item.icon;
 
           return (
-            <motion.button
+            <motion.li
               key={item.id}
-              type="button"
               initial={{ opacity: 0, y: -4 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{
                 duration: 0.18,
                 delay: index * 0.035,
               }}
-              onClick={() => onPromptSelect(item.prompt)}
-              className="group flex h-9 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-lg border border-stone-200 bg-white px-3 text-[12px] font-medium text-stone-600 transition-all duration-150 hover:border-brand-200 hover:bg-brand-50/70 hover:text-brand-700 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300 dark:hover:border-brand-800 dark:hover:bg-brand-950/40 dark:hover:text-brand-300"
+              className="py-1"
             >
-              <Icon className="h-3.5 w-3.5 text-stone-400 transition-colors duration-150 group-hover:text-brand-500 dark:text-stone-500 dark:group-hover:text-brand-400" />
-              <span>{item.label}</span>
-            </motion.button>
+              <button
+                type="button"
+                onClick={() => onPromptSelect(item.prompt)}
+                className="group flex w-full cursor-pointer items-start gap-3 rounded-lg px-3 py-2 text-left transition-colors duration-150 hover:bg-stone-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:hover:bg-stone-800/60"
+              >
+                <Icon className="mt-0.5 h-4 w-4 shrink-0 text-stone-400 transition-colors duration-150 group-hover:text-brand-500 dark:text-stone-500 dark:group-hover:text-brand-400" />
+                <span className="min-w-0">
+                  <span className="block text-sm font-medium text-stone-800 dark:text-stone-200">
+                    {item.label}
+                  </span>
+                  <span className="block truncate text-xs text-stone-500 dark:text-stone-400">
+                    {item.prompt}
+                  </span>
+                </span>
+              </button>
+            </motion.li>
           );
         })}
-      </div>
+      </ul>
     </motion.div>
   );
 }

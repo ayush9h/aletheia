@@ -146,7 +146,7 @@ export default function FractalTree({ className }: { className?: string }) {
       ctx.fillStyle = bloomColors[0];
       ctx.fill(motePath);
 
-      // Horizon line and faint reflection so the trunk stands on something
+      // Horizon line so the trunk stands on something
       const horizon = ctx.createLinearGradient(0, 0, width, 0);
       horizon.addColorStop(0.1, "transparent");
       horizon.addColorStop(0.5, twig);
@@ -154,8 +154,6 @@ export default function FractalTree({ className }: { className?: string }) {
       ctx.fillStyle = horizon;
       ctx.globalAlpha = 0.6;
       ctx.fillRect(0, groundY, width, 1);
-      ctx.globalAlpha = 0.06;
-      ctx.fillRect(0, groundY, width, height - groundY);
 
       ctx.globalAlpha = 0.9;
       ctx.lineCap = "round";

@@ -7,5 +7,6 @@ export const ACCENTS = [
 
 export const FONTS = [
   { id: "default", label: "Bookerly", family: "var(--font-bookerly)" },
+  { id: "jakarta", label: "Plus Jakarta Sans", family: "var(--font-jakarta)" },
   { id: "dyslexic", label: "OpenDyslexic", family: "var(--font-dyslexic)" },
 ];

@@ -3,7 +3,8 @@
 import { useCallback, useReducer, useState } from "react";
 import { useSession } from "next-auth/react";
 
-import Navbar from "@/components/layout/navbar";
+import { HamburgerMenuIcon } from "@radix-ui/react-icons";
+
 import ChatWindow from "@/features/chat/components/chat-window";
 import { useInitLoad } from "@/features/chat/hooks/useInitLoad";
 import { useSendMessage } from "@/features/chat/hooks/useSendMessage";
@@ -78,16 +79,21 @@ export default function ChatApp() {
         onSelectSession={handleSessionSelect}
         dispatch={dispatch}
         userId={userId}
+        userPref={state.userPref}
+        setUserPref={setUserPref}
       />
 
       <div className="flex min-h-0 min-w-0 flex-col overflow-hidden">
-        <div className="shrink-0">
-          <Navbar
-            dispatch={dispatch}
-            userPref={state.userPref}
-            setUserPref={setUserPref}
-            onOpenSidebar={openSidebar}
-          />
+        {/* Mobile only: the sidebar is off-canvas, so keep a way to open it */}
+        <div className="shrink-0 bg-stone-100/40 px-3 py-2 dark:bg-stone-800/60 md:hidden">
+          <button
+            type="button"
+            aria-label="Open sidebar"
+            onClick={openSidebar}
+            className="flex size-9 cursor-pointer items-center justify-center rounded-md text-stone-600 transition-colors hover:bg-stone-200 dark:text-stone-300 dark:hover:bg-stone-800"
+          >
+            <HamburgerMenuIcon className="size-4" />
+          </button>
         </div>
 
         <main className="min-h-0 flex-1 overflow-hidden">

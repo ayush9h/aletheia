@@ -35,6 +35,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+import AccountMenu from "@/features/sidebar/components/account-menu";
 import { DeleteSessionDialog } from "@/features/sidebar/components/delete-session-dialog";
 import { SessionItem } from "@/features/sidebar/components/session-item";
 import { useChatSession } from "@/features/sidebar/hooks/useChatSession";
@@ -42,6 +43,7 @@ import { pinSession, renameUserSession } from "@/lib/api/user-data";
 
 import type { ChatAction } from "@/features/chat/types/chat-action";
 import type { Session } from "@/types/user-message";
+import type { UserPrefProps } from "@/types/user-pref";
 
 import { buildSidebarRows } from "@/features/sidebar/utils/sidebar-utils";
 import type { SortOrder, SidebarRow } from "@/features/sidebar/types/sidebar.types";
@@ -62,6 +64,8 @@ interface SidebarProps {
   onSelectSession: (id: number) => void;
   dispatch: Dispatch<ChatAction>;
   userId?: string;
+  userPref: UserPrefProps;
+  setUserPref: Dispatch<UserPrefProps>;
 }
 
 interface SidebarActionProps {
@@ -90,18 +94,18 @@ function SidebarAction({
         event.stopPropagation();
         onClick?.();
       }}
-      className={`flex w-full items-center gap-2 rounded-md p-2 transition-colors duration-150 ${disabled ? "cursor-not-allowed text-stone-400 dark:text-stone-600" : "cursor-pointer text-stone-800 hover:bg-stone-200/30 dark:text-stone-200 dark:hover:bg-stone-800/50"}`}
+      className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 transition-colors duration-150 ${disabled ? "cursor-not-allowed text-stone-400 dark:text-stone-600" : "cursor-pointer text-stone-800 hover:bg-stone-200/60 dark:text-stone-200 dark:hover:bg-stone-800"}`}
     >
       <span className="flex h-4 w-4 shrink-0 items-center justify-center">
         {icon}
       </span>
 
-      <span className={`overflow-hidden whitespace-nowrap transition-all duration-300 ${open ? "max-w-[10rem] opacity-100" : "max-w-0 opacity-0"}`}>
+      <span className={`overflow-hidden whitespace-nowrap ${open ? "animate-sidebar-in max-w-[10rem]" : "max-w-0 opacity-0"}`}>
         {label}
       </span>
 
       {open && disabled && (
-        <span className="ml-auto rounded bg-stone-300/20 px-1.5 py-0.5 text-[10px] font-medium text-stone-600 dark:bg-stone-700/30 dark:text-stone-400">
+        <span className="animate-sidebar-in ml-auto rounded bg-stone-300/20 px-1.5 py-0.5 text-[10px] font-medium text-stone-600 dark:bg-stone-700/30 dark:text-stone-400">
           Soon
         </span>
       )}
@@ -127,6 +131,8 @@ export default function Sidebar({
   selectedSessionId,
   dispatch,
   userId,
+  userPref,
+  setUserPref,
 }: SidebarProps) {
   const { data: auth } = useSession();
   const router = useRouter();
@@ -259,7 +265,7 @@ export default function Sidebar({
       )}
       <aside
         aria-label="Chat sidebar"
-        className={`font-paragraph flex h-full shrink-0 flex-col overflow-hidden border-r border-stone-200 bg-stone-100/20 p-4 text-sm text-stone-800 transition-[width,transform] duration-300 ease-in-out dark:border-stone-700/50 dark:bg-stone-800/50 dark:text-stone-200 max-md:fixed max-md:inset-y-0 max-md:left-0 max-md:z-50 max-md:w-64 max-md:bg-white max-md:shadow-2xl dark:max-md:bg-stone-900 ${open ? "w-64 translate-x-0" : "w-16 cursor-col-resize max-md:-translate-x-full "}`}
+        className={`font-paragraph flex h-full shrink-0 flex-col overflow-hidden border-r border-stone-200 bg-stone-100/20 px-3 py-3 text-[15px] text-stone-800 transition-[width,transform] duration-300 ease-in-out dark:border-stone-700/50 dark:bg-stone-800/50 dark:text-stone-200 max-md:fixed max-md:inset-y-0 max-md:left-0 max-md:z-50 max-md:w-64 max-md:bg-white max-md:shadow-2xl dark:max-md:bg-stone-900 ${open ? "w-64 translate-x-0" : "w-16 cursor-col-resize max-md:-translate-x-full "}`}
         onClick={() => {
           if (!open) {
             onToggle(true);
@@ -267,7 +273,7 @@ export default function Sidebar({
         }}
       >
         {/* Header */}
-        <header className="flex h-8 shrink-0 items-center justify-between">
+        <header className="flex h-10 shrink-0 items-center justify-between px-1.5">
           <button
             type="button"
             aria-label={open ? "Application home" : "Open sidebar"}
@@ -297,7 +303,7 @@ export default function Sidebar({
               <button
                 type="button"
                 aria-label="Collapse sidebar"
-                className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md hover:bg-stone-200/70 dark:hover:bg-stone-800"
+                className="animate-sidebar-in flex h-8 w-8 cursor-pointer items-center justify-center rounded-md hover:bg-stone-200/70 dark:hover:bg-stone-800"
                 onClick={(event) => {
                   event.stopPropagation();
                   onToggle(false);
@@ -310,7 +316,7 @@ export default function Sidebar({
         </header>
 
         {/* Sidebar Actions */}
-        <nav aria-label="Chat actions" className="mt-4 shrink-0 space-y-1">
+        <nav aria-label="Chat actions" className="mt-3 shrink-0 space-y-0.5">
           <SidebarAction
             open={open}
             label="New Chat"
@@ -335,9 +341,9 @@ export default function Sidebar({
 
         {/* Chat List */}
         {open && (
-          <div className="font-paragraph mt-5 flex min-h-0 flex-1 flex-col overflow-hidden">
-            <div className="flex shrink-0 items-center justify-between px-2 pb-1">
-              <span className="text-xs text-stone-700 dark:text-stone-300">
+          <div className="font-paragraph animate-sidebar-in mt-6 flex min-h-0 flex-1 flex-col overflow-hidden">
+            <div className="flex shrink-0 items-center justify-between px-3 pb-1">
+              <span className="text-xs text-stone-500 dark:text-stone-400">
                 Chats
               </span>
 
@@ -394,7 +400,7 @@ export default function Sidebar({
                         value={row.id}
                         className="border-none"
                       >
-                        <AccordionTrigger className="[&>svg:last-child]:hidden group w-fit flex-none justify-start gap-1.5 px-2 py-2 text-xs leading-none text-stone-600 hover:no-underline dark:text-stone-400">
+                        <AccordionTrigger className="[&>svg:last-child]:hidden group w-fit flex-none justify-start gap-1.5 px-3 py-2 text-xs leading-none text-stone-600 hover:no-underline dark:text-stone-400">
                           <span>{row.label}</span>
 
                           <ChevronDownIcon className="group-data-[state=open]:rotate-90 h-3.5 w-3.5 shrink-0 cursor-pointer transition-transform duration-200" />
@@ -405,14 +411,14 @@ export default function Sidebar({
 
                   if (row.type === "empty") {
                     return (
-                      <p className="px-2 py-2 text-xs text-stone-500 dark:text-stone-500">
+                      <p className="px-3 py-2 text-xs text-stone-500 dark:text-stone-500">
                         Your recent chats will appear here.
                       </p>
                     );
                   }
 
                   return (
-                    <div className="pb-1">
+                    <div className="pb-0.5">
                       <SessionItem
                         s={row.session}
                         open={open}
@@ -430,6 +436,16 @@ export default function Sidebar({
             </Accordion>
           </div>
         )}
+
+        {/* Account */}
+        <footer className="-mx-3 mt-auto shrink-0 border-t border-stone-200 px-3 pt-3 dark:border-stone-700/50">
+          <AccountMenu
+            open={open}
+            userPref={userPref}
+            setUserPref={setUserPref}
+            dispatch={dispatch}
+          />
+        </footer>
       </aside>
 
       {/* Search Dialog */}

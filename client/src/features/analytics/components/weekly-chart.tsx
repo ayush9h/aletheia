@@ -112,13 +112,14 @@ export default function WeeklyTokensChart({
             <Bar
               dataKey="tokens"
               maxBarSize={42}
-              radius={[4, 4, 0, 0]}
+              radius={[6, 6, 0, 0]}
               minPointSize={0}
             >
               {data.map((item) => (
+                // CSS fill follows the accent theme; a hardcoded hex stays blue
                 <Cell
                   key={item.day}
-                  fill="#3b82f6"
+                  className="fill-brand-500"
                   opacity={item.tokens > 0 ? 0.85 : 0.08}
                 />
               ))}

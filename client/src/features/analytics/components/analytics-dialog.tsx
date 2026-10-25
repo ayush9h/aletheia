@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import {
   CalendarClock,
+  ChartNoAxesCombinedIcon,
   CircleAlert,
   CircleCheck,
   Clock3,
@@ -107,7 +108,7 @@ function MonthlyUsageCard({ usage }: { usage: UsageResponse }) {
   });
 
   return (
-    <div className="rounded-2xl border border-stone-200 bg-stone-50 p-5 dark:border-stone-800 dark:bg-stone-900">
+    <div className="rounded-xl border border-stone-200 bg-stone-50 p-5 dark:border-stone-700/50 dark:bg-stone-800/30">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-xs text-stone-500 dark:text-stone-400">
@@ -139,7 +140,7 @@ function MonthlyUsageCard({ usage }: { usage: UsageResponse }) {
         aria-valuemin={0}
         aria-valuemax={usage.token_limit}
         aria-valuenow={Math.min(usage.tokens_used, usage.token_limit)}
-        className="mt-4 h-2 overflow-hidden rounded-full bg-stone-200 dark:bg-stone-800"
+        className="mt-4 h-2 overflow-hidden rounded-full bg-stone-200 dark:bg-stone-700/60"
       >
         <div
           className={cn("h-full rounded-full transition-[width] duration-500", status.bar)}
@@ -171,7 +172,7 @@ interface MetricCardProps {
 
 function MetricCard({ icon: Icon, label, value }: MetricCardProps) {
   return (
-    <div className="flex items-center gap-3 rounded-2xl border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
+    <div className="flex items-center gap-3 rounded-xl border border-stone-200 bg-white p-4 dark:border-stone-700/50 dark:bg-stone-800/30">
       <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-500 dark:bg-brand-950/50 dark:text-brand-400">
         <Icon className="size-4" aria-hidden />
       </div>
@@ -192,7 +193,7 @@ function MetricCard({ icon: Icon, label, value }: MetricCardProps) {
 function SectionHeading({ title, hint }: { title: string; hint?: string }) {
   return (
     <div className="mb-3 flex items-baseline justify-between gap-3">
-      <h3 className="text-sm font-medium text-stone-900 dark:text-stone-100">
+      <h3 className="text-xs font-medium uppercase tracking-wide text-stone-500 dark:text-stone-400">
         {title}
       </h3>
 
@@ -206,13 +207,13 @@ function SectionHeading({ title, hint }: { title: string; hint?: string }) {
 function LoadingSkeleton() {
   return (
     <div className="animate-pulse space-y-6" aria-label="Loading analytics">
-      <div className="h-36 rounded-2xl bg-stone-100 dark:bg-stone-900" />
+      <div className="h-36 rounded-xl bg-stone-100 dark:bg-stone-800/50" />
       <div className="grid gap-3 sm:grid-cols-3">
         {[0, 1, 2].map((i) => (
-          <div key={i} className="h-[70px] rounded-2xl bg-stone-100 dark:bg-stone-900" />
+          <div key={i} className="h-[70px] rounded-xl bg-stone-100 dark:bg-stone-800/50" />
         ))}
       </div>
-      <div className="h-64 rounded-2xl bg-stone-100 dark:bg-stone-900" />
+      <div className="h-64 rounded-xl bg-stone-100 dark:bg-stone-800/50" />
     </div>
   );
 }
@@ -275,19 +276,25 @@ export default function AnalyticsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="font-paragraph max-h-[88dvh] w-[calc(100%-1rem)] max-w-2xl overflow-hidden rounded-2xl border-stone-200 bg-white p-0 text-stone-900 shadow-2xl dark:border-stone-800 dark:bg-stone-950 dark:text-stone-100 sm:w-[calc(100%-2rem)]">
+      <DialogContent className="font-paragraph max-h-[88dvh] w-[calc(100%-1rem)] max-w-2xl overflow-hidden rounded-2xl border-stone-200 bg-white p-0 text-stone-900 shadow-2xl shadow-stone-900/10 dark:border-stone-700/50 dark:bg-stone-900 dark:text-stone-100 dark:shadow-black/50 sm:w-[calc(100%-2rem)]">
         <div className="flex max-h-[88dvh] min-h-0 flex-col">
-          <div className="shrink-0 border-b border-stone-200 px-5 py-5 dark:border-stone-800 sm:px-7">
-            <DialogHeader className="space-y-1">
-              <DialogTitle className="text-lg font-medium tracking-tight">
-                Analytics
-              </DialogTitle>
+          <DialogHeader className="shrink-0 space-y-0 border-b border-stone-200 bg-stone-50 px-5 py-5 pr-14 dark:border-stone-700/50 dark:bg-stone-950 sm:px-7">
+            <div className="flex items-center gap-3.5">
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-stone-200 bg-stone-100 text-stone-700 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-200">
+                <ChartNoAxesCombinedIcon className="size-5" aria-hidden />
+              </span>
 
-              <DialogDescription className="text-xs text-stone-500 dark:text-stone-400">
-                Your plan usage and recent activity.
-              </DialogDescription>
-            </DialogHeader>
-          </div>
+              <div className="min-w-0 text-left">
+                <DialogTitle className="text-base font-semibold">
+                  Analytics
+                </DialogTitle>
+
+                <DialogDescription className="mt-1 text-xs leading-5 text-stone-500 dark:text-stone-400">
+                  Your plan usage and recent activity.
+                </DialogDescription>
+              </div>
+            </div>
+          </DialogHeader>
 
           <main className="min-h-0 flex-1 overflow-y-auto px-5 py-6 sm:px-7">
             {loading ? (
@@ -331,7 +338,7 @@ export default function AnalyticsDialog({
                     hint={`${formatNumber(weekTotal)} total`}
                   />
 
-                  <div className="rounded-2xl border border-stone-200 p-4 dark:border-stone-800">
+                  <div className="rounded-xl border border-stone-200 p-4 dark:border-stone-700/50 dark:bg-stone-800/30">
                     {weekTotal === 0 ? (
                       <div className="flex h-56 flex-col items-center justify-center gap-1 text-center">
                         <p className="text-sm text-stone-700 dark:text-stone-300">

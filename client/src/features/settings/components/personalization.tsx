@@ -2,13 +2,8 @@
 
 import { useEffect, useState } from "react";
 
-import {
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 
 import {
   Select,
@@ -18,8 +13,29 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+import {
+  FIELD_CLASS,
+  SELECT_TRIGGER,
+  SettingRow,
+  SettingSection,
+  SettingsHeader,
+} from "@/features/settings/components/settings-layout";
+import { MENU_CONTENT, MENU_SELECT_ITEM } from "@/lib/menu";
 import type { UserPrefProps } from "@/types/user-pref";
 import type { PersonalizedSettingProps } from "@/features/settings/types/preferences.types";
+
+const TONES = ["Efficient", "Balanced", "Creative", "Technical"];
+
+function Field({ id, label, children }: { id: string; label: string; children: React.ReactNode }) {
+  return (
+    <div className="space-y-2 py-4 first:pt-0 last:pb-0">
+      <label htmlFor={id} className="block text-sm font-medium text-stone-800 dark:text-stone-200">
+        {label}
+      </label>
+      {children}
+    </div>
+  );
+}
 
 export default function PersonalizationSettings({
   userPref,
@@ -58,150 +74,104 @@ export default function PersonalizationSettings({
   };
 
   return (
-    <div className="min-h-0 flex-1 overflow-y-auto pr-2 sm:pr-3">
-      <DialogHeader className="shrink-0 pb-5">
-        <DialogTitle className="text-xl font-semibold text-stone-950 dark:text-stone-100">
-          Personalization
-        </DialogTitle>
+    <div className="flex h-full min-h-0 flex-1 flex-col">
+      <SettingsHeader
+        title="Personalization"
+        description="Customize how Aletheia responds to you."
+      />
 
-        <DialogDescription className="text-stone-500 dark:text-stone-400">
-          Customize how Aletheia responds to you.
-        </DialogDescription>
-      </DialogHeader>
-
-      <div className="min-h-0 flex-1 overflow-y-auto pr-2 sm:pr-3">
-        <div className="space-y-6 pb-8">
-          {/* Base style */}
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
-            <div className="min-w-0">
-              <h3 className="text-sm font-medium text-stone-800 dark:text-stone-200">
-                Base style and tone
-              </h3>
-
-              <p className="mt-1 text-xs leading-5 text-stone-500 dark:text-stone-400">
-                This controls response personality, not capability.
-              </p>
-            </div>
-
+      <div className="min-h-0 flex-1 overflow-y-auto pr-1">
+        <SettingSection title="Responses">
+          <SettingRow
+            title="Base style and tone"
+            description="This controls response personality, not capability."
+          >
             <Select
               value={draft.baseTone}
               onValueChange={(value) => update("baseTone", value)}
             >
-              <SelectTrigger className="w-full shrink-0 border-stone-300 text-stone-700 dark:border-stone-700/50 dark:bg-stone-900 dark:text-stone-200 sm:w-40">
+              <SelectTrigger aria-label="Base style and tone" className={SELECT_TRIGGER}>
                 <SelectValue placeholder="Select tone" />
               </SelectTrigger>
 
-              <SelectContent className="font-paragraph dark:border-stone-700/50 dark:bg-stone-900">
-                <SelectItem value="Efficient">Efficient</SelectItem>
-                <SelectItem value="Balanced">Balanced</SelectItem>
-                <SelectItem value="Creative">Creative</SelectItem>
-                <SelectItem value="Technical">Technical</SelectItem>
+              <SelectContent position="popper" sideOffset={6} className={MENU_CONTENT}>
+                {TONES.map((tone) => (
+                  <SelectItem key={tone} value={tone} className={MENU_SELECT_ITEM}>
+                    {tone}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
-          </div>
+          </SettingRow>
 
-          {/* Memory */}
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
-            <div className="min-w-0">
-              <h3 className="text-sm font-medium text-stone-800 dark:text-stone-200">
-                Memory storage
-              </h3>
+          <SettingRow
+            title="Memory storage"
+            description="Allow Aletheia to remember useful details and personalize future conversations."
+          >
+            <Switch
+              aria-label="Memory storage"
+              checked={draft.memoryEnabled}
+              onCheckedChange={(checked) => update("memoryEnabled", checked)}
+              className="cursor-pointer self-start data-[state=checked]:bg-brand-600 sm:self-center"
+            />
+          </SettingRow>
 
-              <p className="mt-1 text-xs leading-5 text-stone-500 dark:text-stone-400">
-                Allow Aletheia to remember useful details and personalize
-                future conversations.
-              </p>
-            </div>
-
-            <button
-              type="button"
-              role="switch"
-              aria-checked={draft.memoryEnabled}
-              aria-label="Toggle memory storage"
-              onClick={() => update("memoryEnabled", !draft.memoryEnabled)}
-              className={`relative h-6 w-11 shrink-0 cursor-pointer self-start rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-stone-950 sm:self-center ${draft.memoryEnabled ? "bg-brand-500" : "bg-stone-300 dark:bg-stone-700"}`}
-            >
-              <span
-                aria-hidden="true"
-                className={`absolute left-0.5 top-0.5 size-5 rounded-full bg-white shadow-sm transition-transform ${draft.memoryEnabled ? "translate-x-5" : "translate-x-0"}`}
-              />
-            </button>
-          </div>
-
-          {/* Custom instructions */}
-          <div className="space-y-2">
-            <h3 className="text-xs font-medium text-stone-700 dark:text-stone-300">
-              Custom instructions
-            </h3>
-
+          <Field id="custom-instructions" label="Custom instructions">
             <textarea
+              id="custom-instructions"
               rows={4}
               value={draft.userCustomInstruction}
               placeholder="Additional behavior, style, or tone preferences"
               onChange={(event) =>
                 update("userCustomInstruction", event.target.value)
               }
-              className="w-full resize-none rounded-md border border-stone-300 bg-white px-3 py-2 text-sm text-stone-800 outline-none placeholder:text-stone-400 focus:border-stone-500 dark:border-stone-700/50 dark:bg-stone-900 dark:text-stone-200 dark:placeholder:text-stone-500 dark:focus:border-stone-500"
+              className={`${FIELD_CLASS} resize-none`}
             />
-          </div>
+          </Field>
+        </SettingSection>
 
-          {/* About you */}
-          <div className="space-y-4">
-            <h3 className="font-semibold text-stone-900 dark:text-stone-100">
-              About you
-            </h3>
+        <SettingSection title="About you">
+          <Field id="nickname" label="Nickname">
+            <input
+              id="nickname"
+              value={draft.nickname}
+              placeholder="What should Aletheia call you?"
+              onChange={(event) => update("nickname", event.target.value)}
+              className={FIELD_CLASS}
+            />
+          </Field>
 
-            <div className="space-y-2">
-              <h3 className="text-xs font-medium text-stone-700 dark:text-stone-300">
-                Nickname
-              </h3>
+          <Field id="occupation" label="Occupation">
+            <input
+              id="occupation"
+              value={draft.occupation}
+              placeholder="Your profession or role"
+              onChange={(event) => update("occupation", event.target.value)}
+              className={FIELD_CLASS}
+            />
+          </Field>
 
-              <input
-                value={draft.nickname}
-                placeholder="What should Aletheia call you?"
-                onChange={(event) => update("nickname", event.target.value)}
-                className="w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-sm text-stone-800 outline-none placeholder:text-stone-400 focus:border-stone-500 dark:border-stone-700/50 dark:bg-stone-900 dark:text-stone-200 dark:placeholder:text-stone-500 dark:focus:border-stone-500"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <h3 className="text-xs font-medium text-stone-700 dark:text-stone-300">
-                Occupation
-              </h3>
-
-              <input
-                value={draft.occupation}
-                placeholder="Your profession or role"
-                onChange={(event) => update("occupation", event.target.value)}
-                className="w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-sm text-stone-800 outline-none placeholder:text-stone-400 focus:border-stone-500 dark:border-stone-700/50 dark:bg-stone-900 dark:text-stone-200 dark:placeholder:text-stone-500 dark:focus:border-stone-500"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <h3 className="text-xs font-medium text-stone-700 dark:text-stone-300">
-                More about you
-              </h3>
-
-              <textarea
-                rows={3}
-                value={draft.userHobbies}
-                placeholder="Interests, values, preferences"
-                onChange={(event) => update("userHobbies", event.target.value)}
-                className="w-full resize-none rounded-md border border-stone-300 bg-white px-3 py-2 text-sm text-stone-800 outline-none placeholder:text-stone-400 focus:border-stone-500 dark:border-stone-700/50 dark:bg-stone-900 dark:text-stone-200 dark:placeholder:text-stone-500 dark:focus:border-stone-500"
-              />
-            </div>
-          </div>
-        </div>
+          <Field id="more-about-you" label="More about you">
+            <textarea
+              id="more-about-you"
+              rows={3}
+              value={draft.userHobbies}
+              placeholder="Interests, values, preferences"
+              onChange={(event) => update("userHobbies", event.target.value)}
+              className={`${FIELD_CLASS} resize-none`}
+            />
+          </Field>
+        </SettingSection>
       </div>
 
-      {/* Footer */}
-      <div className="flex shrink-0 justify-end gap-2 border-t border-stone-200 bg-white pt-4 dark:border-stone-700/50 dark:bg-stone-900">
+      {/* Footer stays visible while the fields scroll */}
+      <div className="flex shrink-0 justify-end gap-2 border-t border-stone-200 pt-4 dark:border-stone-700/50">
         <Button
           type="button"
           variant="outline"
           disabled={isSaving}
           onClick={() => onOpenChange(false)}
-          className="cursor-pointer border-stone-300 text-stone-700 transition-all duration-150 ease-out active:translate-y-px active:scale-[0.98] dark:border-stone-700/50 dark:bg-stone-900 dark:text-stone-300 dark:hover:bg-stone-800"
+          className="cursor-pointer rounded-lg border-stone-200 text-stone-700 transition-all duration-150 ease-out active:translate-y-px active:scale-[0.98] dark:border-stone-700/60 dark:bg-stone-900 dark:text-stone-300 dark:hover:bg-stone-800"
         >
           Cancel
         </Button>
@@ -210,7 +180,7 @@ export default function PersonalizationSettings({
           type="button"
           disabled={isSaving}
           onClick={() => void handleSubmit()}
-          className="cursor-pointer bg-brand-600 transition-all duration-150 ease-out hover:bg-brand-700 active:translate-y-px active:scale-[0.98] disabled:cursor-not-allowed dark:text-stone-300"
+          className="cursor-pointer rounded-lg bg-brand-600 text-white transition-all duration-150 ease-out hover:bg-brand-700 active:translate-y-px active:scale-[0.98] disabled:cursor-not-allowed"
         >
           {isSaving ? "Saving..." : "Save"}
         </Button>

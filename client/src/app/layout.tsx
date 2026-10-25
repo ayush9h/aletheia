@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Poiret_One } from "next/font/google";
+import { Poiret_One, Plus_Jakarta_Sans } from "next/font/google";
 import localFont from "next/font/local";
 
 import "./globals.css";
@@ -24,6 +24,13 @@ const paragraphFont = localFont({
   src: "./fonts/Bookerly.ttf",
   variable: "--font-bookerly",
   display: "swap",
+});
+
+const jakartaFont = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-jakarta",
+  display: "swap",
+  preload: false,
 });
 
 const dyslexicFont = localFont({
@@ -67,7 +74,7 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
-      className={`${headerFont.variable} ${paragraphFont.variable} ${dyslexicFont.variable}`}
+      className={`${headerFont.variable} ${paragraphFont.variable} ${dyslexicFont.variable} ${jakartaFont.variable}`}
       suppressHydrationWarning
     >
       <head>

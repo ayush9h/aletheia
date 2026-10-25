@@ -16,7 +16,8 @@ export default function ChatWindow(props: ChatWindowProps) {
     <div className="flex h-full min-h-0 flex-col overflow-hidden bg-stone-100/40 dark:bg-stone-800/60">
       <div className={`flex min-h-0 flex-1 flex-col items-center overflow-hidden ${isEmpty ? "justify-center" : ""}`}>
         {!isEmpty && (
-          <div className="min-h-0 w-full flex-1 overflow-hidden overscroll-contain">
+          // Fade messages out above the input instead of a hard clip line
+          <div className="min-h-0 w-full flex-1 overflow-hidden overscroll-contain [mask-image:linear-gradient(to_bottom,black_calc(100%-2.5rem),transparent)]">
             <MessageList messages={props.messages} bottomRef={bottomRef} />
           </div>
         )}

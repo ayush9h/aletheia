@@ -60,8 +60,8 @@ export function SettingsDialog(settingsProps: SettingsDialogProps) {
         <DialogTitle className="sr-only">Settings</DialogTitle>
 
         <div className="flex h-full min-h-0 flex-col md:flex-row">
-          <aside className="shrink-0 border-b border-stone-200 bg-stone-50 dark:border-stone-700/50 dark:bg-stone-950 md:w-48 md:border-b-0 md:border-r md:p-5">
-            <div className="flex gap-1 overflow-x-auto p-3 md:flex-col md:gap-2 md:overflow-visible md:p-0">
+          <aside className="shrink-0 border-b border-stone-200 bg-stone-50 dark:border-stone-700/50 dark:bg-stone-950 md:w-52 md:border-b-0 md:border-r md:px-3 md:py-5">
+            <div className="flex gap-1 overflow-x-auto p-3 md:flex-col md:gap-0.5 md:overflow-visible md:p-0">
               {SETTING_SECTIONS.map((section) => {
                 const Icon = section.icon;
                 const isActive = activeSection === section.id;
@@ -71,7 +71,8 @@ export function SettingsDialog(settingsProps: SettingsDialogProps) {
                     key={section.id}
                     type="button"
                     onClick={() => setActiveSection(section.id)}
-                    className={`flex shrink-0 cursor-pointer items-center gap-2 rounded-md p-2 text-left text-xs transition-colors md:w-full ${isActive ? "bg-stone-200 text-stone-900 dark:bg-stone-800 dark:text-stone-100" : "text-stone-700 hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-200"}`}
+                    aria-current={isActive ? "page" : undefined}
+                    className={`flex shrink-0 cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm transition-colors md:w-full ${isActive ? "bg-stone-200/70 font-medium text-stone-900 dark:bg-stone-800 dark:text-stone-100" : "text-stone-600 hover:bg-stone-200/40 hover:text-stone-900 dark:text-stone-400 dark:hover:bg-stone-800/60 dark:hover:text-stone-200"}`}
                   >
                     <Icon aria-hidden="true" className="size-4 shrink-0" />
                     <span className="whitespace-nowrap">{section.label}</span>

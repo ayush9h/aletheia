@@ -76,7 +76,7 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 src/
 ├── app/          routes only: layouts, pages, api handlers, globals.css, fonts
 ├── auth.ts       next-auth config
-├── components/   shared, feature-agnostic: ui/ (shadcn), layout/
+├── components/   shared, feature-agnostic: ui/ (shadcn)
 ├── features/     <feature>/{components,hooks,types,config,constants,api,utils,reducers}
 ├── lib/          shared utils and API clients (lib/api/axios.ts, user-data.ts)
 └── types/        types shared by multiple features (user-message, user-pref)
@@ -104,7 +104,8 @@ src/
 - Brand color is `brand-*` (defined once in `app/globals.css` `@theme`). Never write `blue-*`.
 - Neutrals are `stone-*`.
 - Dark-mode dialogs follow Settings: header and footer `dark:bg-stone-950`, body `dark:bg-stone-900`, borders `dark:border-stone-700/50`.
-- Chips and tabs follow the starter-prompt style: rounded-lg, stone border, brand tint on hover or when active.
+- Filter tabs follow the connectors dialog: rounded-full pills, plain until hover, solid stone-900 (dark: stone-100) when active.
+- Dropdown menus use the shared classes in `src/lib/menu.ts` (`MENU_CONTENT`, `MENU_ITEM`, …); destructive items use `variant="destructive"`.
 - Fonts: `font-paragraph` for body text, `font-header` for the logo.
 
 ## 8. Comments

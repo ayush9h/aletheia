@@ -15,7 +15,9 @@ import {
   GlobeIcon,
   PlusIcon,
 } from "@radix-ui/react-icons";
+import { Check } from "lucide-react";
 import { Fragment } from "react";
+import { MENU_CONTENT, MENU_ITEM, MENU_LABEL, MENU_SEPARATOR } from "@/lib/menu";
 
 // Exported so ChatInput can render the selected-tool chips.
 export const options = [
@@ -97,15 +99,16 @@ export default function InputOptions({
 
       <DropdownMenuContent
         align="start"
-        className="font-paragraph w-52 dark:border-stone-700 dark:bg-stone-900"
+        sideOffset={8}
+        className={`${MENU_CONTENT} w-56`}
       >
         {sections.map((section, index) => (
           <Fragment key={section.id}>
             {index > 0 && (
-              <DropdownMenuSeparator className="dark:bg-stone-700" />
+              <DropdownMenuSeparator className={MENU_SEPARATOR} />
             )}
 
-            <DropdownMenuLabel className="px-2 py-1.5 text-xs font-medium text-stone-500 dark:text-stone-400">
+            <DropdownMenuLabel className={MENU_LABEL}>
               {section.label}
             </DropdownMenuLabel>
 
@@ -120,19 +123,17 @@ export default function InputOptions({
                     key={option.key}
                     disabled={option.disabled}
                     onSelect={() => handleSelect(option)}
-                    className="data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50 flex cursor-pointer items-center gap-2 dark:text-stone-200 dark:focus:bg-stone-800"
+                    className={MENU_ITEM}
                   >
                     <Icon className="h-4 w-4 shrink-0 text-stone-500 dark:text-stone-400" />
 
-                    <span className="flex-1 text-xs">{option.toolLabel}</span>
+                    <span className="flex-1">{option.toolLabel}</span>
 
                     {isSelected && (
-                      <span
-                        className="text-xs text-brand-600 dark:text-brand-400"
+                      <Check
                         aria-hidden="true"
-                      >
-                        ✓
-                      </span>
+                        className="size-4 text-brand-600 dark:text-brand-400"
+                      />
                     )}
                   </DropdownMenuItem>
                 );

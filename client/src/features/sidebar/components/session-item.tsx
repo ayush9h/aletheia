@@ -3,20 +3,18 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { DotsVerticalIcon } from "@radix-ui/react-icons";
+import { Pen, Pin, PinOff, Trash2 } from "lucide-react";
 import {
-  DotsVerticalIcon,
-  DrawingPinIcon,
-  TrashIcon,
-} from "@radix-ui/react-icons";
-import { Pen } from "lucide-react";
+  MENU_CONTENT,
+  MENU_ITEM,
+  MENU_ITEM_DANGER,
+  MENU_SEPARATOR,
+} from "@/lib/menu";
 import type { SessionItemProps } from "@/features/sidebar/types/session-item.types";
-
-const itemClass =
-  "flex cursor-pointer items-center gap-2 dark:text-stone-200 dark:focus:bg-stone-800 dark:focus:text-stone-100";
-const dangerClass =
-  "flex cursor-pointer items-center gap-2 text-red-500 focus:bg-red-50 focus:text-red-700 dark:text-red-400 dark:focus:bg-red-950/40 dark:focus:text-red-300";
 
 // Portaled menu events bubble through React's tree; only react to events from the row's own DOM.
 const fromRow = (e: React.SyntheticEvent) =>
@@ -85,15 +83,15 @@ export function SessionItem({
           onSelectSession(s.session_id);
         }
       }}
-      className={`group rounded-md outline-none transition-colors focus-visible:ring-2 focus-visible:ring-stone-400 dark:focus-visible:ring-stone-600 ${
+      className={`group rounded-lg outline-none transition-colors focus-visible:ring-2 focus-visible:ring-stone-400 dark:focus-visible:ring-stone-600 ${
         open
-          ? `cursor-pointer hover:bg-stone-200/30 dark:hover:bg-stone-800/50 ${
-              isSelected ? "bg-stone-200/30 dark:bg-stone-800/50" : ""
+          ? `cursor-pointer hover:bg-stone-200/60 dark:hover:bg-stone-800 ${
+              isSelected ? "bg-stone-200/60 dark:bg-stone-800" : ""
             }`
           : "pointer-events-none opacity-0"
       }`}
     >
-      <div className="flex w-full items-center gap-2 p-2">
+      <div className="flex w-full items-center gap-2 px-3 py-2">
         {isEditing ? (
           <input
             ref={inputRef}
@@ -141,26 +139,30 @@ export function SessionItem({
             <DropdownMenuContent
               side="right"
               align="start"
-              className="font-paragraph min-w-36 dark:border-stone-700 dark:bg-stone-900"
+              sideOffset={6}
+              className={`${MENU_CONTENT} w-44`}
             >
-              <DropdownMenuItem className={itemClass} onSelect={startEditing}>
-                <Pen className="h-4 w-4" />
-                Rename
-              </DropdownMenuItem>
-
               <DropdownMenuItem
-                className={itemClass}
+                className={MENU_ITEM}
                 onSelect={() => void handlePinSession(s.session_id)}
               >
-                <DrawingPinIcon className="h-4 w-4" />
+                {s.is_pinned ? <PinOff className="size-4" /> : <Pin className="size-4" />}
                 {s.is_pinned ? "Unpin" : "Pin"}
               </DropdownMenuItem>
 
+              <DropdownMenuItem className={MENU_ITEM} onSelect={startEditing}>
+                <Pen className="size-4" />
+                Rename
+              </DropdownMenuItem>
+
+              <DropdownMenuSeparator className={MENU_SEPARATOR} />
+
               <DropdownMenuItem
-                className={dangerClass}
+                variant="destructive"
+                className={MENU_ITEM_DANGER}
                 onSelect={() => void handleDeleteSession(s.session_id)}
               >
-                <TrashIcon className="h-4 w-4 text-current" />
+                <Trash2 className="size-4" />
                 Delete
               </DropdownMenuItem>
             </DropdownMenuContent>
