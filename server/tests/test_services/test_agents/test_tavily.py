@@ -21,8 +21,8 @@ async def test_tavily_web_search(
     client.search = AsyncMock(
         return_value={
             "results": [
-                {"content": "First result"},
-                {"content": "Second result"},
+                {"title": "First", "url": "https://a.com", "content": "First result"},
+                {"title": "Second", "url": "https://b.com", "content": "Second result"},
             ]
         }
     )
@@ -36,7 +36,10 @@ async def test_tavily_web_search(
         }
     )
 
-    assert result == "First result\n\nSecond result"
+    assert result == (
+        "Title: First\nURL: https://a.com\nContent: First result\n\n"
+        "Title: Second\nURL: https://b.com\nContent: Second result"
+    )
 
     guard.acquire.assert_awaited_once_with(
         tavily_exec_type="search",
@@ -47,7 +50,30 @@ async def test_tavily_web_search(
         "test query",
         include_domains=["example.com"],
         topic="general",
+        max_results=5,
     )
+
+
+@pytest.mark.asyncio
+@patch("app.services.agents.web_search.tools.tavily.AsyncTavilyClient")
+@patch("app.services.agents.web_search.tools.tavily.get_tavily_guard")
+async def test_tavily_web_search_failure_returns_error_text(
+    mock_get_guard: MagicMock,
+    mock_client: MagicMock,
+) -> None:
+    guard = MagicMock()
+    guard.acquire = AsyncMock()
+    mock_get_guard.return_value = guard
+
+    client = MagicMock()
+    client.search = AsyncMock(side_effect=RuntimeError("Usage limit exceeded"))
+    mock_client.return_value = client
+
+    result = await tavily_web_search.ainvoke(
+        {"domains": None, "query": "test query", "topic": "general"}
+    )
+
+    assert result == "Error: Web search failed. Please try again."
 
 
 @pytest.mark.asyncio

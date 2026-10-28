@@ -39,6 +39,15 @@ function MarkdownCode({ className, children, ...props }: ComponentProps<"code"> 
     // Shiki lacks chart grammar
     return <CodeBlock code={code} language="json" />;
   }
+  if (language === "markdown" || language === "md") {
+    return (
+      <div className="my-2 [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&>p]:my-2">
+        <ReactMarkdown remarkPlugins={REMARK_PLUGINS} components={MARKDOWN_COMPONENTS}>
+          {code}
+        </ReactMarkdown>
+      </div>
+    );
+  }
   return <CodeBlock code={code} language={language} />;
 }
 
@@ -54,6 +63,7 @@ const MARKDOWN_COMPONENTS: Components = {
     </a>
   ),
   code: MarkdownCode,
+  pre: ({ children }) => <>{children}</>,
   table: ({ children }) => (
     <div className="my-3 w-full overflow-x-auto">
       <table className="min-w-[800px] border-collapse text-sm">{children}</table>

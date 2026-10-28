@@ -1,5 +1,6 @@
 from typing import Literal
 
+import structlog
 from langchain.tools import tool
 from tavily import AsyncTavilyClient
 
@@ -7,6 +8,10 @@ from app.services.agents.web_search.schema import WebSearchSchema
 from app.utils.config import settings
 from app.utils.rate_limiters.tavily import (TavilyLimitExceeded,
                                             get_tavily_guard)
+
+logger = structlog.get_logger(__name__)
+
+MAX_SEARCH_RESULTS = 5
 
 
 @tool(
@@ -29,12 +34,23 @@ async def tavily_web_search(
     except TavilyLimitExceeded:
         return "Error: Web search rate limit exceeded. Please try again in a minute."
 
-    tavily_client = AsyncTavilyClient(api_key=settings.TAVILY_API_KEY)
-    response = await tavily_client.search(
-        query,
-        include_domains=domains or [],
-        topic=topic,
-    )
+    try:
+        tavily_client = AsyncTavilyClient(api_key=settings.TAVILY_API_KEY)
+        response = await tavily_client.search(
+            query,
+            include_domains=domains or [],
+            topic=topic,
+            max_results=MAX_SEARCH_RESULTS,
+        )
+    except Exception:
+        logger.exception("Tavily search failed", query=query, topic=topic)
+        return "Error: Web search failed. Please try again."
 
-    contents = [r.get("content", "") for r in response.get("results", [])]
+    contents = [
+        f"Title: {r.get('title', '')}\nURL: {r.get('url', '')}\nContent: {r.get('content', '')}"
+        for r in response.get("results", [])
+    ]
+    if not contents:
+        return "No search results found."
+
     return "\n\n".join(contents)

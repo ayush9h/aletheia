@@ -162,6 +162,62 @@ async def test_serpapi_web_search_timeout(
 @pytest.mark.asyncio
 @patch("app.services.agents.web_search.tools.serpapi.serpapi.Client")
 @patch("app.services.agents.web_search.tools.serpapi.get_serp_guard")
+async def test_serpapi_web_search_reads_news_results(
+    mock_get_guard: MagicMock,
+    mock_client: MagicMock,
+) -> None:
+    mock_get_guard.return_value.acquire = AsyncMock()
+    mock_client.return_value.search.return_value = {
+        "news_results": [
+            {"title": "Headline", "link": "https://news.com/1", "date": "2 hours ago"}
+        ]
+    }
+
+    result = await serpapi_web_search.ainvoke(
+        {"domains": None, "query": "latest news", "topic": "news"}
+    )
+
+    assert result == "Title: Headline\nURL: https://news.com/1\nContent: 2 hours ago"
+    assert mock_client.return_value.search.call_args.args[0]["engine"] == "google_news"
+
+
+@pytest.mark.asyncio
+@patch("app.services.agents.web_search.tools.serpapi.serpapi.Client")
+@patch("app.services.agents.web_search.tools.serpapi.get_serp_guard")
+async def test_serpapi_web_search_finance_uses_google(
+    mock_get_guard: MagicMock,
+    mock_client: MagicMock,
+) -> None:
+    mock_get_guard.return_value.acquire = AsyncMock()
+    mock_client.return_value.search.return_value = {"organic_results": []}
+
+    await serpapi_web_search.ainvoke(
+        {"domains": None, "query": "tesla stock price", "topic": "finance"}
+    )
+
+    assert mock_client.return_value.search.call_args.args[0]["engine"] == "google"
+
+
+@pytest.mark.asyncio
+@patch("app.services.agents.web_search.tools.serpapi.serpapi.Client")
+@patch("app.services.agents.web_search.tools.serpapi.get_serp_guard")
+async def test_serpapi_web_search_other_error(
+    mock_get_guard: MagicMock,
+    mock_client: MagicMock,
+) -> None:
+    mock_get_guard.return_value.acquire = AsyncMock()
+    mock_client.return_value.search.side_effect = serpapi.APIKeyNotProvided()
+
+    result = await serpapi_web_search.ainvoke(
+        {"domains": None, "query": "test query", "topic": "general"}
+    )
+
+    assert result == "Error: SerpAPI search failed."
+
+
+@pytest.mark.asyncio
+@patch("app.services.agents.web_search.tools.serpapi.serpapi.Client")
+@patch("app.services.agents.web_search.tools.serpapi.get_serp_guard")
 async def test_serpapi_web_search_no_results(
     mock_get_guard: MagicMock,
     mock_client: MagicMock,

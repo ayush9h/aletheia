@@ -1,3 +1,4 @@
+import asyncio
 from typing import Literal
 
 import serpapi
@@ -42,7 +43,7 @@ async def serpapi_web_search(
     engine_map = {
         "general": "google",
         "news": "google_news",
-        "finance": "google_finance",
+        "finance": "google",
     }
 
     params = {
@@ -60,7 +61,7 @@ async def serpapi_web_search(
             timeout=20,
         )
 
-        response = client.search(params)
+        response = await asyncio.to_thread(client.search, params)
 
     except serpapi.HTTPError as exc:
         logger.exception(
@@ -81,13 +82,20 @@ async def serpapi_web_search(
 
         return "Error: SerpAPI search timed out."
 
-    results = response.get("organic_results", [])[:MAX_SEARCH_RESULTS]
+    except serpapi.SerpApiError:
+        logger.exception("SerpAPI search failed", query=query, topic=topic)
+
+        return "Error: SerpAPI search failed."
+
+    results = (
+        response.get("organic_results") or response.get("news_results") or []
+    )[:MAX_SEARCH_RESULTS]
 
     contents = []
 
     for result in results:
         title = result.get("title", "")
-        snippet = result.get("snippet", "")
+        snippet = result.get("snippet") or result.get("date", "")
         link = result.get("link", "")
 
         contents.append(f"Title: {title}\n" f"URL: {link}\n" f"Content: {snippet}")
