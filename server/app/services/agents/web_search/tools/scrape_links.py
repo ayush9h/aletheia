@@ -1,18 +1,15 @@
-import json
 from datetime import timedelta
 
+import httpx
 import structlog
 from langchain.tools import tool
 from mcp import ClientSession
-from mcp.client.streamable_http import streamablehttp_client
+from mcp.client.streamable_http import streamable_http_client
 
 from app.services.agents.web_search.schema import ScrapeLinksSchema
 from app.utils.config import settings
 
 logger = structlog.get_logger(__name__)
-
-MAX_LINKS = 200
-SCRAPE_TIMEOUT = timedelta(seconds=90)
 
 
 async def call_scrape_tool(name: str, url: str, wait_for: str | None) -> str:
@@ -21,18 +18,20 @@ async def call_scrape_tool(name: str, url: str, wait_for: str | None) -> str:
         arguments["wait_for"] = wait_for
 
     headers = {"Authorization": f"Bearer {settings.FINANCE_MCP_TOKEN}"}
+    timeout = httpx.Timeout(30, read=90)
 
     try:
-        async with streamablehttp_client(
-            settings.FINANCE_MCP_URL, headers=headers
-        ) as (read, write, _):
-            async with ClientSession(read, write) as session:
-                await session.initialize()
-                result = await session.call_tool(
-                    name,
-                    arguments,
-                    read_timeout_seconds=SCRAPE_TIMEOUT,
-                )
+        async with httpx.AsyncClient(headers=headers, timeout=timeout) as http_client:
+            async with streamable_http_client(
+                settings.FINANCE_MCP_URL, http_client=http_client
+            ) as (read, write, _):
+                async with ClientSession(read, write) as session:
+                    await session.initialize()
+                    result = await session.call_tool(
+                        name,
+                        arguments,
+                        read_timeout_seconds=timedelta(seconds=90),
+                    )
     except Exception:
         logger.exception("Link scrape failed", tool=name, url=url)
         return "Error: Link scrape failed. Please try again."
@@ -46,7 +45,9 @@ async def call_scrape_tool(name: str, url: str, wait_for: str | None) -> str:
     if not links:
         return "No links found."
 
-    return json.dumps({"total": len(links), "links": links[:MAX_LINKS]})
+    markdown = "\n".join(f"- {link}" for link in links[:200])
+
+    return f"Total links on the page: {len(links)}\n\n{markdown}"
 
 
 @tool(

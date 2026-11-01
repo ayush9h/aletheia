@@ -23,6 +23,15 @@ from app.utils.token_estimator import tokens_from_string
 logger = structlog.getLogger(__name__)
 
 
+# str(list) escapes newlines, which flattens markdown tables onto one line
+def format_tool_results(results: list[dict]) -> str:
+    return "\n\n".join(
+        f"Step {r['step_id']} ({r['agent_name']}, {r['status']}):\n"
+        f"{r.get('result') or r.get('error') or 'No output.'}"
+        for r in results
+    )
+
+
 async def consolidator(
     state: AgentState,
 ) -> dict:
@@ -99,8 +108,10 @@ User Occupation:
 
     tool_results_block = (
         "Results from executed plan:\n"
-        f"{tool_results if tool_results else 'No tool results.'}\n"
-        "Copy any ```chart block from the results into your answer unchanged."
+        f"{format_tool_results(tool_results) if tool_results else 'No tool results.'}\n\n"
+        "Copy any ```chart block from the results into your answer unchanged.\n"
+        "Answer in Markdown. Write a table as a real multi-line Markdown table, "
+        "never inside backticks or a code block. Write links as [title](url)."
     )
 
     full_messages: list[BaseMessage] = [

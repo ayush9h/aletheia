@@ -2,6 +2,7 @@ import logging
 import urllib.request
 from unittest.mock import MagicMock, patch
 
+import structlog
 from urllib3.connection import HTTPException
 
 from app.utils.logger import (
@@ -132,7 +133,10 @@ def test_setup_logging_configures_root_logger():
 
     mock_queue_class.assert_called_once_with(-1)
 
-    mock_listener_class.assert_called_once_with(mock_queue)
+    mock_listener_class.assert_called_once()
+    listener_args = mock_listener_class.call_args.args
+    assert listener_args[0] is mock_queue
+    assert isinstance(listener_args[1], logging.StreamHandler)
 
     mock_listener.start.assert_called_once()
 
@@ -164,3 +168,34 @@ def test_shutdown_logging_stops_listener():
 def test_shutdown_logging_does_nothing_when_listener_is_none():
     with patch("app.utils.logger.queue_listener", None):
         shutdown_logging()
+
+
+def test_logs_reach_console_with_tracebacks(capsys):
+    root_logger = logging.getLogger()
+    original_handlers = root_logger.handlers[:]
+    original_level = root_logger.level
+    structlog_config = structlog.get_config()
+
+    try:
+        setup_logging()
+        logger = structlog.get_logger("test")
+
+        logger.info("visible", user_id="u1")
+        try:
+            raise ValueError("boom")
+        except ValueError:
+            logger.exception("failed")
+
+        # Stopping the listener drains the queue before we read the output
+        shutdown_logging()
+    finally:
+        root_logger.handlers[:] = original_handlers
+        root_logger.setLevel(original_level)
+        structlog.configure(**structlog_config)
+
+    output = capsys.readouterr().err
+
+    assert '"event": "visible"' in output
+    assert '"user_id": "u1"' in output
+    assert '"event": "failed"' in output
+    assert "ValueError: boom" in output

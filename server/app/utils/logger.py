@@ -27,11 +27,12 @@ queue_listener = None
 
 
 def setup_logging():
+    global queue_listener
 
     log_queue = queue.Queue(-1)
     queue_handler = QueueHandler(log_queue)
     # queue_listener = QueueListener(log_queue, PaperTrailHandler())
-    queue_listener = QueueListener(log_queue)
+    queue_listener = QueueListener(log_queue, logging.StreamHandler())
 
     queue_listener.start()
     root_logger = logging.getLogger()

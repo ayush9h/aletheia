@@ -97,7 +97,21 @@ async def test_consolidator_with_user_preferences(
     preference.occupation = "Developer"
 
     base_state["user_preference"] = preference
-    base_state["tool_results"] = ["Search result"]
+    base_state["tool_results"] = [
+        {
+            "step_id": 1,
+            "agent_name": "web_search_agent",
+            "status": "success",
+            "result": "| Title |\n|---|\n| Search result |",
+        },
+        {
+            "step_id": 2,
+            "agent_name": "github_agent",
+            "status": "failed",
+            "result": None,
+            "error": "Not connected",
+        },
+    ]
 
     guard = MagicMock()
     guard.acquire = AsyncMock()
@@ -123,7 +137,8 @@ async def test_consolidator_with_user_preferences(
     assert "AI" in messages[0].content
     assert "Alex" in messages[0].content
     assert "Developer" in messages[0].content
-    assert "Search result" in messages[1].content
+    assert "| Title |\n|---|\n| Search result |" in messages[1].content
+    assert "Not connected" in messages[1].content
     assert "```chart" in messages[1].content
 
 
