@@ -21,7 +21,8 @@ from app.services.token_usage import add_tokens_used, get_tokens_used
 from app.services.workflows.orch import graph
 from app.utils.config import settings
 from app.utils.core.dependencies import get_rate_limiter
-from app.utils.rate_limiters.core import RateLimitPolicy, RedisSlidingWindowLimiter
+from app.utils.rate_limiters.core import (RateLimitPolicy,
+                                          RedisSlidingWindowLimiter)
 
 chat_router = APIRouter(prefix="/v1")
 logger = structlog.get_logger(__name__)
@@ -213,7 +214,6 @@ async def chat_stream(
                         checkpoint_ns = event.get("metadata", {}).get(
                             "langgraph_checkpoint_ns", ""
                         )
-
 
                         if kind == "on_chain_end" and node_name == "planner_node":
                             output = event["data"].get("output", {})

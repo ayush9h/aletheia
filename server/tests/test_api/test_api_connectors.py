@@ -4,10 +4,7 @@ import pytest
 from fastapi import HTTPException
 from sqlalchemy.exc import DatabaseError
 
-from app.api.connectors import (
-    get_user_connectors,
-    store_github_connector,
-)
+from app.api.connectors import get_user_connectors, store_github_connector
 from app.schemas.connectors.github import GitHubConnectorRequest
 
 

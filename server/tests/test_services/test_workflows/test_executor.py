@@ -4,7 +4,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from app.services.workflows.executor_node import emit, executor_node, layers, run_step
+from app.services.workflows.executor_node import (emit, executor_node, layers,
+                                                  run_step)
 
 
 @pytest.mark.asyncio

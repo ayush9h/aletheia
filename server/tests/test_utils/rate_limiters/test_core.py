@@ -3,12 +3,9 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 from redis.exceptions import RedisError
 
-from app.utils.rate_limiters.core import (
-    POLICY_SCRIPT,
-    RateLimitDecision,
-    RateLimitPolicy,
-    RedisSlidingWindowLimiter,
-)
+from app.utils.rate_limiters.core import (POLICY_SCRIPT, RateLimitDecision,
+                                          RateLimitPolicy,
+                                          RedisSlidingWindowLimiter)
 
 
 def test_rate_limit_policy_defaults_cost_to_one():

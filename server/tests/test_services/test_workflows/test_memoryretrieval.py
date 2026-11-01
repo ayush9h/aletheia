@@ -3,12 +3,10 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from langchain_core.messages import HumanMessage
 
-from app.services.workflows.memory_retrieval import (
-    memory_retrieve,
-    memory_store,
-    route_memory_retrieve,
-    route_memory_store,
-)
+from app.services.workflows.memory_retrieval import (memory_retrieve,
+                                                     memory_store,
+                                                     route_memory_retrieve,
+                                                     route_memory_store)
 
 
 @patch("app.services.workflows.memory_retrieval.MemoryManager")
@@ -38,6 +36,7 @@ def test_get_memory_manager_initializes(mock_chat_groq, mock_memory_manager):
     )
 
     assert memory_module.memory_manager is manager
+
 
 @pytest.mark.asyncio
 async def test_memory_retrieve_no_input():
@@ -73,6 +72,7 @@ async def test_memory_retrieve(mock_get_memory_manager):
         session_id="session-123",
         k=5,
     )
+
 
 @pytest.mark.parametrize(
     ("use_memory", "expected"),

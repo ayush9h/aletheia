@@ -2,13 +2,9 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from app.utils.rate_limiters.llm import (
-    GroqGuard,
-    GroqModelLimit,
-    GroqRateLimitExceeded,
-    get_groq_guard,
-    set_groq_guard,
-)
+from app.utils.rate_limiters.llm import (GroqGuard, GroqModelLimit,
+                                         GroqRateLimitExceeded, get_groq_guard,
+                                         set_groq_guard)
 
 
 class MockDecision:

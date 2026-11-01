@@ -43,6 +43,7 @@ async def user_preferences_read_rate_limit(
             detail="Too many user preference requests. Please try again later.",
         )
 
+
 async def user_preferences_write_rate_limit(
     payload: UserPref,
 ) -> None:

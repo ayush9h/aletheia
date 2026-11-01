@@ -58,9 +58,7 @@ async def test_slack_list_channels(mock_get_client: MagicMock) -> None:
     client = MagicMock()
     client.get = AsyncMock(
         return_value={
-            "channels": [
-                {"id": "C1", "name": "general", "purpose": {"value": "Team"}}
-            ]
+            "channels": [{"id": "C1", "name": "general", "purpose": {"value": "Team"}}]
         }
     )
     mock_get_client.return_value = client

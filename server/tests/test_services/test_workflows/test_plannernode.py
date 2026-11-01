@@ -4,7 +4,8 @@ import pytest
 from langchain_core.messages import HumanMessage
 
 from app.schemas.workflows.planner_schema import Plan, Step
-from app.services.workflows.planner_node import add_missing_agents, planner_node
+from app.services.workflows.planner_node import (add_missing_agents,
+                                                 planner_node)
 
 
 @pytest.mark.asyncio

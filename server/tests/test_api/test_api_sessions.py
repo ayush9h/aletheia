@@ -4,12 +4,8 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 from sqlalchemy.exc import DatabaseError
 
-from app.api.sessions import (
-    all_chats,
-    delete_session,
-    rename_session,
-    users_session,
-)
+from app.api.sessions import (all_chats, delete_session, rename_session,
+                              users_session)
 
 
 def make_session_result(*, scalar=None, scalars=None):

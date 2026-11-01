@@ -1,13 +1,9 @@
 import pytest
 
 from app.utils.rate_limiters.core import RateLimitPolicy
-from app.utils.rate_limiters.serpapi import (
-    SerpApiGuard,
-    SerpApiLimit,
-    SerpAPILimitExceeded,
-    get_serp_guard,
-    set_serp_guard,
-)
+from app.utils.rate_limiters.serpapi import (SerpApiGuard, SerpApiLimit,
+                                             SerpAPILimitExceeded,
+                                             get_serp_guard, set_serp_guard)
 
 
 class MockDecision:

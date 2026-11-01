@@ -3,10 +3,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from langchain_core.messages import HumanMessage
 
-from app.services.workflows.session_title import (
-    generate_session_title,
-    route_session_title,
-)
+from app.services.workflows.session_title import (generate_session_title,
+                                                  route_session_title)
 from app.utils.rate_limiters.llm import GroqRateLimitExceeded
 
 

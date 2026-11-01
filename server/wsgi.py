@@ -15,18 +15,11 @@ from app.api.user_settings import user_router
 from app.db_service.db import engine
 from app.utils import create_redis_client, setup_logging, shutdown_logging
 from app.utils.config import settings
-from app.utils.rate_limiters import (
-    GroqGuard,
-    GroqModelLimit,
-    RedisSlidingWindowLimiter,
-    SerpApiGuard,
-    SerpApiLimit,
-    TavilyGuard,
-    TavilyLimit,
-    set_groq_guard,
-    set_serp_guard,
-    set_tavily_guard,
-)
+from app.utils.rate_limiters import (GroqGuard, GroqModelLimit,
+                                     RedisSlidingWindowLimiter, SerpApiGuard,
+                                     SerpApiLimit, TavilyGuard, TavilyLimit,
+                                     set_groq_guard, set_serp_guard,
+                                     set_tavily_guard)
 
 logger = structlog.get_logger(__name__)
 origins = [

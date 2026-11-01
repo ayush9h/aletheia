@@ -174,7 +174,6 @@ async def test_consolidator_empty_preferences_and_tools(
     assert "No tool results." in messages[1].content
 
 
-
 @pytest.mark.asyncio
 @patch("app.services.workflows.orch.get_groq_guard")
 async def test_consolidator_rate_limit(mock_get_guard, base_state):

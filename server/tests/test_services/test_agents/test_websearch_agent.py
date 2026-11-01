@@ -1,12 +1,9 @@
 from unittest.mock import MagicMock, patch
 
 from app.services.agents.web_search.agent import create_web_search_agent
-from app.services.agents.web_search.tools import (
-    scrape_links,
-    scrape_reports,
-    serpapi_web_search,
-    tavily_web_search,
-)
+from app.services.agents.web_search.tools import (scrape_links, scrape_reports,
+                                                  serpapi_web_search,
+                                                  tavily_web_search)
 
 
 @patch("app.services.agents.web_search.agent.create_agent")

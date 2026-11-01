@@ -59,6 +59,7 @@ class Step(BaseModel):
         ),
     )
 
+
 class Plan(BaseModel):
     steps: list[Step] = Field(
         description="Ordered list of execution steps for the task.",

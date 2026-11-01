@@ -3,12 +3,10 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from app.services.agents.github.tools.pull_requests import (
-    create_pull_request_tools,
-)
-from app.services.agents.github.tools.repositories import (
-    create_repository_tools,
-)
+from app.services.agents.github.tools.pull_requests import \
+    create_pull_request_tools
+from app.services.agents.github.tools.repositories import \
+    create_repository_tools
 
 
 @pytest.mark.asyncio

@@ -4,7 +4,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from sqlalchemy.dialects import postgresql
 
-from app.services.token_usage import add_tokens_used, current_period, get_tokens_used
+from app.services.token_usage import (add_tokens_used, current_period,
+                                      get_tokens_used)
 
 
 def test_current_period_is_first_of_month():

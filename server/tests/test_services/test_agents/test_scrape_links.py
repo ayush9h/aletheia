@@ -10,7 +10,9 @@ from app.utils.config import settings
 MODULE = "app.services.agents.web_search.tools.scrape_links"
 
 
-def mock_session(mock_client: MagicMock, mock_session_cls: MagicMock, result) -> MagicMock:
+def mock_session(
+    mock_client: MagicMock, mock_session_cls: MagicMock, result
+) -> MagicMock:
     mock_client.return_value.__aenter__ = AsyncMock(
         return_value=(MagicMock(), MagicMock(), MagicMock())
     )

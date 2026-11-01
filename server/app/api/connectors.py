@@ -42,9 +42,7 @@ async def store_slack_connector(
     x_connector_secret: str | None = Header(default=None),
     session: AsyncSession = Depends(get_session),
 ):
-    return await store_connector(
-        "slack", "Slack", payload, x_connector_secret, session
-    )
+    return await store_connector("slack", "Slack", payload, x_connector_secret, session)
 
 
 async def store_connector(

@@ -1,7 +1,6 @@
 from langchain.agents import create_agent
 
-from app.services.agents.web_search.tools import (scrape_links,
-                                                  scrape_reports,
+from app.services.agents.web_search.tools import (scrape_links, scrape_reports,
                                                   serpapi_web_search,
                                                   tavily_web_search)
 

@@ -5,11 +5,7 @@ from unittest.mock import MagicMock, patch
 import structlog
 from urllib3.connection import HTTPException
 
-from app.utils.logger import (
-    PaperTrailHandler,
-    setup_logging,
-    shutdown_logging,
-)
+from app.utils.logger import PaperTrailHandler, setup_logging, shutdown_logging
 
 
 def test_papertrail_handler_emit_sends_formatted_payload():

@@ -1,13 +1,9 @@
 import pytest
 
 from app.utils.rate_limiters.core import RateLimitPolicy
-from app.utils.rate_limiters.tavily import (
-    TavilyGuard,
-    TavilyLimit,
-    TavilyLimitExceeded,
-    get_tavily_guard,
-    set_tavily_guard,
-)
+from app.utils.rate_limiters.tavily import (TavilyGuard, TavilyLimit,
+                                            TavilyLimitExceeded,
+                                            get_tavily_guard, set_tavily_guard)
 
 
 class MockDecision:
@@ -73,7 +69,7 @@ async def test_acquire_raises_when_execution_type_is_not_configured(
 ):
     limiter = MockLimiter()
     guard = TavilyGuard(
-        limiter=limiter,  # type:ignore
+        limiter=limiter,  # type: ignore
         model_limits=model_limits,
     )
 
@@ -91,7 +87,7 @@ async def test_acquire_raises_when_credit_usage_exceeds_rpm(
 ):
     limiter = MockLimiter()
     guard = TavilyGuard(
-        limiter=limiter,  # type:ignore
+        limiter=limiter,  # type: ignore
         model_limits=model_limits,
     )
 
@@ -113,7 +109,7 @@ async def test_acquire_raises_when_rate_limit_is_exceeded(
 ):
     limiter = MockLimiter(allowed=False)
     guard = TavilyGuard(
-        limiter=limiter,  # type:ignore
+        limiter=limiter,  # type: ignore
         model_limits=model_limits,
     )
 
@@ -129,7 +125,7 @@ async def test_acquire_raises_when_rate_limit_is_exceeded(
 def test_set_and_get_tavily_guard(model_limits):
     limiter = MockLimiter()
     guard = TavilyGuard(
-        limiter=limiter,  # type:ignore
+        limiter=limiter,  # type: ignore
         model_limits=model_limits,
     )
 

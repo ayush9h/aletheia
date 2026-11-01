@@ -5,14 +5,9 @@ import pytest
 from fastapi import HTTPException
 from sqlalchemy.exc import DatabaseError
 
-from app.api.analytics import (
-    WEEK_DAYS,
-    build_weekly_tokens,
-    format_duration,
-    get_user_analytics,
-    get_user_usage,
-    get_week_dates,
-)
+from app.api.analytics import (WEEK_DAYS, build_weekly_tokens, format_duration,
+                               get_user_analytics, get_user_usage,
+                               get_week_dates)
 from app.db_service.models import UserChats, UserSessions
 
 

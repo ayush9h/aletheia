@@ -2,13 +2,10 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from app.api.health import (
-    check_database_connectivity,
-    check_papertrail_connectivity,
-    check_redis_connectivity,
-    health_check,
-    perform_health_checks,
-)
+from app.api.health import (check_database_connectivity,
+                            check_papertrail_connectivity,
+                            check_redis_connectivity, health_check,
+                            perform_health_checks)
 
 
 @pytest.mark.asyncio

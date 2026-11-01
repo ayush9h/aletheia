@@ -87,9 +87,9 @@ async def serpapi_web_search(
 
         return "Error: SerpAPI search failed."
 
-    results = (
-        response.get("organic_results") or response.get("news_results") or []
-    )[:MAX_SEARCH_RESULTS]
+    results = (response.get("organic_results") or response.get("news_results") or [])[
+        :MAX_SEARCH_RESULTS
+    ]
 
     contents = []
 

@@ -3,10 +3,8 @@ from unittest.mock import AsyncMock
 import pytest
 from fastapi import HTTPException, status
 
-from app.utils.rate_limiters.endpoints.sessions import (
-    session_rate_limit,
-    session_throttle,
-)
+from app.utils.rate_limiters.endpoints.sessions import (session_rate_limit,
+                                                        session_throttle)
 
 
 class MockLimitResult:

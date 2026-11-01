@@ -3,10 +3,8 @@ from unittest.mock import AsyncMock
 import pytest
 from fastapi import HTTPException, status
 
-from app.utils.rate_limiters.endpoints.analytics import (
-    analytics_rate_limit,
-    analytics_throttle,
-)
+from app.utils.rate_limiters.endpoints.analytics import (analytics_rate_limit,
+                                                         analytics_throttle)
 
 
 class MockLimitResult:

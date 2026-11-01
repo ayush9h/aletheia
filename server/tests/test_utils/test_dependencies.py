@@ -3,10 +3,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from app.utils.core.dependencies import (
-    get_rate_limiter,
-    get_redis,
-)
+from app.utils.core.dependencies import get_rate_limiter, get_redis
 
 
 def make_request(

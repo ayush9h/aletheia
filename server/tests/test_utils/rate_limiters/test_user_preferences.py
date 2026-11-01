@@ -5,11 +5,8 @@ import pytest
 from fastapi import HTTPException, status
 
 from app.utils.rate_limiters.endpoints.user_preferences import (
-    user_preferences_read_rate_limit,
-    user_preferences_write_rate_limit,
-    user_prefs_read_throttle,
-    user_prefs_write_throttle,
-)
+    user_preferences_read_rate_limit, user_preferences_write_rate_limit,
+    user_prefs_read_throttle, user_prefs_write_throttle)
 
 
 class MockLimitResult:
