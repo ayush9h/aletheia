@@ -21,9 +21,11 @@ class AgentContext:
 @dataclass(frozen=True)
 class AgentSpec:
     name: str
+    label: str
     description: str
     factory: Callable[[AgentContext], Any]
     include_query: bool = False
+    selectable: bool = True
 
 
 AGENT_REGISTRY: dict[str, AgentSpec] = {
@@ -31,6 +33,8 @@ AGENT_REGISTRY: dict[str, AgentSpec] = {
     for spec in (
         AgentSpec(
             name="github_agent",
+            label="GitHub",
+            selectable=False,
             description=(
                 "Interacts with the user's connected GitHub account. "
                 "Can search repositories, inspect repositories, and work "
@@ -42,6 +46,8 @@ AGENT_REGISTRY: dict[str, AgentSpec] = {
         ),
         AgentSpec(
             name="slack_agent",
+            label="Slack",
+            selectable=False,
             description=(
                 "Interacts with the user's connected Slack workspace. "
                 "Can list channels, read channel history, and search messages."
@@ -52,18 +58,23 @@ AGENT_REGISTRY: dict[str, AgentSpec] = {
         ),
         AgentSpec(
             name="web_search_agent",
+            label="Web search",
             description=(
                 "Searches the public web for current information. "
                 "Can use supported search providers such as SerpAPI or Tavily. "
                 "Use SerpAPI when the user asks for Google Search or SerpAPI, "
                 "otherwise use Tavily. "
                 "Call only one provider per query; do not call both SerpAPI "
-                "and Tavily at the same time."
+                "and Tavily at the same time. "
+                "Can also open a specific page and list its links or only its "
+                "report links, for example to find annual reports on a "
+                "company's investor relations page."
             ),
             factory=lambda ctx: create_web_search_agent(llm=ctx.llm),
         ),
         AgentSpec(
             name="visualize_agent",
+            label="Visualize data",
             description=(
                 "Turns data into a chart (bar, line, area or pie). "
                 "Use when the user asks to visualize, chart, plot or graph "

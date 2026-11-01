@@ -3,7 +3,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from langchain_core.messages import HumanMessage
 
-from app.services.workflows.planner_node import planner_node
+from app.schemas.workflows.planner_schema import Plan, Step
+from app.services.workflows.planner_node import add_missing_agents, planner_node
 
 
 @pytest.mark.asyncio
@@ -88,3 +89,57 @@ async def test_planner_node(
     parser.parse.assert_called_once_with(
         '{"steps": []}',
     )
+
+
+@pytest.mark.asyncio
+@patch("app.services.workflows.planner_node.tokens_from_string")
+@patch("app.services.workflows.planner_node.get_groq_guard")
+@patch("app.services.workflows.planner_node.planner_llm")
+async def test_planner_node_enforces_selected_agents_and_drops_unknown(
+    mock_planner_llm: MagicMock,
+    mock_get_guard: MagicMock,
+    mock_tokens: MagicMock,
+) -> None:
+    mock_tokens.return_value = 100
+    guard = MagicMock()
+    guard.acquire = AsyncMock()
+    mock_get_guard.return_value = guard
+
+    llm_response = MagicMock()
+    llm_response.content = (
+        '{"steps": [{"step_id": 1, "plan": "Answer directly.", "agent_name": null}]}'
+    )
+    mock_planner_llm.ainvoke = AsyncMock(return_value=llm_response)
+
+    state = {
+        "user_input": [HumanMessage(content="Latest Tesla news")],
+        "tools": ["web_search_agent", "web_search_agent", "ignore_all_rules"],
+    }
+
+    result = await planner_node(state)
+
+    assert [step.agent_name for step in result["plan"].steps] == ["web_search_agent"]
+
+    prompt = mock_planner_llm.ainvoke.call_args.args[0][0].content
+    assert 'Required Agents:\n["web_search_agent"]' in prompt
+    assert "ignore_all_rules" not in prompt
+
+
+def test_add_missing_agents_keeps_a_plan_that_uses_them() -> None:
+    step = Step(step_id=1, plan="Search.", agent_name="web_search_agent")
+    plan = Plan(steps=[step])
+
+    add_missing_agents(plan, ["web_search_agent"], "query")
+
+    assert plan.steps == [step]
+
+
+def test_add_missing_agents_appends_after_existing_steps() -> None:
+    plan = Plan(steps=[Step(step_id=3, plan="Search.", agent_name="web_search_agent")])
+
+    add_missing_agents(plan, ["github_agent", "slack_agent"], "my query")
+
+    assert [step.step_id for step in plan.steps] == [3, 4, 5]
+    assert plan.steps[1].agent_name == "github_agent"
+    assert plan.steps[2].agent_input == {"task": "my query"}
+    assert plan.steps[2].depends_on == []

@@ -45,6 +45,8 @@ jobs:
       SERPAPI_RPM: "10"
       SERPAPI_API_KEY: "test-serpapi-key"
       MONTHLY_TOKEN_CAP: "20000"
+      FINANCE_MCP_URL: "https://example.com/mcp"
+      FINANCE_MCP_TOKEN: "test-finance-mcp-token"
 
     steps:
       - name: Checkout Code

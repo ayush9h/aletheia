@@ -5,6 +5,7 @@ from langchain_core.messages import SystemMessage
 from langchain_groq import ChatGroq
 
 from app.prompts.workflows.planner_prompt import planner_prompt_parser
+from app.schemas.workflows.planner_schema import Plan, Step
 from app.services.agent_state import AgentState
 from app.services.agents import AGENT_REGISTRY
 from app.utils.config import settings
@@ -21,6 +22,27 @@ planner_llm = ChatGroq(
     model=PLANNER_MODEL,
     max_tokens=PLANNER_MAX_TOKENS,
 )
+
+
+def add_missing_agents(plan: Plan, required: list[str], task: str) -> None:
+    planned = {step.agent_name for step in plan.steps}
+    missing = [name for name in required if name not in planned]
+
+    if not missing:
+        return
+
+    plan.steps = [step for step in plan.steps if step.agent_name]
+    first_id = max((step.step_id for step in plan.steps), default=0) + 1
+
+    for step_id, name in enumerate(missing, start=first_id):
+        plan.steps.append(
+            Step(
+                step_id=step_id,
+                plan=f"Use {AGENT_REGISTRY[name].label} for this request.",
+                agent_name=name,
+                agent_input={"task": task},
+            )
+        )
 
 
 async def planner_node(
@@ -41,6 +63,13 @@ async def planner_node(
         for agent in AGENT_REGISTRY.values()
     ]
 
+    # Client input reaches the prompt, so keep only names we registered
+    required_agents = [
+        name
+        for name in dict.fromkeys(state.get("tools") or [])
+        if name in AGENT_REGISTRY
+    ]
+
     planner_prompt, planner_parser = planner_prompt_parser()
 
     memory_context = state.get(
@@ -54,6 +83,7 @@ async def planner_node(
             agents_for_prompt,
             indent=2,
         ),
+        required_agents=json.dumps(required_agents),
         memory_context=memory_context or "None",
     )
 
@@ -79,6 +109,9 @@ async def planner_node(
     generated_plan = planner_parser.parse(
         output.content,  # type: ignore
     )
+
+    # The LLM can skip the prompt rule, so a user's selection is enforced here
+    add_missing_agents(generated_plan, required_agents, str(user_message.content))
 
     logger.info(
         "Generated execution plan",

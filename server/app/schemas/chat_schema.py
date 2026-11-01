@@ -31,5 +31,5 @@ class ChatRequest(BaseModel):
         ..., description="The id of the user asking the question"
     )
     tools: list[str] | None = Field(
-        None, description="List of tools selected by the user"
+        None, description="Names of the agents the user requires for this message"
     )

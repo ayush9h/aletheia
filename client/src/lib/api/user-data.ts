@@ -97,3 +97,15 @@ export async function getUserUsage(userId: string): Promise<UsageResponse> {
 
   return response.data;
 }
+
+export interface AgentResponse {
+  name: string;
+  label: string;
+}
+
+// Fetch the agents a user can select in chat
+export async function getAgents(): Promise<AgentResponse[]> {
+  const response = await api.get<{ agents: AgentResponse[] }>("/agents");
+
+  return response.data.agents;
+}

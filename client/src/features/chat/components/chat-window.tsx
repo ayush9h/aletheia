@@ -34,6 +34,7 @@ export default function ChatWindow(props: ChatWindowProps) {
               value={props.input}
               onChange={(value) => props.dispatch({ type: "SET_INPUT", payload: value })}
               dispatch={props.dispatch}
+              agents={props.agents}
               tools={props.tools}
               onSend={props.onSend}
               setSelectedModel={(model) => props.dispatch({ type: "SET_MODEL", payload: model })}

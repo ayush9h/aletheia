@@ -17,3 +17,17 @@ class WebSearchSchema(BaseModel):
     topic: Literal["general", "news", "finance"] = Field(
         description="Analyze the query and select one search topic"
     )
+
+
+class ScrapeLinksSchema(BaseModel):
+    """Input for listing the links on a web page."""
+
+    url: str = Field(description="Public http or https page to open")
+    wait_for: str | None = Field(
+        default=None,
+        description=(
+            "CSS selector to wait for before reading links. Only set this when "
+            "an earlier scrape of the same page missed links that load with "
+            "JavaScript."
+        ),
+    )

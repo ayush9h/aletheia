@@ -2,6 +2,8 @@ from unittest.mock import MagicMock, patch
 
 from app.services.agents.web_search.agent import create_web_search_agent
 from app.services.agents.web_search.tools import (
+    scrape_links,
+    scrape_reports,
     serpapi_web_search,
     tavily_web_search,
 )
@@ -25,6 +27,8 @@ def test_create_web_search_agent(mock_create_agent: MagicMock) -> None:
     assert kwargs["tools"] == [
         serpapi_web_search,
         tavily_web_search,
+        scrape_links,
+        scrape_reports,
     ]
     assert isinstance(kwargs["system_prompt"], str)
     assert "Use SerpAPI" in kwargs["system_prompt"]

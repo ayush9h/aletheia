@@ -31,6 +31,8 @@ class Settings(BaseSettings):
     SERPAPI_RPM: int
     SERPAPI_API_KEY: str
     MONTHLY_TOKEN_CAP: int
+    FINANCE_MCP_URL: str
+    FINANCE_MCP_TOKEN: str
 
     model_config = SettingsConfigDict(
         env_file=ENV_FILE,

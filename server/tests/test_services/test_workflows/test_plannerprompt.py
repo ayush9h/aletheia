@@ -15,6 +15,7 @@ def test_planner_prompt_parser() -> None:
         "agents",
         "memory_context",
         "query",
+        "required_agents",
     ]
 
     assert prompt.partial_variables["format_instructions"]

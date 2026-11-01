@@ -1,12 +1,13 @@
 import { Message } from "@/types/user-message";
 import { ChatAction } from "@/features/chat/types/chat-action";
 import { UserPrefProps } from "@/types/user-pref";
-import type { UsageResponse } from "@/lib/api/user-data";
+import type { AgentResponse, UsageResponse } from "@/lib/api/user-data";
 // Chat Input Props
 export interface inputProps {
   value: string;
   onChange: (v: string) => void;
   onSend: () => void;
+  agents: AgentResponse[];
   tools: string[];
   dispatch: React.Dispatch<ChatAction>;
   selectedModel: string;
@@ -26,6 +27,7 @@ export interface ChatWindowProps {
   userPref: UserPrefProps;
   onSend: () => void;
   userName: string;
+  agents: AgentResponse[];
   tools: string[];
   usage?: UsageResponse | null;
 }

@@ -5,6 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from langfuse import Langfuse, get_client
 
+from app.api.agents import agent_router
 from app.api.analytics import analytics_router
 from app.api.chats import chat_router
 from app.api.connectors import connector_router
@@ -127,4 +128,5 @@ app.include_router(user_router)
 app.include_router(session_router)
 app.include_router(connector_router)
 app.include_router(analytics_router)
+app.include_router(agent_router)
 app.include_router(health_router)

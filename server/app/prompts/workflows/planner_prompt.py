@@ -29,8 +29,13 @@ Relevant Memory:
 Available Agents:
 {agents}
 
+Required Agents:
+{required_agents}
+
 ## Planning rules
 
+- The user selected every agent in Required Agents, so each one MUST be
+used in at least one step, and the other agents stay available.
 - Use ONLY the agents listed in Available Agents.
 - Use the exact agent name provided in Available Agents.
 - If an agent is required, put its name in `step.tool_name`.
@@ -124,6 +129,7 @@ Do not add dependency fields or next-agent fields.
         input_variables=[
             "query",
             "agents",
+            "required_agents",
             "memory_context",
         ],
         partial_variables={

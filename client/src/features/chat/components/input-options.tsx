@@ -10,79 +10,41 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   BarChartIcon,
+  ComponentInstanceIcon,
   FileIcon,
-  GitHubLogoIcon,
   GlobeIcon,
   PlusIcon,
 } from "@radix-ui/react-icons";
 import { Check } from "lucide-react";
-import { Fragment } from "react";
+import type { ComponentType } from "react";
+import type { AgentResponse } from "@/lib/api/user-data";
 import { MENU_CONTENT, MENU_ITEM, MENU_LABEL, MENU_SEPARATOR } from "@/lib/menu";
 
-// Exported so ChatInput can render the selected-tool chips.
-export const options = [
-  {
-    key: "add_file",
-    toolLabel: "Add file",
-    toolIcon: FileIcon,
-    section: "attachments",
-    disabled: true,
-  },
-  {
-    key: "web_search",
-    toolLabel: "Web search",
-    toolIcon: GlobeIcon,
-    section: "tools",
-    disabled: false,
-  },
-  {
-    key: "github",
-    toolLabel: "GitHub",
-    toolIcon: GitHubLogoIcon,
-    section: "tools",
-    disabled: false,
-  },
-  {
-    key: "visualize",
-    toolLabel: "Visualize data",
-    toolIcon: BarChartIcon,
-    section: "tools",
-    disabled: false,
-  },
-] as const;
-
-const sections = [
-  { id: "attachments", label: "Attachments" },
-  { id: "tools", label: "Tools" },
-] as const;
+const AGENT_ICONS: Record<string, ComponentType<{ className?: string }>> = {
+  web_search_agent: GlobeIcon,
+  visualize_agent: BarChartIcon,
+};
 
 type InputOptionsProps = {
+  agents: AgentResponse[];
   tools: string[];
   setTools: (tools: string[]) => void;
   onAddFileClick?: () => void;
 };
 
 export default function InputOptions({
+  agents,
   tools,
   setTools,
   onAddFileClick,
 }: InputOptionsProps) {
-  const toggleTool = (optionKey: string) => {
-    if (tools.includes(optionKey)) {
-      setTools(tools.filter((item) => item !== optionKey));
+  const toggleTool = (agentName: string) => {
+    if (tools.includes(agentName)) {
+      setTools(tools.filter((item) => item !== agentName));
       return;
     }
 
-    setTools([...tools, optionKey]);
-  };
-
-  const handleSelect = (option: (typeof options)[number]) => {
-    if (option.section === "attachments") {
-      onAddFileClick?.();
-      return;
-    }
-
-    toggleTool(option.key);
+    setTools([...tools, agentName]);
   };
 
   return (
@@ -102,44 +64,41 @@ export default function InputOptions({
         sideOffset={8}
         className={`${MENU_CONTENT} w-56`}
       >
-        {sections.map((section, index) => (
-          <Fragment key={section.id}>
-            {index > 0 && (
-              <DropdownMenuSeparator className={MENU_SEPARATOR} />
-            )}
+        <DropdownMenuLabel className={MENU_LABEL}>Attachments</DropdownMenuLabel>
 
-            <DropdownMenuLabel className={MENU_LABEL}>
-              {section.label}
-            </DropdownMenuLabel>
+        <DropdownMenuItem disabled onSelect={onAddFileClick} className={MENU_ITEM}>
+          <FileIcon className="h-4 w-4 shrink-0 text-stone-500 dark:text-stone-400" />
 
-            {options
-              .filter((option) => option.section === section.id)
-              .map((option) => {
-                const Icon = option.toolIcon;
-                const isSelected = tools.includes(option.key);
+          <span className="flex-1">Add file</span>
+        </DropdownMenuItem>
 
-                return (
-                  <DropdownMenuItem
-                    key={option.key}
-                    disabled={option.disabled}
-                    onSelect={() => handleSelect(option)}
-                    className={MENU_ITEM}
-                  >
-                    <Icon className="h-4 w-4 shrink-0 text-stone-500 dark:text-stone-400" />
+        <DropdownMenuSeparator className={MENU_SEPARATOR} />
 
-                    <span className="flex-1">{option.toolLabel}</span>
+        <DropdownMenuLabel className={MENU_LABEL}>Tools</DropdownMenuLabel>
 
-                    {isSelected && (
-                      <Check
-                        aria-hidden="true"
-                        className="size-4 text-brand-600 dark:text-brand-400"
-                      />
-                    )}
-                  </DropdownMenuItem>
-                );
-              })}
-          </Fragment>
-        ))}
+        {agents.map((agent) => {
+          const Icon = AGENT_ICONS[agent.name] ?? ComponentInstanceIcon;
+          const isSelected = tools.includes(agent.name);
+
+          return (
+            <DropdownMenuItem
+              key={agent.name}
+              onSelect={() => toggleTool(agent.name)}
+              className={MENU_ITEM}
+            >
+              <Icon className="h-4 w-4 shrink-0 text-stone-500 dark:text-stone-400" />
+
+              <span className="flex-1">{agent.label}</span>
+
+              {isSelected && (
+                <Check
+                  aria-hidden="true"
+                  className="size-4 text-brand-600 dark:text-brand-400"
+                />
+              )}
+            </DropdownMenuItem>
+          );
+        })}
       </DropdownMenuContent>
     </DropdownMenu>
   );

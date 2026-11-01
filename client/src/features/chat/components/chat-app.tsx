@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { HamburgerMenuIcon } from "@radix-ui/react-icons";
 
 import ChatWindow from "@/features/chat/components/chat-window";
+import { useAgents } from "@/features/chat/hooks/useAgents";
 import { useInitLoad } from "@/features/chat/hooks/useInitLoad";
 import { useSendMessage } from "@/features/chat/hooks/useSendMessage";
 import { useTokenUsage } from "@/features/chat/hooks/useTokenUsage";
@@ -29,6 +30,7 @@ export default function ChatApp() {
   useUserPreferences(userId, dispatch);
 
   const { usage, refresh: refreshUsage } = useTokenUsage(userId);
+  const agents = useAgents();
 
   const sendMessage = useSendMessage({
     input: state.input,
@@ -105,6 +107,7 @@ export default function ChatApp() {
             dispatch={dispatch}
             onSend={handleSend}
             userName={session?.user?.name ?? ""}
+            agents={agents}
             tools={state.selectedTools}
             usage={usage}
           />

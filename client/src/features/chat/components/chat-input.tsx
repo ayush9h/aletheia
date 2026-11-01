@@ -14,7 +14,7 @@ import Image from "next/image";
 
 import type { inputProps as ChatInputProps } from "@/features/chat/types/chats.types";
 import { useSpeechToText } from "@/features/voice/hooks/useSpeechToText";
-import InputOptions, { options } from "@/features/chat/components/input-options";
+import InputOptions from "@/features/chat/components/input-options";
 import { MODEL_GROUPS } from "@/features/chat/config/models";
 import {
   DropdownMenu,
@@ -137,6 +137,7 @@ export default function ChatInput(props: ChatInputProps) {
           <div className="flex min-w-0 flex-1 items-center gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <div className="shrink-0">
               <InputOptions
+                agents={props.agents}
                 tools={optionList}
                 setTools={setOptionList}
                 onAddFileClick={() => fileInputRef.current?.click()}
@@ -144,9 +145,9 @@ export default function ChatInput(props: ChatInputProps) {
             </div>
 
             {optionList.map((item) => {
-              const tool = options.find((option) => option.key === item);
+              const agent = props.agents.find((option) => option.name === item);
 
-              if (!tool) {
+              if (!agent) {
                 return null;
               }
 
@@ -156,7 +157,7 @@ export default function ChatInput(props: ChatInputProps) {
                   className="flex shrink-0 items-center gap-1 rounded-lg bg-brand-100 px-2 py-1 text-xs text-brand-600 dark:bg-brand-950/50 dark:text-brand-400"
                 >
                   <span className="max-w-24 truncate sm:max-w-none">
-                    {tool.toolLabel}
+                    {agent.label}
                   </span>
 
                   <button
@@ -167,7 +168,7 @@ export default function ChatInput(props: ChatInputProps) {
                       )
                     }
                     className="ml-1 shrink-0 cursor-pointer text-brand-600 hover:text-brand-800 dark:text-brand-400 dark:hover:text-brand-300"
-                    aria-label={`Remove ${tool.toolLabel}`}
+                    aria-label={`Remove ${agent.label}`}
                   >
                     <Cross2Icon className="h-4 w-4" />
                   </button>
