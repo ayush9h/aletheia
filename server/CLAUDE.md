@@ -126,7 +126,8 @@ wsgi.py           app factory, lifespan, router registration
 ## 10. LLM Output Tokens
 
 - Never cap the final answer with a small fixed `max_tokens`; the user wants complete answers.
-- The consolidator in `services/workflows/orch.py` uses the model's full remaining TPM budget (`tpm - input_tokens`) as `max_output_tokens`, passed to both the Groq guard and `ChatGroq`. Keep it that way.
+- The consolidator in `services/workflows/orch.py` sets `max_output_tokens = min(tpm // 2, tpm - input_tokens - 1)`, passed to both the Groq guard and `ChatGroq`. Keep it that way.
+- Never reserve the full TPM: `RateLimitPolicy` rejects `cost >= limit`, and the guard has no refund, so a full reservation blocks every other request on that model for 60 seconds.
 
 ---
 

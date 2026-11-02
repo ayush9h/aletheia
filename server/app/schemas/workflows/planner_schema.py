@@ -64,3 +64,24 @@ class Plan(BaseModel):
     steps: list[Step] = Field(
         description="Ordered list of execution steps for the task.",
     )
+
+
+class PlannedStep(BaseModel):
+    step_id: int = Field(description="Step number.")
+    plan: str = Field(description="What this step accomplishes.")
+    agent_name: str | None = Field(
+        default=None,
+        description="Exact name of the agent to run. Null when no agent is required.",
+    )
+    task: str | None = Field(
+        default=None,
+        description="Task the agent must perform. Null when no agent is required.",
+    )
+    depends_on: list[int] = Field(
+        default_factory=list,
+        description="step_ids whose output this step needs, else [].",
+    )
+
+
+class PlannerOutput(BaseModel):
+    steps: list[PlannedStep] = Field(description="Ordered list of steps.")

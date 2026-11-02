@@ -67,7 +67,7 @@ async def test_consolidator_success(
     guard.acquire.assert_awaited_once_with(
         model="qwen/qwen3.8-27b",
         input_tokens=25,
-        max_output_tokens=7975,
+        max_output_tokens=4000,
     )
 
     mock_chat_groq.assert_called_once_with(
@@ -75,7 +75,7 @@ async def test_consolidator_success(
         model="qwen/qwen3.8-27b",
         reasoning_effort=None,
         streaming=True,
-        max_tokens=7975,
+        max_tokens=4000,
     )
 
     llm.ainvoke.assert_awaited_once()

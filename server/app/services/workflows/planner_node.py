@@ -5,7 +5,7 @@ from langchain_core.messages import SystemMessage
 from langchain_groq import ChatGroq
 
 from app.prompts.workflows.planner_prompt import planner_prompt_parser
-from app.schemas.workflows.planner_schema import Plan, Step
+from app.schemas.workflows.planner_schema import Plan, PlannerOutput, Step
 from app.services.agent_state import AgentState
 from app.services.agents import AGENT_REGISTRY
 from app.utils.config import settings
@@ -22,6 +22,35 @@ planner_llm = ChatGroq(
     model=PLANNER_MODEL,
     max_tokens=PLANNER_MAX_TOKENS,
 )
+
+planner_prompt, planner_parser = planner_prompt_parser()
+
+PLANNER_SYSTEM_PROMPT = planner_prompt.format(
+    agents=json.dumps(
+        [
+            {
+                "name": agent.name,
+                "description": agent.description,
+            }
+            for agent in AGENT_REGISTRY.values()
+        ]
+    ),
+)
+
+
+def to_plan(output: PlannerOutput) -> Plan:
+    return Plan(
+        steps=[
+            Step(
+                step_id=step.step_id,
+                plan=step.plan,
+                agent_name=step.agent_name,
+                agent_input={"task": step.task} if step.task else {},
+                depends_on=step.depends_on,
+            )
+            for step in output.steps
+        ]
+    )
 
 
 def add_missing_agents(plan: Plan, required: list[str], task: str) -> None:
@@ -55,14 +84,6 @@ async def planner_node(
 
     user_message = user_input[-1]
 
-    agents_for_prompt = [
-        {
-            "name": agent.name,
-            "description": agent.description,
-        }
-        for agent in AGENT_REGISTRY.values()
-    ]
-
     # Client input reaches the prompt, so keep only names we registered
     required_agents = [
         name
@@ -70,26 +91,22 @@ async def planner_node(
         if name in AGENT_REGISTRY
     ]
 
-    planner_prompt, planner_parser = planner_prompt_parser()
-
     memory_context = state.get(
         "memory_context",
         "",
     )
 
-    formatted_prompt = planner_prompt.format(
-        query=user_message.content,
-        agents=json.dumps(
-            agents_for_prompt,
-            indent=2,
-        ),
-        required_agents=json.dumps(required_agents),
-        memory_context=memory_context or "None",
+    request_context = (
+        f"Relevant Memory:\n{memory_context or 'None'}\n\n"
+        f"Required Agents:\n{json.dumps(required_agents)}"
     )
 
     messages = [
         SystemMessage(
-            content=formatted_prompt,
+            content=PLANNER_SYSTEM_PROMPT,
+        ),
+        SystemMessage(
+            content=request_context,
         ),
         user_message,
     ]
@@ -106,8 +123,10 @@ async def planner_node(
 
     output = await planner_llm.ainvoke(messages)
 
-    generated_plan = planner_parser.parse(
-        output.content,  # type: ignore
+    generated_plan = to_plan(
+        planner_parser.parse(
+            output.content,  # type: ignore
+        )
     )
 
     # The LLM can skip the prompt rule, so a user's selection is enforced here

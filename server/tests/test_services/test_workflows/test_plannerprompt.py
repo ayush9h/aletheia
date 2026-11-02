@@ -2,7 +2,7 @@ from langchain_core.output_parsers import PydanticOutputParser
 from langchain_core.prompts import PromptTemplate
 
 from app.prompts.workflows.planner_prompt import planner_prompt_parser
-from app.schemas.workflows.planner_schema import Plan
+from app.schemas.workflows.planner_schema import PlannerOutput
 
 
 def test_planner_prompt_parser() -> None:
@@ -11,21 +11,14 @@ def test_planner_prompt_parser() -> None:
     assert isinstance(prompt, PromptTemplate)
     assert isinstance(parser, PydanticOutputParser)
 
-    assert prompt.input_variables == [
-        "agents",
-        "memory_context",
-        "query",
-        "required_agents",
-    ]
+    assert prompt.input_variables == ["agents"]
 
     assert prompt.partial_variables["format_instructions"]
 
     assert "STRICT planning agent" in prompt.template
-    assert "User Query:" in prompt.template
-    assert "Relevant Memory:" in prompt.template
     assert "Available Agents:" in prompt.template
-    assert "Do NOT execute agents." in prompt.template
-    assert "Do NOT execute tools." in prompt.template
+    assert "{query}" not in prompt.template
+    assert "tool_name" not in prompt.template
 
     # Confirm the parser is configured for the expected schema.
-    assert parser.pydantic_object is Plan
+    assert parser.pydantic_object is PlannerOutput

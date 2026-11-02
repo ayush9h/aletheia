@@ -126,8 +126,9 @@ User Occupation:
         "\n".join(str(message.content) for message in full_messages)
     )
 
+    tpm = groq_guard.model_limits[model_name].tpm
     max_output_tokens = max(
-        groq_guard.model_limits[model_name].tpm - input_tokens,
+        min(tpm // 2, tpm - input_tokens - 1),
         1,
     )
 
