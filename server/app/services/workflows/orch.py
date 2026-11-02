@@ -126,7 +126,10 @@ User Occupation:
         "\n".join(str(message.content) for message in full_messages)
     )
 
-    max_output_tokens = 2048
+    max_output_tokens = max(
+        groq_guard.model_limits[model_name].tpm - input_tokens,
+        1,
+    )
 
     try:
         await groq_guard.acquire(

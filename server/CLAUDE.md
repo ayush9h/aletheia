@@ -120,8 +120,13 @@ wsgi.py           app factory, lifespan, router registration
 
 ## 9. Comments
 
-- One-line `#` comments only, and only where the "why" isn't obvious.
+- Do not add code comments.
 - No multi-line docstrings except on `@tool` functions, where the docstring is the tool description the LLM reads.
+
+## 10. LLM Output Tokens
+
+- Never cap the final answer with a small fixed `max_tokens`; the user wants complete answers.
+- The consolidator in `services/workflows/orch.py` uses the model's full remaining TPM budget (`tpm - input_tokens`) as `max_output_tokens`, passed to both the Groq guard and `ChatGroq`. Keep it that way.
 
 ---
 

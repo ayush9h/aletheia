@@ -29,6 +29,7 @@ async def test_consolidator_success(
     base_state,
 ):
     guard = MagicMock()
+    guard.model_limits.__getitem__.return_value.tpm = 8000
     guard.acquire = AsyncMock()
     mock_get_guard.return_value = guard
 
@@ -66,7 +67,7 @@ async def test_consolidator_success(
     guard.acquire.assert_awaited_once_with(
         model="qwen/qwen3.8-27b",
         input_tokens=25,
-        max_output_tokens=2048,
+        max_output_tokens=7975,
     )
 
     mock_chat_groq.assert_called_once_with(
@@ -74,7 +75,7 @@ async def test_consolidator_success(
         model="qwen/qwen3.8-27b",
         reasoning_effort=None,
         streaming=True,
-        max_tokens=2048,
+        max_tokens=7975,
     )
 
     llm.ainvoke.assert_awaited_once()
@@ -114,6 +115,7 @@ async def test_consolidator_with_user_preferences(
     ]
 
     guard = MagicMock()
+    guard.model_limits.__getitem__.return_value.tpm = 8000
     guard.acquire = AsyncMock()
     mock_get_guard.return_value = guard
 
@@ -153,6 +155,7 @@ async def test_consolidator_empty_preferences_and_tools(
     base_state,
 ):
     guard = MagicMock()
+    guard.model_limits.__getitem__.return_value.tpm = 8000
     guard.acquire = AsyncMock()
     mock_get_guard.return_value = guard
 
@@ -180,6 +183,7 @@ async def test_consolidator_rate_limit(mock_get_guard, base_state):
     from app.utils.rate_limiters.llm import GroqRateLimitExceeded
 
     guard = MagicMock()
+    guard.model_limits.__getitem__.return_value.tpm = 8000
 
     error = GroqRateLimitExceeded(
         model="qwen/qwen3.8-27b",
@@ -209,6 +213,7 @@ async def test_consolidator_non_base_message(
     base_state,
 ):
     guard = MagicMock()
+    guard.model_limits.__getitem__.return_value.tpm = 8000
     guard.acquire = AsyncMock()
     mock_get_guard.return_value = guard
 
@@ -236,6 +241,7 @@ async def test_consolidator_non_string_content(
     base_state,
 ):
     guard = MagicMock()
+    guard.model_limits.__getitem__.return_value.tpm = 8000
     guard.acquire = AsyncMock()
     mock_get_guard.return_value = guard
 
@@ -267,6 +273,7 @@ async def test_consolidator_missing_usage_metadata(
     base_state,
 ):
     guard = MagicMock()
+    guard.model_limits.__getitem__.return_value.tpm = 8000
     guard.acquire = AsyncMock()
     mock_get_guard.return_value = guard
 
