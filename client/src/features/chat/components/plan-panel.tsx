@@ -1,88 +1,221 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { ChevronDownIcon, CheckIcon, Cross2Icon } from "@radix-ui/react-icons";
-import { Plan } from "@/types/user-message";
+import { useAgents } from "@/features/chat/hooks/useAgents";
+import { Plan, PlanStep } from "@/types/user-message";
 
 type PlanPanelProps = {
-  plan: Plan;
+  plan?: Plan;
+  isStreaming?: boolean;
+  hasText: boolean;
 };
 
-export default function PlanPanel({ plan }: PlanPanelProps) {
-  const [isOpen, setIsOpen] = useState(false);
+type StepState = PlanStep["status"] | "stopped";
+
+const STATE_TEXT: Record<StepState, string> = {
+  pending: "Not started",
+  running: "In progress",
+  success: "Done",
+  failed: "Failed",
+  stopped: "Stopped",
+  pending_human_approval: "Waiting for your approval",
+};
+
+// Fallback for agents the /agents endpoint doesn't list
+function humanize(name: string) {
+  const words = name.replace(/_agent$/, "").replace(/_/g, " ");
+  return words.charAt(0).toUpperCase() + words.slice(1);
+}
+
+function formatElapsed(seconds: number) {
+  return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
+}
+
+function useElapsed(active: boolean) {
+  const [seconds, setSeconds] = useState(0);
 
   useEffect(() => {
-    if (plan?.steps?.some((step) => step.status === "running")) {
-      setIsOpen(false);
-    }
-  }, [plan]);
+    if (!active) return;
+    const startedAt = Date.now();
+    const interval = setInterval(
+      () => setSeconds(Math.floor((Date.now() - startedAt) / 1000)),
+      1000
+    );
+    return () => clearInterval(interval);
+  }, [active]);
 
-  if (!plan?.steps?.length) return null;
+  return seconds;
+}
 
-  const totalSteps = plan.steps.length;
+function StepGlyph({ state }: { state: StepState }) {
+  if (state === "running") {
+    return (
+      <span className="h-2 w-2 animate-pulse rounded-full bg-foreground motion-reduce:animate-none" />
+    );
+  }
+  if (state === "success") {
+    return <CheckIcon aria-hidden className="h-3.5 w-3.5 text-foreground/70" />;
+  }
+  if (state === "failed" || state === "stopped") {
+    return <Cross2Icon aria-hidden className="h-3.5 w-3.5 text-destructive" />;
+  }
+  if (state === "pending_human_approval") {
+    return <span className="h-2 w-2 rounded-full border-2 border-brand-500" />;
+  }
+  return <span className="h-2 w-2 rounded-full border border-muted-foreground/60" />;
+}
+
+export default function PlanPanel({ plan, isStreaming = false, hasText }: PlanPanelProps) {
+  const [userOpen, setUserOpen] = useState<boolean | null>(null);
+  const listId = useId();
+  const agents = useAgents();
+  const elapsed = useElapsed(isStreaming);
+
+  const labelOf = (name: string) =>
+    agents.find((agent) => agent.name === name)?.label ?? humanize(name);
+
+  // A step still pending or running after the stream ends never finished
+  const stateOf = (step: PlanStep): StepState =>
+    !isStreaming && (step.status === "running" || step.status === "pending")
+      ? "stopped"
+      : step.status;
+
+  const steps = plan?.steps ?? [];
+  const agentSteps = steps.filter((step) => step.agent_name);
+  const running = agentSteps.filter((step) => step.status === "running");
+  const finished = agentSteps.filter((step) =>
+    ["success", "failed"].includes(step.status)
+  ).length;
+  const unfinished = agentSteps.filter((step) =>
+    ["failed", "stopped"].includes(stateOf(step))
+  ).length;
+  const usedLabels = [
+    ...new Set(agentSteps.map((step) => labelOf(step.agent_name as string))),
+  ];
+
+  // Direct answers need no status once the text is there
+  if (!isStreaming && !agentSteps.length) return null;
+  if (isStreaming && hasText && !agentSteps.length) return null;
+
+  let phase: string;
+  if (!isStreaming) {
+    phase = `Used ${agentSteps.length} step${agentSteps.length > 1 ? "s" : ""} · ${usedLabels.join(", ")}`;
+  } else if (!plan) {
+    phase = "Planning";
+  } else if (hasText) {
+    phase = "Writing the answer";
+  } else if (running.length === 1) {
+    phase = labelOf(running[0].agent_name as string);
+  } else if (running.length > 1) {
+    phase = `${running.length} steps in parallel`;
+  } else if (agentSteps.length && finished < agentSteps.length) {
+    phase = "Starting";
+  } else if (agentSteps.length) {
+    phase = "Writing the answer";
+  } else {
+    phase = "Answering directly";
+  }
+
+  const details = [
+    isStreaming && agentSteps.length && !hasText
+      ? `${finished} of ${agentSteps.length} done`
+      : null,
+    unfinished ? `${unfinished} didn't finish` : null,
+    isStreaming && elapsed >= 10 ? formatElapsed(elapsed) : null,
+  ].filter(Boolean);
+
+  const isOpen = userOpen ?? (isStreaming && !hasText);
+  const canExpand = agentSteps.length > 0;
+
+  const summary = (
+    <>
+      {isStreaming && (
+        <span
+          aria-hidden
+          className="h-1.5 w-1.5 shrink-0 animate-pulse rounded-full bg-foreground/70 motion-reduce:animate-none"
+        />
+      )}
+      <span className={isStreaming ? "text-foreground/80" : undefined}>
+        {phase}
+        {isStreaming && !hasText && "…"}
+      </span>
+      {details.map((detail) => (
+        <span key={detail} className="tabular-nums">
+          · {detail}
+        </span>
+      ))}
+    </>
+  );
 
   return (
-    <div className="mb-3 select-none font-paragraph text-xs">
-      <button
-        type="button"
-        onClick={() => setIsOpen((prev) => !prev)}
-        className="text-muted-foreground hover:text-foreground flex cursor-pointer items-center gap-1.5 transition-all"
-      >
-        <span>
-          Planned {totalSteps} step{totalSteps > 1 ? "s" : ""}
-        </span>
+    <div className="mb-3 font-paragraph text-xs">
+      <span role="status" aria-live="polite" className="sr-only">
+        {phase}
+      </span>
 
-        <ChevronDownIcon
-          className={`h-3.5 w-3.5 transition-transform duration-200 ${
-            isOpen ? "rotate-180" : ""
-          }`}
-        />
-      </button>
+      {canExpand ? (
+        <button
+          type="button"
+          onClick={() => setUserOpen(!isOpen)}
+          aria-expanded={isOpen}
+          aria-controls={listId}
+          className="flex min-h-6 max-w-full cursor-pointer items-center gap-1.5 rounded-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          {summary}
+          <ChevronDownIcon
+            aria-hidden
+            className={`h-3.5 w-3.5 shrink-0 transition-transform duration-200 motion-reduce:transition-none ${
+              isOpen ? "rotate-180" : ""
+            }`}
+          />
+        </button>
+      ) : (
+        <div className="flex min-h-6 items-center gap-1.5 text-muted-foreground">{summary}</div>
+      )}
 
-      {isOpen && (
-        <div className="mt-2.5 ml-1 border-l border-border/70 pl-3.5">
-          {plan.steps.map((step, index) => (
-            <div
-              key={step.step_id}
-              className={`relative flex gap-2.5 ${
-                index !== plan.steps.length - 1 ? "pb-3" : ""
-              }`}
-            >
-              <div className="flex w-3.5 shrink-0 justify-center pt-1">
-                {step.status === "running" && (
-                  <span className="h-2 w-2 animate-pulse rounded-full bg-foreground" />
-                )}
+      {canExpand && isOpen && (
+        <ol id={listId} className="mt-2.5 ml-1 border-l border-border/70 pl-3.5">
+          {agentSteps.map((step, index) => {
+            const state = stateOf(step);
+            return (
+              <li
+                key={step.step_id}
+                className={`relative flex gap-2.5 ${index !== agentSteps.length - 1 ? "pb-3" : ""}`}
+              >
+                <div className="flex h-5 w-3.5 shrink-0 items-center justify-center">
+                  <StepGlyph state={state} />
+                </div>
 
-                {step.status === "success" && (
-                  <CheckIcon className="h-3.5 w-3.5 text-muted-foreground" />
-                )}
+                <div className="min-w-0 flex-1">
+                  <p
+                    className={`leading-5 ${
+                      state === "pending" ? "text-muted-foreground" : "text-foreground"
+                    }`}
+                  >
+                    {step.plan}
+                  </p>
 
-                {step.status === "failed" && (
-                  <Cross2Icon className="h-3.5 w-3.5 text-destructive" />
-                )}
-
-                {(step.status === "pending" ||
-                  step.status === "pending_human_approval") && (
-                  <span className="h-2 w-2 rounded-full border border-muted-foreground/60" />
-                )}
-              </div>
-
-              <div className="min-w-0 flex-1">
-                <p className="leading-5 text-foreground">
-                  {step.plan}
-                </p>
-
-                {step.agent_name && (
-                  <div className="mt-1.5">
-                    <span className="inline-flex rounded-md bg-muted/70 px-2 py-0.5 font-mono text-[10px] leading-4 text-muted-foreground">
-                      {step.agent_name}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
+                  <p className="mt-0.5 leading-4 text-muted-foreground">
+                    {labelOf(step.agent_name as string)}
+                    {state !== "success" && state !== "pending" && (
+                      <span
+                        className={
+                          state === "failed" || state === "stopped" ? "text-destructive" : undefined
+                        }
+                      >
+                        {" "}· {STATE_TEXT[state]}
+                      </span>
+                    )}
+                    {(state === "success" || state === "pending") && (
+                      <span className="sr-only"> · {STATE_TEXT[state]}</span>
+                    )}
+                  </p>
+                </div>
+              </li>
+            );
+          })}
+        </ol>
       )}
     </div>
   );

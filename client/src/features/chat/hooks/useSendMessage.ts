@@ -134,7 +134,7 @@ export function useSendMessage(params: Params) {
             dispatch({
               type: "UPDATE_LAST_ASSISTANT_MESSAGE",
               payload: {
-                text: "Oops something went wrong. Try Again Later.",
+                text: "Something went wrong while answering. Please send your message again.",
                 isStreaming: false,
               },
             });
@@ -145,7 +145,7 @@ export function useSendMessage(params: Params) {
       dispatch({
         type: "UPDATE_LAST_ASSISTANT_MESSAGE",
         payload: {
-          text: "Oops something went wrong. Try Again Later.",
+          text: "Something went wrong while answering. Please send your message again.",
           isStreaming: false,
         },
       });

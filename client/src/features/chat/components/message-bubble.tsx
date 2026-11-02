@@ -13,7 +13,6 @@ import {
 import ChartBlock, { parseChartSpec } from "@/features/chat/components/chart-block";
 import CodeBlock from "@/features/chat/components/code-block";
 import PlanPanel from "@/features/chat/components/plan-panel";
-import ThinkingStatus from "@/features/chat/components/thinking-status";
 import { useReadAloud } from "@/features/voice/hooks/useReadAloud";
 import type { Message } from "@/types/user-message";
 
@@ -131,12 +130,12 @@ const MessageBubble = memo(function MessageBubble({ message }: { message: Messag
         <div
           className={`rounded-md text-sm ${isUser ? "max-w-[60%] whitespace-pre-wrap break-words bg-brand-500 px-4 py-2 text-stone-100 [&_a]:text-white" : "w-full min-w-0 overflow-hidden text-stone-800 dark:text-stone-200"}`}
         >
-          {!isUser && message.plan && <PlanPanel plan={message.plan} />}
-
-          {!isUser && message.isStreaming && !message.text && (
-            <div className="flex min-h-8 items-center py-1">
-              <ThinkingStatus />
-            </div>
+          {!isUser && (message.plan || message.isStreaming) && (
+            <PlanPanel
+              plan={message.plan}
+              isStreaming={message.isStreaming}
+              hasText={Boolean(message.text)}
+            />
           )}
 
           {Boolean(message.text) && (
