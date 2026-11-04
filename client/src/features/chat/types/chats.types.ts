@@ -7,6 +7,7 @@ export interface inputProps {
   value: string;
   onChange: (v: string) => void;
   onSend: () => void;
+  isStreaming: boolean;
   agents: AgentResponse[];
   tools: string[];
   dispatch: React.Dispatch<ChatAction>;
@@ -25,7 +26,10 @@ export interface ChatWindowProps {
   selectedModel: string;
   dispatch: React.Dispatch<ChatAction>;
   userPref: UserPrefProps;
-  onSend: () => void;
+  onSend: (text?: string) => void;
+  isStreaming: boolean;
+  sessionStatus: "idle" | "loading" | "failed";
+  onRetryLoad: () => void;
   userName: string;
   agents: AgentResponse[];
   tools: string[];

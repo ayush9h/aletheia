@@ -1,3 +1,5 @@
+export const BASE_PATH = "/aletheia";
+
 export const SITE = {
   name: "Aletheia",
   description: "Your AI assistant for your daily tasks, connected to GitHub, Slack and the web.",

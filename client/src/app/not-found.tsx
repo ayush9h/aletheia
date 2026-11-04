@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { BASE_PATH } from "@/lib/site";
 
 export default function NotFound() {
   return (
@@ -10,7 +11,7 @@ export default function NotFound() {
           <span className="sr-only">404</span>
           <span aria-hidden="true">4</span>
           <Image
-            src="/logo.png"
+            src={`${BASE_PATH}/logo.png`}
             alt=""
             width={256}
             height={256}

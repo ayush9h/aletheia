@@ -5,6 +5,7 @@ type AgentEvent = {
   agent_name: string;
   status: "running" | "success" | "failed";
   task?: string;
+  evidence?: string;
 };
 
 type StreamHandlers = {
@@ -57,7 +58,9 @@ export async function streamChatMessage(
   });
 
   if (!response.ok || !response.body) {
-    throw new Error(`Stream request failed: ${response.status}`);
+    throw Object.assign(new Error(`Stream request failed: ${response.status}`), {
+      status: response.status,
+    });
   }
 
   const reader = response.body.getReader();

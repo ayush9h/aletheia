@@ -96,13 +96,15 @@ export const ChatReducer = (state: ChatState, action: ChatAction) => {
         selectedTools: action.payload,
       };
 
-    case "UPDATE_LAST_ASSISTANT_MESSAGE": {
-      const messages = [...state.messages];
-      const lastIndex = messages.length - 1;
-      if (lastIndex >= 0 && messages[lastIndex].role === "assistant") {
-        messages[lastIndex] = { ...messages[lastIndex], ...action.payload };
-      }
-      return { ...state, messages };
+    // Streamed updates target their own message, so a session switch or a second send can't misroute them
+    case "UPDATE_ASSISTANT_MESSAGE": {
+      const { id, ...changes } = action.payload;
+      return {
+        ...state,
+        messages: state.messages.map((message) =>
+          message.id === id ? { ...message, ...changes } : message
+        ),
+      };
     }
 
     case "SET_CURRENT_PLAN": {
@@ -114,30 +116,32 @@ export const ChatReducer = (state: ChatState, action: ChatAction) => {
       return { ...state, messages };
     }
 
-    case "UPDATE_LAST_ASSISTANT_PLAN_STEP": {
+    case "UPDATE_ASSISTANT_PLAN_STEP": {
+      const { id, step_id, ...changes } = action.payload;
       return {
         ...state,
-        messages: state.messages.map((message, index) => {
-          if (index !== state.messages.length - 1 || !message.plan) {
-            return message;
-          }
-
-          return {
-            ...message,
-            plan: {
-              ...message.plan,
-              steps: message.plan.steps.map((step) =>
-                step.step_id === action.payload.step_id
-                  ? {
-                      ...step,
-                      agent_name: action.payload.agent_name,
-                      status: action.payload.status,
-                    }
-                  : step
-              ),
-            },
-          };
-        }),
+        messages: state.messages.map((message) =>
+          message.id !== id || !message.plan
+            ? message
+            : {
+                ...message,
+                plan: {
+                  ...message.plan,
+                  steps: message.plan.steps.map((step) =>
+                    step.step_id !== step_id
+                      ? step
+                      : {
+                          ...step,
+                          agent_name: changes.agent_name,
+                          status: changes.status,
+                          evidence: changes.evidence
+                            ? { ...step.evidence, content: changes.evidence }
+                            : step.evidence,
+                        }
+                  ),
+                },
+              }
+        ),
       };
     }
     default:

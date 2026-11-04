@@ -1,4 +1,5 @@
 "use client";
+import { BASE_PATH } from "@/lib/site";
 
 import type { Dispatch, ReactNode } from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -243,7 +244,8 @@ export default function Sidebar({
       payload: [],
     });
     router.push("/chat")
-  }, [dispatch, router]);
+    if (window.matchMedia("(max-width: 767px)").matches) onToggle(false);
+  }, [dispatch, router, onToggle]);
 
   const handleOpenSearch = useCallback(() => {
     setSearchOpen(true);
@@ -289,7 +291,7 @@ export default function Sidebar({
             }}
           >
             <Image
-              src="/logo.png"
+              src={`${BASE_PATH}/logo.png`}
               alt="Logo"
               width={28}
               height={28}

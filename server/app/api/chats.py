@@ -257,6 +257,7 @@ async def chat_stream(
                                         "step_id": event_data.get("step_id"),
                                         "agent_name": event_data.get("agent_name"),
                                         "status": event_data.get("status"),
+                                        "evidence": event_data.get("evidence"),
                                     },
                                 )
                         elif kind == "on_chain_end":

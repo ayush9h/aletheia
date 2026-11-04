@@ -9,7 +9,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "next-themes";
 import ThemeShortcuts from "@/components/theme-shortcuts";
-import { SITE } from "@/lib/site";
+import { BASE_PATH, SITE } from "@/lib/site";
 import {ConsentBanner, ConsentDialog, ConsentRoot} from 'c15t/next'
 import {resolveConsent} from 'c15t/next/server'
 
@@ -48,11 +48,11 @@ export const metadata: Metadata = {
   description: SITE.description,
   applicationName: SITE.name,
   keywords: ["AI assistant", "chat", "GitHub", "Slack", "web search", "productivity"],
-  alternates: { canonical: "/" },
-  icons: { icon: "/favicon.ico", apple: "/logo.png" },
+  alternates: { canonical: BASE_PATH },
+  icons: { icon: `${BASE_PATH}/favicon.ico`, apple: `${BASE_PATH}/logo.png` },
   openGraph: {
     type: "website",
-    url: "/",
+    url: BASE_PATH,
     siteName: SITE.name,
     title: SITE.name,
     description: SITE.description,
@@ -86,7 +86,7 @@ export default async function RootLayout({
         <ConsentRoot state={resolveConsent()}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <TooltipProvider>
-            <SessionProvider session={session}>
+            <SessionProvider session={session} basePath={`${BASE_PATH}/api/auth`}>
               
               <ThemeShortcuts />
               

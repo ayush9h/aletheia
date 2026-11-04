@@ -7,6 +7,7 @@ import { Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { authProviders } from "@/features/auth/config/auth-providers";
+import { BASE_PATH } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
 // Only interactive part of the login page, keeps the rest server-rendered
@@ -16,7 +17,7 @@ export default function ProviderButtons() {
   const handleSignIn = async (id: string) => {
     setPendingId(id);
     try {
-      await signIn(id, { redirectTo: "/chat" });
+      await signIn(id, { redirectTo: `${window.location.origin}${BASE_PATH}/chat` });
     } catch {
       setPendingId(null);
     }

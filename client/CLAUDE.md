@@ -104,7 +104,7 @@ src/
 - Brand color is `brand-*` (defined once in `app/globals.css` `@theme`). Never write `blue-*`.
 - Neutrals are `stone-*`.
 - Dark-mode dialogs follow Settings: header and footer `dark:bg-stone-950`, body `dark:bg-stone-900`, borders `dark:border-stone-700/50`.
-- Filter tabs follow the connectors dialog: rounded-full pills, plain until hover, solid stone-900 (dark: stone-100) when active.
+- Filter tabs follow the connectors dialog: rounded-full pills, plain until hover, brand tint when active (`bg-brand-100 text-brand-700`, dark: `bg-brand-950/50 text-brand-400`).
 - Dropdown menus use the shared classes in `src/lib/menu.ts` (`MENU_CONTENT`, `MENU_ITEM`, …); destructive items use `variant="destructive"`.
 - Fonts: `font-paragraph` for body text, `font-header` for the logo.
 

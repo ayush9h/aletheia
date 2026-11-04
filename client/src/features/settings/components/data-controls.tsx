@@ -14,6 +14,16 @@ import {
 } from "@/features/settings/components/settings-layout";
 
 import { ConsentDialogLink } from "c15t/next";
+import { toast } from "sonner";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 type DataControlsProps = {
   userId: string;
   dispatch: Dispatch<ChatAction>;
@@ -27,6 +37,7 @@ export default function DataControls({
   dispatch,
 }: DataControlsProps) {
   const [isDeletingChats, setIsDeletingChats] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const handleDeleteAll = async () => {
     if (isDeletingChats) return;
@@ -39,8 +50,11 @@ export default function DataControls({
       dispatch({ type: "SET_SESSIONS", payload: [] });
       dispatch({ type: "SET_MESSAGES", payload: [] });
       dispatch({ type: "SET_SELECTED_SESSION", payload: null });
+      setConfirmOpen(false);
+      toast.success("All chats deleted");
     } catch (error) {
       console.error("Failed to delete all chats:", error);
+      toast.error("Couldn't delete your chats. Nothing was removed. Try again.");
     } finally {
       setIsDeletingChats(false);
     }
@@ -94,13 +108,47 @@ export default function DataControls({
             description="Permanently delete your entire chat history. This action cannot be undone."
           >
             <Button
-              onClick={handleDeleteAll}
+              onClick={() => setConfirmOpen(true)}
               disabled={isDeletingChats}
               className={`${ROW_BUTTON} border border-red-200 bg-white text-red-600 hover:bg-red-50 dark:border-red-900/60 dark:bg-transparent dark:text-red-400 dark:hover:bg-red-950/40`}
             >
-              {isDeletingChats ? "Deleting..." : "Delete all"}
+              Delete all
             </Button>
           </SettingRow>
+
+          <Dialog open={confirmOpen} onOpenChange={(open) => !isDeletingChats && setConfirmOpen(open)}>
+            <DialogContent
+              showCloseButton={false}
+              className="font-paragraph max-w-sm dark:border-stone-700 dark:bg-stone-900"
+            >
+              <DialogHeader>
+                <DialogTitle className="text-stone-950 dark:text-stone-100">Delete all chats?</DialogTitle>
+                <DialogDescription className="text-stone-500 dark:text-stone-400">
+                  Every chat in your history will be permanently deleted. This can&apos;t be undone.
+                </DialogDescription>
+              </DialogHeader>
+
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button
+                    variant="outline"
+                    disabled={isDeletingChats}
+                    className="cursor-pointer dark:border-stone-700 dark:bg-stone-800 dark:text-stone-200 dark:hover:bg-stone-700"
+                  >
+                    Cancel
+                  </Button>
+                </DialogClose>
+                <Button
+                  variant="destructive"
+                  onClick={handleDeleteAll}
+                  disabled={isDeletingChats}
+                  className="cursor-pointer"
+                >
+                  {isDeletingChats ? "Deleting..." : "Delete all chats"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </SettingSection>
       </div>
     </div>

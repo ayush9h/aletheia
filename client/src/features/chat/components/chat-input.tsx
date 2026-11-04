@@ -8,7 +8,7 @@ import {
   Cross2Icon,
   CaretDownIcon,
 } from "@radix-ui/react-icons";
-import { Check, Mic, Square } from "lucide-react";
+import { Check, LoaderCircle, Mic, Square } from "lucide-react";
 import TextareaAutosize from "react-textarea-autosize";
 import Image from "next/image";
 
@@ -32,6 +32,7 @@ import StarterPrompts from "@/features/chat/components/starter-prompts";
 
 export default function ChatInput(props: ChatInputProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const optionList = props.tools;
 
@@ -72,7 +73,7 @@ export default function ChatInput(props: ChatInputProps) {
   });
 
   const handleSend = () => {
-    if (!props.value.trim() || capReached) {
+    if (!props.value.trim() || capReached || props.isStreaming) {
       return;
     }
 
@@ -107,9 +108,10 @@ export default function ChatInput(props: ChatInputProps) {
         </div>
       )}
 
-      <div className="flex flex-col rounded-2xl border border-stone-200/80 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.04)] transition-colors focus-within:border-stone-300 dark:border-stone-700/50 dark:bg-stone-800/50 dark:shadow-none dark:focus-within:border-stone-600">
+      <div className="flex flex-col rounded-2xl border border-stone-200/80 bg-white shadow-[0_1px_4px_rgba(0,0,0,0.025)] transition-[border-color,box-shadow] has-[textarea:focus-visible]:border-stone-400 has-[textarea:focus-visible]:ring-2 has-[textarea:focus-visible]:ring-stone-300/60 dark:border-stone-700/50 dark:bg-stone-800/50 dark:shadow-none dark:has-[textarea:focus-visible]:border-stone-500 dark:has-[textarea:focus-visible]:ring-stone-600/50">
         {/* User Input */}
         <TextareaAutosize
+          ref={textareaRef}
           value={props.value}
           onChange={(event) => {
             props.onChange(event.target.value);
@@ -124,7 +126,7 @@ export default function ChatInput(props: ChatInputProps) {
               handleSend();
             }
           }}
-          className="w-full resize-none overflow-y-auto bg-transparent px-3 pb-1 pt-3.5 text-sm text-stone-900 outline-none placeholder:text-stone-400 dark:text-stone-100 dark:placeholder:text-stone-500 sm:px-4"
+          className="w-full resize-none overflow-y-auto bg-transparent px-3 pb-1 pt-3.5 text-base text-stone-900 md:text-sm outline-none placeholder:text-stone-400 dark:text-stone-100 dark:placeholder:text-stone-500 sm:px-4"
           minRows={1}
           maxRows={6}
           placeholder={isListening ? "Listening…" : "Ask anything"}
@@ -167,7 +169,7 @@ export default function ChatInput(props: ChatInputProps) {
                         optionList.filter((toolKey) => toolKey !== item),
                       )
                     }
-                    className="ml-1 shrink-0 cursor-pointer text-brand-600 hover:text-brand-800 dark:text-brand-400 dark:hover:text-brand-300"
+                    className="relative ml-1 shrink-0 cursor-pointer after:absolute after:-inset-3.5 text-brand-600 hover:text-brand-800 dark:text-brand-400 dark:hover:text-brand-300"
                     aria-label={`Remove ${agent.label}`}
                   >
                     <Cross2Icon className="h-4 w-4" />
@@ -185,7 +187,7 @@ export default function ChatInput(props: ChatInputProps) {
                 <DropdownMenuTrigger asChild>
                   <button
                     type="button"
-                    className="font-paragraph max-w-28 flex h-8 shrink-0 cursor-pointer items-center gap-1 rounded-md px-2 text-sm text-stone-600 transition-colors hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800 sm:max-w-none sm:px-2.5"
+                    className="font-paragraph max-w-28 flex h-8 shrink-0 relative max-md:after:absolute max-md:after:-inset-1.5 cursor-pointer items-center gap-1 rounded-md px-2 text-sm text-stone-600 transition-colors hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800 sm:max-w-none sm:px-2.5"
                   >
                     <span className="truncate">{currentModel}</span>
 
@@ -254,7 +256,7 @@ export default function ChatInput(props: ChatInputProps) {
                   }
                   aria-pressed={isListening}
                   className={[
-                    "flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors",
+                    "flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors relative max-md:after:absolute max-md:after:-inset-1.5",
                     isListening
                       ? "bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-950/50 dark:text-red-400 dark:hover:bg-red-950/70"
                       : "text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800",
@@ -269,16 +271,21 @@ export default function ChatInput(props: ChatInputProps) {
               </AppTooltip>
             )}
 
-            {/* Send */}
-            <AppTooltip label="Send message">
+            {/* Send; a spinner while an answer streams, so a second send waits */}
+            <AppTooltip label={props.isStreaming ? "Answering…" : "Send message"}>
               <Button
                 type="button"
                 onClick={handleSend}
-                disabled={!props.value.trim() || capReached}
-                className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg bg-brand-600 hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-50"
-                aria-label="Send message"
+                disabled={props.isStreaming || !props.value.trim() || capReached}
+                aria-busy={props.isStreaming}
+                className={`relative flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-brand-600 p-0 hover:bg-brand-700 disabled:cursor-not-allowed max-md:after:absolute max-md:after:-inset-2 ${props.isStreaming ? "disabled:opacity-100" : "cursor-pointer disabled:opacity-50"}`}
+                aria-label={props.isStreaming ? "Answering" : "Send message"}
               >
-                <ArrowRightIcon className="h-4 w-4 text-white" />
+                {props.isStreaming ? (
+                  <LoaderCircle className="h-3.5 w-3.5 animate-spin text-white motion-reduce:animate-none" />
+                ) : (
+                  <ArrowRightIcon className="h-3.5 w-3.5 text-white" />
+                )}
               </Button>
             </AppTooltip>
           </div>
@@ -310,6 +317,7 @@ export default function ChatInput(props: ChatInputProps) {
         show={props.showStarterPrompts ?? false}
         onPromptSelect={(prompt) => {
           props.onChange(prompt);
+          textareaRef.current?.focus();
         }}
       />
     </div>

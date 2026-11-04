@@ -2,7 +2,10 @@ import GithubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
 import NextAuth from "next-auth";
 
+import { BASE_PATH } from "@/lib/site";
+
 export const { auth, handlers, signIn, signOut } = NextAuth({
+  basePath: `${BASE_PATH}/api/auth`,
   providers: [
     // GitHub OAuth Provider
     GithubProvider({

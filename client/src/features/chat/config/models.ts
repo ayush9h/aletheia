@@ -1,7 +1,8 @@
+import { BASE_PATH } from "@/lib/site";
 export const MODEL_GROUPS = [
   {
     provider: "OpenAI",
-    url: "./openai.svg",
+    url: `${BASE_PATH}/openai.svg`,
     models: [
       {
         label: "GPT-OSS-120B",

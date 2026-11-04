@@ -65,7 +65,7 @@ const MARKDOWN_COMPONENTS: Components = {
   pre: ({ children }) => <>{children}</>,
   table: ({ children }) => (
     <div className="my-3 w-full overflow-x-auto">
-      <table className="min-w-[800px] border-collapse text-sm">{children}</table>
+      <table className="w-full border-collapse text-sm">{children}</table>
     </div>
   ),
   thead: ({ children }) => (
@@ -96,9 +96,15 @@ const STREAMING_COMPONENTS: Components = {
 };
 
 const ACTION_BUTTON =
-  "flex h-7 w-7 cursor-pointer items-center justify-center rounded-md hover:bg-stone-100 hover:text-stone-800 dark:hover:bg-stone-800 dark:hover:text-stone-200";
+  "relative flex h-7 w-7 cursor-pointer items-center justify-center rounded-md max-md:after:absolute max-md:after:-inset-2 hover:bg-stone-100 hover:text-stone-800 dark:hover:bg-stone-800 dark:hover:text-stone-200";
 
-const MessageBubble = memo(function MessageBubble({ message }: { message: Message }) {
+const MessageBubble = memo(function MessageBubble({
+  message,
+  onRetry,
+}: {
+  message: Message;
+  onRetry?: (prompt: string) => void;
+}) {
   const isUser = message.role === "user";
   const [copied, setCopied] = useState(false);
   const text = String(message.text ?? "");
@@ -126,6 +132,7 @@ const MessageBubble = memo(function MessageBubble({ message }: { message: Messag
 
   return (
     <div>
+      <span className="sr-only">{isUser ? "You said:" : "Aletheia said:"}</span>
       <div className={`font-paragraph flex ${isUser ? "justify-end" : "justify-start"}`}>
         <div
           className={`rounded-md text-sm ${isUser ? "max-w-[60%] whitespace-pre-wrap break-words bg-brand-500 px-4 py-2 text-stone-100 [&_a]:text-white" : "w-full min-w-0 overflow-hidden text-stone-800 dark:text-stone-200"}`}
@@ -169,7 +176,25 @@ const MessageBubble = memo(function MessageBubble({ message }: { message: Messag
         </div>
       </div>
 
-      {!isUser && !message.isStreaming && Boolean(message.text) && (
+      {!isUser && message.error && (
+        <div className="font-paragraph mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-stone-600 dark:text-stone-300">
+          <span>
+            {message.error}
+            {message.text ? " What arrived is kept above." : ""}
+          </span>
+          {onRetry && message.prompt && (
+            <button
+              type="button"
+              onClick={() => onRetry(message.prompt as string)}
+              className="min-h-11 cursor-pointer rounded-md border border-stone-300 px-3 md:min-h-9 text-stone-800 transition-colors hover:bg-stone-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-400 dark:border-stone-600 dark:text-stone-100 dark:hover:bg-stone-800"
+            >
+              Retry
+            </button>
+          )}
+        </div>
+      )}
+
+      {!isUser && !message.isStreaming && !message.error && Boolean(message.text) && (
         <div className="mt-1 flex items-center justify-between gap-1 text-stone-500 dark:text-stone-400">
           <div className="flex items-center gap-1">
             <button
@@ -205,7 +230,7 @@ const MessageBubble = memo(function MessageBubble({ message }: { message: Messag
 
             <div title="Tokens consumed" className="flex items-center gap-1">
               <LightningBoltIcon className="h-3.5 w-3.5" />
-              <span>{message.tokens_consumed}</span>
+              <span>{message.tokens_consumed.toLocaleString()} tokens</span>
             </div>
           </div>
         </div>

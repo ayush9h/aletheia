@@ -1,4 +1,5 @@
 "use client";
+import { BASE_PATH } from "@/lib/site";
 
 import { useEffect, useMemo, useState } from "react";
 import { Check, Loader2, PlugIcon, RefreshCw, Search, ShieldCheck, X } from "lucide-react";
@@ -56,7 +57,7 @@ export default function ConnectorsDialog({ open, onOpenChange, userId }: Connect
     if (!open || !userId) return;
 
     setLoading(true);
-    fetch(`/api/connectors?user_id=${encodeURIComponent(userId)}`, { cache: "no-store" })
+    fetch(`${BASE_PATH}/api/connectors?user_id=${encodeURIComponent(userId)}`, { cache: "no-store" })
       .then((res) => (res.ok ? res.json() : Promise.reject(new Error("Failed to fetch connectors"))))
       .then((data) => setConnected(data.connectors ?? []))
       .catch((error) => {
@@ -116,7 +117,7 @@ export default function ConnectorsDialog({ open, onOpenChange, userId }: Connect
     const top = window.screenY + (window.outerHeight - height) / 2;
 
     const popup = window.open(
-      `/api/connectors/${connectorId}`,
+      `${BASE_PATH}/api/connectors/${connectorId}`,
       `${connectorId}-oauth`,
       `width=${width},height=${height},left=${left},top=${top}`,
     );
@@ -189,7 +190,7 @@ export default function ConnectorsDialog({ open, onOpenChange, userId }: Connect
                 onClick={() => setCategory(c)}
                 className={`h-8 shrink-0 cursor-pointer rounded-full px-3.5 text-[13px] font-medium transition-colors duration-150 ${
                   category === c
-                    ? "bg-stone-900 text-white dark:bg-stone-100 dark:text-stone-900"
+                    ? "bg-brand-100 text-brand-700 dark:bg-brand-950/50 dark:text-brand-400"
                     : "text-stone-600 hover:bg-stone-100 hover:text-stone-900 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100"
                 }`}
               >

@@ -44,15 +44,25 @@ export type ChatAction =
     payload: string[];
   }
   | {
-    type: "UPDATE_LAST_ASSISTANT_MESSAGE";
-    payload: Partial<{
+    type: "UPDATE_ASSISTANT_MESSAGE";
+    payload: { id: string } & Partial<{
       text: string;
       reasoning: string;
       duration: number;
       tokens_consumed: number;
       isStreaming: boolean;
       plan: Plan;
+      error: string;
     }>;
   }
   | { type: "SET_CURRENT_PLAN"; payload: Plan }
-  | { type: "UPDATE_LAST_ASSISTANT_PLAN_STEP"; payload: { step_id: number; agent_name: string; status: "running" | "success" | "failed" } };
+  | {
+    type: "UPDATE_ASSISTANT_PLAN_STEP";
+    payload: {
+      id: string;
+      step_id: number;
+      agent_name: string;
+      status: "running" | "success" | "failed";
+      evidence?: string;
+    };
+  };

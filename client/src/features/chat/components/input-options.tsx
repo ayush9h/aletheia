@@ -25,6 +25,12 @@ const AGENT_ICONS: Record<string, ComponentType<{ className?: string }>> = {
   visualize_agent: BarChartIcon,
 };
 
+// Short hints for people; the server descriptions are written for the planner
+const AGENT_HINTS: Record<string, string> = {
+  web_search_agent: "Search the web for current information",
+  visualize_agent: "Turn data into a chart",
+};
+
 type InputOptionsProps = {
   agents: AgentResponse[];
   tools: string[];
@@ -53,7 +59,7 @@ export default function InputOptions({
         <button
           type="button"
           aria-label="Add tools or attachments"
-          className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md p-0 text-stone-600 transition-colors hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800"
+          className="relative flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md p-0 max-md:after:absolute max-md:after:-inset-1.5 text-stone-600 transition-colors hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800"
         >
           <PlusIcon className="h-4 w-4 shrink-0" />
         </button>
@@ -62,7 +68,7 @@ export default function InputOptions({
       <DropdownMenuContent
         align="start"
         sideOffset={8}
-        className={`${MENU_CONTENT} w-56`}
+        className={`${MENU_CONTENT} w-64`}
       >
         <DropdownMenuLabel className={MENU_LABEL}>Attachments</DropdownMenuLabel>
 
@@ -86,9 +92,16 @@ export default function InputOptions({
               onSelect={() => toggleTool(agent.name)}
               className={MENU_ITEM}
             >
-              <Icon className="h-4 w-4 shrink-0 text-stone-500 dark:text-stone-400" />
+              <Icon className="h-4 w-4 shrink-0 self-start mt-0.5 text-stone-500 dark:text-stone-400" />
 
-              <span className="flex-1">{agent.label}</span>
+              <span className="flex flex-1 flex-col">
+                {agent.label}
+                {AGENT_HINTS[agent.name] && (
+                  <span className="text-xs text-stone-500 dark:text-stone-400">
+                    {AGENT_HINTS[agent.name]}
+                  </span>
+                )}
+              </span>
 
               {isSelected && (
                 <Check

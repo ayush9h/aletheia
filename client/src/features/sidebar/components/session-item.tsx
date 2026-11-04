@@ -129,7 +129,10 @@ export function SessionItem({
                 type="button"
                 aria-label={`Options for ${label}`}
                 className={`data-[state=open]:bg-stone-200 data-[state=open]:opacity-100 dark:data-[state=open]:bg-stone-800 dark:data-[state=open]:text-stone-200 ml-auto flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded text-stone-600 opacity-0 transition hover:bg-stone-200 hover:text-stone-800 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-400 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-200 dark:focus-visible:ring-stone-600 ${
-                  open ? "group-hover:opacity-100" : "pointer-events-none"
+                  // Touch screens have no hover, so keep it visible with a 44px hit area
+                  open
+                    ? "group-hover:opacity-100 relative [@media(hover:none)]:opacity-100 [@media(hover:none)]:after:absolute [@media(hover:none)]:after:-inset-2.5"
+                    : "pointer-events-none"
                 }`}
               >
                 <DotsVerticalIcon className="h-4 w-4" />

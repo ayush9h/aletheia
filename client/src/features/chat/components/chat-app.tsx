@@ -18,12 +18,15 @@ import Sidebar from "@/features/sidebar/components/sidebar";
 import { userChats } from "@/lib/api/user-data";
 import type { UserPrefProps } from "@/types/user-pref";
 
+const MOBILE_QUERY = "(max-width: 767px)";
+
 export default function ChatApp() {
   const { data: session } = useSession();
   const userId = session?.user?.id;
 
   const [state, dispatch] = useReducer(ChatReducer, InitialState);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sessionStatus, setSessionStatus] = useState<"idle" | "loading" | "failed">("idle");
 
   useConnectorToast();
   useInitLoad(userId as string, dispatch);
@@ -32,7 +35,7 @@ export default function ChatApp() {
   const { usage, refresh: refreshUsage } = useTokenUsage(userId);
   const agents = useAgents();
 
-  const sendMessage = useSendMessage({
+  const send = useSendMessage({
     input: state.input,
     selectedModel: state.selectedModel,
     userPref: state.userPref,
@@ -43,20 +46,29 @@ export default function ChatApp() {
     dispatch,
   });
 
-  const handleSend = useCallback(async () => {
-    await sendMessage();
-    refreshUsage();
-  }, [sendMessage, refreshUsage]);
+  const isStreaming = state.messages.some((message) => message.isStreaming);
+
+  const handleSend = useCallback(
+    async (text?: string) => {
+      await send(text);
+      refreshUsage();
+    },
+    [send, refreshUsage],
+  );
 
   // Selects a session and hydrates its messages
   const handleSessionSelect = useCallback(async (sessionId: number) => {
     dispatch({ type: "SET_SELECTED_SESSION", payload: sessionId });
+    dispatch({ type: "SET_MESSAGES", payload: [] });
+    setSessionStatus("loading");
+    if (window.matchMedia(MOBILE_QUERY).matches) setSidebarOpen(false);
 
     try {
       const res = await userChats(sessionId);
       dispatch({ type: "SET_MESSAGES", payload: res.data });
+      setSessionStatus("idle");
     } catch {
-      dispatch({ type: "SET_MESSAGES", payload: [] });
+      setSessionStatus("failed");
     }
   }, []);
 
@@ -106,6 +118,9 @@ export default function ChatApp() {
             selectedModel={state.selectedModel}
             dispatch={dispatch}
             onSend={handleSend}
+            isStreaming={isStreaming}
+            sessionStatus={sessionStatus}
+            onRetryLoad={() => state.selectedSessionId && handleSessionSelect(state.selectedSessionId)}
             userName={session?.user?.name ?? ""}
             agents={agents}
             tools={state.selectedTools}

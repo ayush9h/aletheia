@@ -28,6 +28,10 @@ export type Message = {
   duration: number;
   tokens_consumed: number;
   isStreaming?: boolean;
+  // Set when the answer failed; partial text is kept alongside it
+  error?: string;
+  // The question this answer replies to, for Retry
+  prompt?: string;
 };
 
 export type Session = {

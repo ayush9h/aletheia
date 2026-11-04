@@ -162,7 +162,12 @@ async def run_step(
             await emit(
                 config,
                 "agent_end",
-                {"step_id": sid, "agent_name": agent_name, "status": "success"},
+                {
+                    "step_id": sid,
+                    "agent_name": agent_name,
+                    "status": "success",
+                    "evidence": result,
+                },
             )
             return {
                 "step_id": sid,

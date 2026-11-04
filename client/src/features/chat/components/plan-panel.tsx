@@ -211,6 +211,19 @@ export default function PlanPanel({ plan, isStreaming = false, hasText }: PlanPa
                       <span className="sr-only"> · {STATE_TEXT[state]}</span>
                     )}
                   </p>
+
+                  {/* The agent's raw result, so the answer can be checked against it */}
+                  {state === "success" && step.evidence?.content && (
+                    <details className="group mt-1.5">
+                      <summary className="w-fit cursor-pointer list-none rounded-sm leading-5 text-muted-foreground underline decoration-current/40 underline-offset-2 transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
+                        <span className="group-open:hidden">Show what it found</span>
+                        <span className="hidden group-open:inline">Hide what it found</span>
+                      </summary>
+                      <div className="mt-1.5 max-h-60 overflow-y-auto whitespace-pre-wrap break-words rounded-md bg-muted/60 px-3 py-2 leading-5 text-foreground/85">
+                        {step.evidence.content}
+                      </div>
+                    </details>
+                  )}
                 </div>
               </li>
             );

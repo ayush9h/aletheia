@@ -1,13 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import {
-  CalendarDays,
-  Lightbulb,
-  ListChecks,
-  MessageCircleQuestion,
-  Pen,
-} from "lucide-react";
+import { ChartColumn, Github, Globe, Slack } from "lucide-react";
 
 type StarterPrompt = {
   id: string;
@@ -16,36 +10,31 @@ type StarterPrompt = {
   prompt: string;
 };
 
+// Each prompt shows off one agent, so the first message teaches what Aletheia can reach
 const STARTER_PROMPTS: StarterPrompt[] = [
   {
-    id: "plan",
-    label: "Plan my day",
-    icon: CalendarDays,
-    prompt: "Help me plan my day based on what I need to get done.",
+    id: "web",
+    label: "What's new this week",
+    icon: Globe,
+    prompt: "Search the web and summarize the most important tech news from this week, with sources.",
   },
   {
-    id: "learn",
-    label: "Explain something",
-    icon: MessageCircleQuestion,
-    prompt: "Explain a concept to me in simple terms with a practical example.",
+    id: "chart",
+    label: "Chart some data",
+    icon: ChartColumn,
+    prompt: "Make a bar chart of the five most populous countries and their populations.",
   },
   {
-    id: "ideas",
-    label: "Brainstorm ideas",
-    icon: Lightbulb,
-    prompt: "Help me brainstorm some useful ideas for what I can work on today.",
+    id: "github",
+    label: "My open pull requests",
+    icon: Github,
+    prompt: "List my open GitHub pull requests and what each one is waiting on.",
   },
   {
-    id: "organize",
-    label: "Organize my thoughts",
-    icon: ListChecks,
-    prompt: "Help me organize my thoughts and turn them into a clear plan.",
-  },
-  {
-    id: "improve",
-    label: "Improve my writing",
-    icon: Pen,
-    prompt: "Improve this text so it sounds clear, natural, and professional.",
+    id: "slack",
+    label: "Catch me up on Slack",
+    icon: Slack,
+    prompt: "Summarize what I missed in my Slack channels today.",
   },
 ];
 

@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useState, type Dispatch } from "react";
 import { signOut, useSession } from "next-auth/react";
+import { BASE_PATH } from "@/lib/site";
 import { CaretSortIcon } from "@radix-ui/react-icons";
 import { ChartNoAxesCombinedIcon, LogOut, Settings } from "lucide-react";
 import {
@@ -67,7 +68,7 @@ export default function AccountMenu({
 
     try {
       await signOut({
-        redirectTo: "/",
+        redirectTo: `${window.location.origin}${BASE_PATH}`,
       });
     } catch (error) {
       console.error("Failed to sign out", error);
