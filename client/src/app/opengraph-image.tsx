@@ -2,14 +2,19 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { ImageResponse } from "next/og";
 
-import { SITE } from "@/lib/site";
+import { BASE_PATH, SITE } from "@/lib/site";
 
 export const alt = `${SITE.name}: ${SITE.description}`;
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
 export default async function Image() {
-  const logo = await readFile(join(process.cwd(), "public/logo.png"), "base64");
+  const cwd = process.cwd();
+  const [logo, art] = await Promise.all([
+    readFile(join(cwd, "public/logo.png"), "base64"),
+    readFile(join(cwd, "src/features/auth/assets/login-art.png"), "base64"),
+  ]);
+  const link = `${new URL(SITE.url).host}${BASE_PATH}`;
 
   return new ImageResponse(
     (
@@ -18,38 +23,95 @@ export default async function Image() {
           width: "100%",
           height: "100%",
           display: "flex",
-          alignItems: "center",
-          gap: 64,
-          padding: "0 96px",
-          background: "linear-gradient(135deg, #fafaf9 0%, #f5f5f4 55%, #dbeafe 100%)",
-          color: "#1c1917",
+          position: "relative",
+          background: "#082f49",
+          color: "#ffffff",
         }}
       >
         <img
           alt=""
-          src={`data:image/png;base64,${logo}`}
-          width={280}
-          height={280}
-          style={{ borderRadius: 48, boxShadow: "0 24px 60px -20px rgba(28,25,23,0.35)" }}
+          src={`data:image/png;base64,${art}`}
+          width={1200}
+          height={630}
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            objectFit: "cover",
+          }}
         />
-        <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
-          <div style={{ fontSize: 96, lineHeight: 1, letterSpacing: -2 }}>{SITE.name}</div>
-          <div style={{ marginTop: 28, fontSize: 36, lineHeight: 1.35, color: "#57534e" }}>
-            {SITE.description}
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            display: "flex",
+            background:
+              "linear-gradient(90deg, rgba(8,47,73,0.96) 0%, rgba(8,47,73,0.85) 45%, rgba(8,47,73,0.2) 100%)",
+          }}
+        />
+
+        <div
+          style={{
+            position: "relative",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+            width: "100%",
+            padding: "72px 80px",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+            <img
+              alt=""
+              src={`data:image/png;base64,${logo}`}
+              width={64}
+              height={64}
+              style={{ borderRadius: 14 }}
+            />
+            <div style={{ fontSize: 40, letterSpacing: -0.5 }}>{SITE.name}</div>
           </div>
+
+          <div
+            style={{ display: "flex", flexDirection: "column", maxWidth: 720 }}
+          >
+            <div style={{ fontSize: 64, lineHeight: 1.1, letterSpacing: -1.5 }}>
+              Your AI assistant for daily work.
+            </div>
+            <div
+              style={{
+                marginTop: 24,
+                fontSize: 28,
+                lineHeight: 1.4,
+                color: "#bae6fd",
+              }}
+            >
+              Connected to GitHub, Slack and the web.
+            </div>
+          </div>
+
           <div
             style={{
-              marginTop: 44,
               display: "flex",
-              alignSelf: "flex-start",
-              padding: "10px 22px",
-              borderRadius: 999,
-              background: "#2563eb",
-              color: "#ffffff",
+              alignItems: "center",
+              gap: 14,
               fontSize: 24,
+              color: "#e0f2fe",
             }}
           >
-            {new URL(SITE.url).host}
+            <div
+              style={{
+                width: 10,
+                height: 10,
+                borderRadius: 999,
+                background: "#38bdf8",
+              }}
+            />
+            {link}
           </div>
         </div>
       </div>

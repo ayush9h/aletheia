@@ -1,6 +1,7 @@
+import Image from "next/image";
 import Link from "next/link";
 
-import FractalTree from "@/features/auth/components/fractal-tree";
+import loginArt from "@/features/auth/assets/login-art.png";
 import ProviderButtons from "@/features/auth/components/provider-buttons";
 
 const LINK_CLASS =
@@ -8,15 +9,20 @@ const LINK_CLASS =
 
 export default function LoginPage() {
   return (
-    <main className="min-h-dvh text-stone-950 dark:bg-stone-950 flex gap-3 bg-white p-3 dark:text-white">
-      <aside className="bg-radial-[at_50%_45%] from-brand-950 via-stone-950 to-stone-950 relative hidden w-[48%] max-w-3xl overflow-hidden rounded-2xl lg:block">
-        <FractalTree className="size-full absolute inset-0" />
-        <p className="font-paragraph pointer-events-none absolute inset-x-0 bottom-6 text-center text-xs tracking-wide text-stone-400">
-          Click the tree to grow a new one
-        </p>
+    <main className="min-h-dvh text-stone-950 dark:bg-stone-950 flex bg-stone-200 p-2 dark:text-white">
+      <aside className="relative hidden w-1/2 shrink-0 overflow-hidden rounded-l-lg lg:block">
+        <Image
+          src={loginArt}
+          alt=""
+          fill
+          priority
+          placeholder="blur"
+          sizes="50vw"
+          className="object-cover"
+        />
       </aside>
 
-      <div className="relative flex flex-1 flex-col overflow-hidden px-3 py-5 text-center">
+      <div className="relative flex flex-1 flex-col overflow-hidden rounded-lg bg-white px-3 py-5 text-center dark:bg-stone-900 lg:rounded-l-none">
         <div className="relative z-10 flex flex-1 items-center justify-center">
           <section className="flex w-full max-w-sm flex-col items-center">
             <h1 className="font-header text-brand-500 -mt-1 text-[4.25rem] font-extrabold leading-none tracking-[-0.06em] sm:text-[5rem]">

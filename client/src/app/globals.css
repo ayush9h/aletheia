@@ -7,7 +7,7 @@
   --font-header: var(--font-header);
   --font-paragraph: var(--font-paragraph);
   /* Waits for most of the sidebar's 300ms width slide before showing text */
-  --animate-sidebar-in: sidebar-in 200ms ease-out 180ms both;
+  --animate-sidebar-in: sidebar-in 150ms ease-out both;
 
   @keyframes sidebar-in {
     from {
@@ -18,18 +18,18 @@
     }
   }
 
-  /* Brand palette: change blue here to re-theme the whole app */
-  --color-brand-50: var(--color-blue-50);
-  --color-brand-100: var(--color-blue-100);
-  --color-brand-200: var(--color-blue-200);
-  --color-brand-300: var(--color-blue-300);
-  --color-brand-400: var(--color-blue-400);
-  --color-brand-500: var(--color-blue-500);
-  --color-brand-600: var(--color-blue-600);
-  --color-brand-700: var(--color-blue-700);
-  --color-brand-800: var(--color-blue-800);
-  --color-brand-900: var(--color-blue-900);
-  --color-brand-950: var(--color-blue-950);
+  /* Brand palette: change sky here to re-theme the whole app */
+  --color-brand-50: var(--color-sky-50);
+  --color-brand-100: var(--color-sky-100);
+  --color-brand-200: var(--color-sky-200);
+  --color-brand-300: var(--color-sky-300);
+  --color-brand-400: var(--color-sky-400);
+  --color-brand-500: var(--color-sky-500);
+  --color-brand-600: var(--color-sky-600);
+  --color-brand-700: var(--color-sky-700);
+  --color-brand-800: var(--color-sky-800);
+  --color-brand-900: var(--color-sky-900);
+  --color-brand-950: var(--color-sky-950);
 }
 
 html:root:root {

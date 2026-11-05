@@ -40,7 +40,7 @@ export default function GeneralSettings() {
             title="Dark mode"
             description={
               <>
-                Toggle with <kbd className="font-sans">Ctrl ⇧ D</kbd> / <kbd className="font-sans">Ctrl ⇧ L</kbd>
+                Toggle with <kbd className="font-paragraph">Ctrl Shift D</kbd> / <kbd className="font-paragraph">Ctrl Shift L</kbd>
               </>
             }
           >

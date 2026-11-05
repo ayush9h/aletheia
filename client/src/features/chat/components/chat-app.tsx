@@ -81,7 +81,7 @@ export default function ChatApp() {
 
   return (
     <div
-      className={`relative grid h-dvh w-full overflow-hidden transition-[grid-template-columns] duration-300 ${
+      className={`relative grid h-dvh w-full overflow-hidden ${
         sidebarOpen ? "grid-cols-[16rem_minmax(0,1fr)]" : "grid-cols-[4rem_minmax(0,1fr)]"
       } max-md:grid-cols-1`}
     >

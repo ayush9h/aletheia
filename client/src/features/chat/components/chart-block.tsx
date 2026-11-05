@@ -34,7 +34,7 @@ export interface ChartSpec {
 const CHART_TYPES = new Set<ChartType>(["bar", "line", "area", "pie"]);
 
 // Tailwind drops unused vars
-const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#f43f5e", "#8b5cf6", "#06b6d4"];
+const COLORS = ["#0ea5e9", "#10b981", "#f59e0b", "#f43f5e", "#8b5cf6", "#06b6d4"];
 
 // Null if invalid/partial
 export function parseChartSpec(raw: string): ChartSpec | null {

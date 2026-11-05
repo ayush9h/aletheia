@@ -76,6 +76,7 @@ interface SidebarActionProps {
   onClick?: () => void;
   disabled?: boolean;
   disabledLabel?: string;
+  shortcut?: string;
 }
 
 function SidebarAction({
@@ -85,6 +86,7 @@ function SidebarAction({
   onClick,
   disabled = false,
   disabledLabel,
+  shortcut,
 }: SidebarActionProps) {
   const button = (
     <button
@@ -95,7 +97,7 @@ function SidebarAction({
         event.stopPropagation();
         onClick?.();
       }}
-      className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 transition-colors duration-150 ${disabled ? "cursor-not-allowed text-stone-400 dark:text-stone-600" : "cursor-pointer text-stone-800 hover:bg-stone-200/60 dark:text-stone-200 dark:hover:bg-stone-800"}`}
+      className={`group flex w-full items-center gap-3 rounded-lg px-3 py-1.5 transition-colors duration-150 ${disabled ? "cursor-not-allowed text-stone-400 dark:text-stone-600" : "cursor-pointer text-stone-800 hover:bg-stone-200/60 dark:text-stone-200 dark:hover:bg-stone-800"}`}
     >
       <span className="flex h-4 w-4 shrink-0 items-center justify-center">
         {icon}
@@ -104,6 +106,12 @@ function SidebarAction({
       <span className={`overflow-hidden whitespace-nowrap ${open ? "animate-sidebar-in max-w-[10rem]" : "max-w-0 opacity-0"}`}>
         {label}
       </span>
+
+      {open && shortcut && !disabled && (
+        <kbd className="font-paragraph ml-auto text-xs text-stone-400 opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100 dark:text-stone-500">
+          {shortcut}
+        </kbd>
+      )}
 
       {open && disabled && (
         <span className="animate-sidebar-in ml-auto rounded bg-stone-300/20 px-1.5 py-0.5 text-[10px] font-medium text-stone-600 dark:bg-stone-700/30 dark:text-stone-400">
@@ -118,7 +126,9 @@ function SidebarAction({
   }
 
   return (
-    <AppTooltip label={disabled ? disabledLabel ?? label : label}>
+    <AppTooltip
+      label={disabled ? disabledLabel ?? label : shortcut ? `${label} (${shortcut})` : label}
+    >
       {button}
     </AppTooltip>
   );
@@ -147,27 +157,6 @@ export default function Sidebar({
     "pinned",
     "recent",
   ]);
-
-  // Cmd/Ctrl + K toggles session search
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (
-        event.key.toLowerCase() !== "k" ||
-        (!event.metaKey && !event.ctrlKey)
-      ) {
-        return;
-      }
-
-      event.preventDefault();
-      setSearchOpen((current) => !current);
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, []);
 
   const handleDeleteSession = useChatSession(
     auth?.user?.id,
@@ -247,6 +236,26 @@ export default function Sidebar({
     if (window.matchMedia("(max-width: 767px)").matches) onToggle(false);
   }, [dispatch, router, onToggle]);
 
+  // Cmd/Ctrl shortcuts; Ctrl+N/T/W belong to the browser, so New Chat uses Shift+O
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!event.metaKey && !event.ctrlKey) return;
+      const key = event.key.toLowerCase();
+      const action =
+        !event.shiftKey && key === "k" ? () => setSearchOpen((current) => !current)
+        : !event.shiftKey && key === "b" ? () => onToggle(!open)
+        : event.shiftKey && key === "o" ? handleNewChat
+        : event.shiftKey && key === "x" ? () => setConnectorsOpen((current) => !current)
+        : null;
+      if (!action) return;
+      event.preventDefault();
+      action();
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [open, onToggle, handleNewChat]);
+
   const handleOpenSearch = useCallback(() => {
     setSearchOpen(true);
   }, []);
@@ -267,7 +276,7 @@ export default function Sidebar({
       )}
       <aside
         aria-label="Chat sidebar"
-        className={`font-paragraph flex h-full shrink-0 flex-col overflow-hidden border-r border-stone-200 bg-stone-100/20 px-3 py-3 text-[15px] text-stone-800 transition-[width,transform] duration-300 ease-in-out dark:border-stone-700/50 dark:bg-stone-800/50 dark:text-stone-200 max-md:fixed max-md:inset-y-0 max-md:left-0 max-md:z-50 max-md:w-64 max-md:bg-white max-md:shadow-2xl dark:max-md:bg-stone-900 ${open ? "w-64 translate-x-0" : "w-16 cursor-col-resize max-md:-translate-x-full "}`}
+        className={`font-paragraph flex h-full shrink-0 flex-col overflow-hidden border-r border-stone-200 bg-stone-100/20 px-3 py-3 text-[15px] text-stone-800 transition-transform duration-300 ease-in-out dark:border-stone-700/50 dark:bg-stone-800/50 dark:text-stone-200 max-md:fixed max-md:inset-y-0 max-md:left-0 max-md:z-50 max-md:w-64 max-md:bg-white max-md:shadow-2xl dark:max-md:bg-stone-900 ${open ? "w-64 translate-x-0" : "w-16 cursor-col-resize max-md:-translate-x-full "}`}
         onClick={() => {
           if (!open) {
             onToggle(true);
@@ -301,7 +310,7 @@ export default function Sidebar({
           </button>
 
           {open && (
-            <AppTooltip label="Collapse sidebar">
+            <AppTooltip label="Collapse sidebar (Ctrl B)">
               <button
                 type="button"
                 aria-label="Collapse sidebar"
@@ -318,12 +327,13 @@ export default function Sidebar({
         </header>
 
         {/* Sidebar Actions */}
-        <nav aria-label="Chat actions" className="mt-3 shrink-0 space-y-0.5">
+        <nav aria-label="Chat actions" className="mt-2 shrink-0 space-y-px">
           <SidebarAction
             open={open}
             label="New Chat"
             icon={<Pencil2Icon className="h-4 w-4" />}
             onClick={handleNewChat}
+            shortcut="Ctrl Shift O"
           />
 
           <SidebarAction
@@ -331,6 +341,7 @@ export default function Sidebar({
             label="Search Chats"
             icon={<MagnifyingGlassIcon className="h-4 w-4" />}
             onClick={handleOpenSearch}
+            shortcut="Ctrl K"
           />
 
           <SidebarAction
@@ -338,12 +349,13 @@ export default function Sidebar({
             label="Connectors"
             icon={<PlugIcon className="h-4 w-4" />}
             onClick={handleOpenConnectors}
+            shortcut="Ctrl Shift X"
           />
         </nav>
 
         {/* Chat List */}
         {open && (
-          <div className="font-paragraph animate-sidebar-in mt-6 flex min-h-0 flex-1 flex-col overflow-hidden">
+          <div className="font-paragraph animate-sidebar-in mt-4 flex min-h-0 flex-1 flex-col overflow-hidden">
             <div className="flex shrink-0 items-center justify-between px-3 pb-1">
               <span className="text-xs text-stone-500 dark:text-stone-400">
                 Chats

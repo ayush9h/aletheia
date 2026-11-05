@@ -114,7 +114,7 @@ export function SessionItem({
         ) : (
           <span
             title={label}
-            className={`min-w-0 truncate whitespace-nowrap transition-all duration-300 ${
+            className={`min-w-0 truncate whitespace-nowrap ${
               open ? "max-w-[11rem] opacity-100" : "max-w-0 opacity-0"
             }`}
           >

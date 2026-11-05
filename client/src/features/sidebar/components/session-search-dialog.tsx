@@ -22,7 +22,7 @@ const formatDate = (value: Date) =>
   new Date(value).toLocaleDateString(undefined, { month: "short", day: "numeric" });
 
 const KBD =
-  "rounded border border-stone-200 bg-stone-50 px-1.5 py-0.5 font-sans text-[10px] font-medium text-stone-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-400";
+  "rounded border border-stone-200 bg-stone-50 px-1.5 py-0.5 font-paragraph text-[10px] font-medium text-stone-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-400";
 
 export function SessionSearchDialog({
   open,
