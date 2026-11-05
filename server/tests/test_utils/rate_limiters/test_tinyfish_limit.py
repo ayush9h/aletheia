@@ -1,9 +1,9 @@
 import pytest
 
 from app.utils.rate_limiters.core import RateLimitPolicy
-from app.utils.rate_limiters.tavily import (TavilyGuard, TavilyLimit,
-                                            TavilyLimitExceeded,
-                                            get_tavily_guard, set_tavily_guard)
+from app.utils.rate_limiters.tinyfish import (TinyFishGuard, TinyFishLimit,
+                                            TinyFishLimitExceeded,
+                                            get_tinyfish_guard, set_tinyfish_guard)
 
 
 class MockDecision:
@@ -27,23 +27,23 @@ class MockLimiter:
 
 
 @pytest.fixture
-def model_limits() -> dict[str, TavilyLimit]:
+def model_limits() -> dict[str, TinyFishLimit]:
     return {
-        "search": TavilyLimit(rpm=10),
-        "extract": TavilyLimit(rpm=5),
+        "search": TinyFishLimit(rpm=10),
+        "extract": TinyFishLimit(rpm=5),
     }
 
 
 @pytest.mark.asyncio
 async def test_acquire_success(model_limits):
     limiter = MockLimiter(allowed=True)
-    guard = TavilyGuard(
+    guard = TinyFishGuard(
         limiter=limiter,  # type: ignore
         model_limits=model_limits,
     )
 
     await guard.acquire(
-        tavily_exec_type="search",
+        tinyfish_exec_type="search",
         credit_usage_by_type=2,
         project_id="test-project",
     )
@@ -52,7 +52,7 @@ async def test_acquire_success(model_limits):
 
     call = limiter.calls[0]
 
-    assert call["group"] == "tavily:test-project:search"
+    assert call["group"] == "tinyfish:test-project:search"
     assert len(call["policies"]) == 1
 
     policy = call["policies"][0]
@@ -68,14 +68,14 @@ async def test_acquire_raises_when_execution_type_is_not_configured(
     model_limits,
 ):
     limiter = MockLimiter()
-    guard = TavilyGuard(
+    guard = TinyFishGuard(
         limiter=limiter,  # type: ignore
         model_limits=model_limits,
     )
 
     with pytest.raises(ValueError, match="No rate limit configured"):
         await guard.acquire(
-            tavily_exec_type="unknown",
+            tinyfish_exec_type="unknown",
         )
 
     assert limiter.calls == []
@@ -86,7 +86,7 @@ async def test_acquire_raises_when_credit_usage_exceeds_rpm(
     model_limits,
 ):
     limiter = MockLimiter()
-    guard = TavilyGuard(
+    guard = TinyFishGuard(
         limiter=limiter,  # type: ignore
         model_limits=model_limits,
     )
@@ -96,7 +96,7 @@ async def test_acquire_raises_when_credit_usage_exceeds_rpm(
         match="Request requires 11 credits",
     ):
         await guard.acquire(
-            tavily_exec_type="search",
+            tinyfish_exec_type="search",
             credit_usage_by_type=11,
         )
 
@@ -108,37 +108,37 @@ async def test_acquire_raises_when_rate_limit_is_exceeded(
     model_limits,
 ):
     limiter = MockLimiter(allowed=False)
-    guard = TavilyGuard(
+    guard = TinyFishGuard(
         limiter=limiter,  # type: ignore
         model_limits=model_limits,
     )
 
     with pytest.raises(
-        TavilyLimitExceeded,
-        match="Rate limit exceeded for Tavily",
+        TinyFishLimitExceeded,
+        match="Rate limit exceeded for TinyFish",
     ):
         await guard.acquire(
-            tavily_exec_type="search",
+            tinyfish_exec_type="search",
         )
 
 
-def test_set_and_get_tavily_guard(model_limits):
+def test_set_and_get_tinyfish_guard(model_limits):
     limiter = MockLimiter()
-    guard = TavilyGuard(
+    guard = TinyFishGuard(
         limiter=limiter,  # type: ignore
         model_limits=model_limits,
     )
 
-    set_tavily_guard(guard)
+    set_tinyfish_guard(guard)
 
-    assert get_tavily_guard() is guard
+    assert get_tinyfish_guard() is guard
 
 
-def test_get_tavily_guard_raises_when_not_initialized():
-    set_tavily_guard(None)
+def test_get_tinyfish_guard_raises_when_not_initialized():
+    set_tinyfish_guard(None)
 
     with pytest.raises(
         RuntimeError,
-        match="Tavily guard has not been initialized",
+        match="TinyFish guard has not been initialized",
     ):
-        get_tavily_guard()
+        get_tinyfish_guard()

@@ -4,16 +4,14 @@ from langchain.agents.middleware import (ModelFallbackMiddleware,
 
 from app.services.gemini import gemini_llm
 from app.services.agents.web_search.tools import (scrape_links, scrape_reports,
-                                                  serpapi_web_search,
-                                                  tavily_web_search)
+                                                  tinyfish_web_search)
 
 
 def create_web_search_agent(llm):
     return create_agent(
         model=llm,
         tools=[
-            serpapi_web_search,
-            tavily_web_search,
+            tinyfish_web_search,
             scrape_links,
             scrape_reports,
         ],
@@ -24,13 +22,6 @@ def create_web_search_agent(llm):
         system_prompt="""
 You are a web search specialist responsible for finding accurate,
 relevant, and up-to-date information from the web.
-
-## Search tool selection
-
-- Use SerpAPI when the user explicitly asks to use SerpAPI,
-  Google Search, or Google-style search.
-- Use Tavily for all other web searches.
-- Do not use both tools for the same request unless necessary.
 
 ## Search behavior
 

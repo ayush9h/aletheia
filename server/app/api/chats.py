@@ -217,7 +217,8 @@ async def chat_stream(
 
                         if kind == "on_chain_end" and node_name == "planner_node":
                             output = event["data"].get("output", {})
-                            plan = output.get("plan")
+                            # inner runnables (the LLM call) also end inside planner_node; only the node's dict output carries the plan
+                            plan = output.get("plan") if isinstance(output, dict) else None
                             if plan is not None:
                                 plan_payload = (
                                     plan.model_dump()

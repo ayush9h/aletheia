@@ -2,8 +2,7 @@ from unittest.mock import MagicMock, patch
 
 from app.services.agents.web_search.agent import create_web_search_agent
 from app.services.agents.web_search.tools import (scrape_links, scrape_reports,
-                                                  serpapi_web_search,
-                                                  tavily_web_search)
+                                                  tinyfish_web_search)
 
 
 @patch("app.services.agents.web_search.agent.create_agent")
@@ -22,14 +21,11 @@ def test_create_web_search_agent(mock_create_agent: MagicMock) -> None:
 
     assert kwargs["model"] is llm
     assert kwargs["tools"] == [
-        serpapi_web_search,
-        tavily_web_search,
+        tinyfish_web_search,
         scrape_links,
         scrape_reports,
     ]
     assert isinstance(kwargs["system_prompt"], str)
-    assert "Use SerpAPI" in kwargs["system_prompt"]
-    assert "Use Tavily" in kwargs["system_prompt"]
     limit, fallback = kwargs["middleware"]
     assert limit.run_limit == 2
     assert type(fallback).__name__ == "ModelFallbackMiddleware"

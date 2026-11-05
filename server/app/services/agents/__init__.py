@@ -61,11 +61,6 @@ AGENT_REGISTRY: dict[str, AgentSpec] = {
             label="Web search",
             description=(
                 "Searches the public web for current information. "
-                "Can use supported search providers such as SerpAPI or Tavily. "
-                "Use SerpAPI when the user asks for Google Search or SerpAPI, "
-                "otherwise use Tavily. "
-                "Call only one provider per query; do not call both SerpAPI "
-                "and Tavily at the same time. "
                 "Answers questions about facts, news, prices and financial "
                 "results from search results. Only lists a page's links or "
                 "report files when the user explicitly gives a URL or asks "

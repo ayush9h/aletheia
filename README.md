@@ -31,7 +31,7 @@ The platform supports authenticated chat sessions, personalized assistant behavi
 - **Multi-model chat** using Groq-hosted Llama and OpenAI-compatible models.
 - **Agentic orchestration** with LangGraph and ReWOO-style planning.
 - **Persistent conversational memory** using Voyage AI embeddings and Pinecone.
-- **Web search tools** powered by Tavily.
+- **Web search tools** powered by TinyFish.
 - **OAuth authentication** with GitHub and Google through NextAuth/Auth.js.
 - **Personalized responses** using nicknames, occupations, custom instructions, tone, and memory preferences.
 - **Session management** with history retrieval, pinning, deletion, and bulk cleanup.
@@ -82,7 +82,7 @@ The platform supports authenticated chat sessions, personalized assistant behavi
 | Authentication | NextAuth/Auth.js v5, GitHub OAuth, Google OAuth |
 | Backend | FastAPI, Uvicorn, Pydantic, SQLModel |
 | Agent system | LangGraph, LangChain, Groq |
-| Planning and tools | ReWOO-style planning, Tavily web search |
+| Planning and tools | ReWOO-style planning, TinyFish web search |
 | Relational database | PostgreSQL, NeonDB, SQLAlchemy, Alembic |
 | Memory | Pinecone, Voyage AI embeddings |
 | Rate limiting | Redis sliding-window limits |

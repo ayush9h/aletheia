@@ -24,7 +24,7 @@ Available Agents:
 
 - Use ONLY the agents listed in Available Agents, by their exact name.
 - Do NOT hallucinate agents or reference an agent's internal tools, such
-as SerpAPI or Tavily. Each agent selects its own internal tools.
+as the search tool. Each agent selects its own internal tools.
 - The user selected every agent in Required Agents, so each one MUST be
 used in at least one step, and the other agents stay available.
 - Minimize the number of steps. Create only the steps required to fulfill

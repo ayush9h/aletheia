@@ -17,10 +17,9 @@ from app.services.gemini import set_gemini_limiter
 from app.utils import create_redis_client, setup_logging, shutdown_logging
 from app.utils.config import settings
 from app.utils.rate_limiters import (GroqGuard, GroqModelLimit,
-                                     RedisSlidingWindowLimiter, SerpApiGuard,
-                                     SerpApiLimit, TavilyGuard, TavilyLimit,
-                                     set_groq_guard, set_serp_guard,
-                                     set_tavily_guard)
+                                     RedisSlidingWindowLimiter, TinyFishGuard,
+                                     TinyFishLimit, set_groq_guard,
+                                     set_tinyfish_guard)
 
 logger = structlog.get_logger(__name__)
 origins = [
@@ -72,30 +71,20 @@ async def lifespan(app: FastAPI):
         },
     )
 
-    logger.info("tavily guard init", status="startup")
-    tavily_guard = TavilyGuard(
+    logger.info("tinyfish guard init", status="startup")
+    tinyfish_guard = TinyFishGuard(
         limiter=rate_limiter,
         model_limits={
-            "search": TavilyLimit(rpm=settings.TAVILY_SEARCH_RPM),
-        },
-    )
-
-    logger.info("serpapi guard init", status="startup")
-    serpapi_guard = SerpApiGuard(
-        limiter=rate_limiter,
-        model_limits={
-            "search": SerpApiLimit(rpm=settings.SERPAPI_RPM),
+            "search": TinyFishLimit(rpm=settings.TINYFISH_SEARCH_RPM),
         },
     )
 
     app.state.rate_limiter = rate_limiter
     app.state.groq_guard = groq_guard
-    app.state.tavily_guard = tavily_guard
-    app.state.serpapi_guard = serpapi_guard
+    app.state.tinyfish_guard = tinyfish_guard
 
     set_groq_guard(groq_guard)
-    set_tavily_guard(tavily_guard)
-    set_serp_guard(serpapi_guard)
+    set_tinyfish_guard(tinyfish_guard)
     set_gemini_limiter(rate_limiter)
 
     try:
@@ -103,7 +92,7 @@ async def lifespan(app: FastAPI):
     finally:
         shutdown_logging()
         set_groq_guard(None)
-        set_tavily_guard(None)
+        set_tinyfish_guard(None)
         set_gemini_limiter(None)
         await redis_client.aclose()
         await engine.dispose()

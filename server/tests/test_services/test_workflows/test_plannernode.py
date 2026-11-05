@@ -36,7 +36,7 @@ async def test_planner_node(
     mock_tokens.return_value = 100
 
     llm_response = MagicMock()
-    llm_response.content = (
+    llm_response.text = (
         '{"steps": [{"step_id": 1, "plan": "Search repos.", '
         '"agent_name": "github_agent", "task": "List my repos.", "depends_on": []}]}'
     )
@@ -86,7 +86,7 @@ async def test_planner_node_enforces_selected_agents_and_drops_unknown(
     mock_get_guard.return_value = guard
 
     llm_response = MagicMock()
-    llm_response.content = (
+    llm_response.text = (
         '{"steps": [{"step_id": 1, "plan": "Answer directly.", "agent_name": null}]}'
     )
     mock_planner_llm.ainvoke = AsyncMock(return_value=llm_response)

@@ -8,7 +8,7 @@ const email = <a href={`mailto:${SITE.contactEmail}`}>{SITE.contactEmail}</a>;
 const PROVIDERS = [
   ["Groq", "Runs the AI models that write replies, plan tasks and title your chats", "Your messages, relevant memories and data fetched from connected apps"],
   ["Voyage AI and Pinecone", "Create and store long-term memory, when memory is on", "Notes derived from your conversations"],
-  ["Tavily and SerpAPI", "Search the web when a reply needs current information", "Search queries"],
+  ["TinyFish", "Search the web when a reply needs current information", "Search queries"],
   ["GitHub and Slack", "Connected apps you choose to authorise", "Requests made with the access you granted"],
   ["PostHog", "Product analytics, only after you allow it", "Pages viewed, interactions, browser and device details"],
   ["Langfuse and Papertrail", "Monitoring, debugging and error logs", "Request traces and logs, which can include message content"],

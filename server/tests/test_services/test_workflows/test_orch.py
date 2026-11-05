@@ -6,6 +6,12 @@ from langchain_core.messages import AIMessage, HumanMessage
 from app.services.workflows.orch import consolidator
 
 
+@pytest.fixture(autouse=True)
+def mock_gemini():
+    with patch("app.services.workflows.orch.gemini_llm") as mock:
+        yield mock
+
+
 @pytest.fixture
 def base_state():
     return {
@@ -52,7 +58,7 @@ async def test_consolidator_success(
 
     llm = MagicMock()
     llm.ainvoke = AsyncMock(return_value=final_message)
-    mock_chat_groq.return_value = llm
+    mock_chat_groq.return_value.with_fallbacks.return_value = llm
 
     result = await consolidator(base_state)
 
@@ -76,6 +82,7 @@ async def test_consolidator_success(
         reasoning_effort=None,
         streaming=True,
         max_tokens=4000,
+        max_retries=0,
     )
 
     llm.ainvoke.assert_awaited_once()
@@ -127,7 +134,7 @@ async def test_consolidator_with_user_preferences(
 
     llm = MagicMock()
     llm.ainvoke = AsyncMock(return_value=final_message)
-    mock_chat_groq.return_value = llm
+    mock_chat_groq.return_value.with_fallbacks.return_value = llm
 
     result = await consolidator(base_state)
 
@@ -167,7 +174,7 @@ async def test_consolidator_empty_preferences_and_tools(
 
     llm = MagicMock()
     llm.ainvoke = AsyncMock(return_value=final_message)
-    mock_chat_groq.return_value = llm
+    mock_chat_groq.return_value.with_fallbacks.return_value = llm
 
     await consolidator(base_state)
 
@@ -179,7 +186,9 @@ async def test_consolidator_empty_preferences_and_tools(
 
 @pytest.mark.asyncio
 @patch("app.services.workflows.orch.get_groq_guard")
-async def test_consolidator_rate_limit(mock_get_guard, base_state):
+async def test_consolidator_rate_limit_falls_back_to_gemini(
+    mock_get_guard, mock_gemini, base_state
+):
     from app.utils.rate_limiters.llm import GroqRateLimitExceeded
 
     guard = MagicMock()
@@ -193,11 +202,13 @@ async def test_consolidator_rate_limit(mock_get_guard, base_state):
     guard.acquire = AsyncMock(side_effect=error)
     mock_get_guard.return_value = guard
 
-    with pytest.raises(
-        RuntimeError,
-        match=r"Rate limit hit for model qwen/qwen3\.8-27b\. Retry in 30s",
-    ):
-        await consolidator(base_state)
+    mock_gemini.return_value.ainvoke = AsyncMock(
+        return_value=AIMessage(content="From Gemini")
+    )
+
+    result = await consolidator(base_state)
+
+    assert result["response_content"] == "From Gemini"
 
     guard.acquire.assert_awaited_once()
 
@@ -221,7 +232,7 @@ async def test_consolidator_non_base_message(
 
     llm = MagicMock()
     llm.ainvoke = AsyncMock(return_value="invalid response")
-    mock_chat_groq.return_value = llm
+    mock_chat_groq.return_value.with_fallbacks.return_value = llm
 
     with pytest.raises(
         TypeError,
@@ -255,11 +266,11 @@ async def test_consolidator_non_string_content(
 
     llm = MagicMock()
     llm.ainvoke = AsyncMock(return_value=final_message)
-    mock_chat_groq.return_value = llm
+    mock_chat_groq.return_value.with_fallbacks.return_value = llm
 
     result = await consolidator(base_state)
 
-    assert result["response_content"] == str(final_message.content)
+    assert result["response_content"] == "Generated response"
 
 
 @pytest.mark.asyncio
@@ -285,7 +296,7 @@ async def test_consolidator_missing_usage_metadata(
 
     llm = MagicMock()
     llm.ainvoke = AsyncMock(return_value=final_message)
-    mock_chat_groq.return_value = llm
+    mock_chat_groq.return_value.with_fallbacks.return_value = llm
 
     result = await consolidator(base_state)
 

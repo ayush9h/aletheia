@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     DB_POSTGRES_URL: str
     PINECONE_API_KEY: str
     VOYAGE_API_KEY: str
-    TAVILY_API_KEY: str
+    TINYFISH_API_KEY: str
     REDIS_URL: str
     CHAT_STREAM_REQUESTS_PER_MINUTE: int
     CHAT_STREAM_REQUESTS_PER_HOUR: int
@@ -26,15 +26,14 @@ class Settings(BaseSettings):
     GROQ_META_RPM: int
     GROQ_OPENAI_TPM: int
     GROQ_META_TPM: int
-    TAVILY_SEARCH_RPM: int
+    # TinyFish free tier allows 30 searches/min per account
+    TINYFISH_SEARCH_RPM: int = 30
     PAPERTRAIL_ENDPOINT: str
     PAPERTRAIL_TOKEN: str
     LANGFUSE_SECRET_KEY: str
     LANGFUSE_PUBLIC_KEY: str
     LANGFUSE_BASE_URL: str
     CONNECTOR_SECRET: str
-    SERPAPI_RPM: int
-    SERPAPI_API_KEY: str
     MONTHLY_TOKEN_CAP: int
     FINANCE_MCP_URL: str
     FINANCE_MCP_TOKEN: str

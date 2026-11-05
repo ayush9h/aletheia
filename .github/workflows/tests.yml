@@ -18,10 +18,11 @@ jobs:
 
     env:
       GROQ_API_KEY: "test-groq-key"
+      GEMINI_API_KEY: "test-gemini-key"
       DB_POSTGRES_URL: "postgresql+asyncpg://test:test@localhost:5432/test"
       PINECONE_API_KEY: "test-pinecone-key"
       VOYAGE_API_KEY: "test-voyage-key"
-      TAVILY_API_KEY: "test-tavily-key"
+      TINYFISH_API_KEY: "test-tinyfish-key"
       REDIS_URL: "redis://localhost:6379/0"
 
       CHAT_STREAM_REQUESTS_PER_MINUTE: "10"
@@ -33,8 +34,6 @@ jobs:
       GROQ_OPENAI_TPM: "10000"
       GROQ_META_TPM: "10000"
 
-      TAVILY_SEARCH_RPM: "10"
-
       PAPERTRAIL_ENDPOINT: "https://example.com"
       PAPERTRAIL_TOKEN: "test-papertrail-token"
 
@@ -43,9 +42,6 @@ jobs:
       LANGFUSE_BASE_URL: "https://example.com"
 
       CONNECTOR_SECRET: "test-connector-secret"
-
-      SERPAPI_RPM: "10"
-      SERPAPI_API_KEY: "test-serpapi-key"
       MONTHLY_TOKEN_CAP: "20000"
       FINANCE_MCP_URL: "https://example.com/mcp"
       FINANCE_MCP_TOKEN: "test-finance-mcp-token"
