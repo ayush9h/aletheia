@@ -231,7 +231,8 @@ async def chat_stream(
                             and checkpoint_ns.startswith("consolidator:")
                         ):
                             chunk = event["data"]["chunk"]  # type: ignore
-                            token = getattr(chunk, "content", "")
+                            # .text: Gemini streams content as a list of blocks
+                            token = getattr(chunk, "text", "")
                             if token:
                                 yield sse_event("token", {"token": token})
 

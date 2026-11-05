@@ -47,5 +47,9 @@ def test_create_github_agent(
             repository_tools,
             pull_request_tools,
         ],
+        middleware=mock_create_agent.call_args.kwargs["middleware"],
         system_prompt=mock_create_agent.call_args.kwargs["system_prompt"],
     )
+    limit, fallback = mock_create_agent.call_args.kwargs["middleware"]
+    assert limit.run_limit == 2
+    assert type(fallback).__name__ == "ModelFallbackMiddleware"

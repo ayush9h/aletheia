@@ -13,6 +13,7 @@ from app.api.health import health_router
 from app.api.sessions import session_router
 from app.api.user_settings import user_router
 from app.db_service.db import engine
+from app.services.gemini import set_gemini_limiter
 from app.utils import create_redis_client, setup_logging, shutdown_logging
 from app.utils.config import settings
 from app.utils.rate_limiters import (GroqGuard, GroqModelLimit,
@@ -95,6 +96,7 @@ async def lifespan(app: FastAPI):
     set_groq_guard(groq_guard)
     set_tavily_guard(tavily_guard)
     set_serp_guard(serpapi_guard)
+    set_gemini_limiter(rate_limiter)
 
     try:
         yield
@@ -102,6 +104,7 @@ async def lifespan(app: FastAPI):
         shutdown_logging()
         set_groq_guard(None)
         set_tavily_guard(None)
+        set_gemini_limiter(None)
         await redis_client.aclose()
         await engine.dispose()
 

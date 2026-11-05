@@ -53,8 +53,9 @@ async def call_scrape_tool(name: str, url: str, wait_for: str | None) -> str:
 @tool(
     "scrape_links",
     description=(
-        "Open a specific web page in a browser and list every link on it. "
-        "Use this to find documents on a known page."
+        "List every link on a specific web page. Returns links only, never "
+        "the page text, so it cannot read articles. Use only when the user "
+        "asks for the links or documents on a given page."
     ),
     args_schema=ScrapeLinksSchema,
 )
@@ -65,9 +66,10 @@ async def scrape_links(url: str, wait_for: str | None = None) -> str:
 @tool(
     "scrape_reports",
     description=(
-        "Open a specific web page in a browser and list only the links whose "
-        "URL or title mentions report. Use this to find annual or quarterly "
-        "reports on a company's investor relations page."
+        "List only the report links on a company's investor relations page. "
+        "Returns links only, never the page text. Use only when the user "
+        "asks for report files or documents, not for questions about "
+        "financial results."
     ),
     args_schema=ScrapeLinksSchema,
 )

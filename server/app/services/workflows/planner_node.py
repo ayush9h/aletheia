@@ -8,8 +8,9 @@ from app.prompts.workflows.planner_prompt import planner_prompt_parser
 from app.schemas.workflows.planner_schema import Plan, PlannerOutput, Step
 from app.services.agent_state import AgentState
 from app.services.agents import AGENT_REGISTRY
+from app.services.gemini import gemini_llm
 from app.utils.config import settings
-from app.utils.rate_limiters.llm import get_groq_guard
+from app.utils.rate_limiters.llm import GroqRateLimitExceeded, get_groq_guard
 from app.utils.token_estimator import tokens_from_string
 
 logger = structlog.get_logger(__name__)
@@ -17,11 +18,15 @@ logger = structlog.get_logger(__name__)
 PLANNER_MODEL = "qwen/qwen3.8-27b"
 PLANNER_MAX_TOKENS = 512
 
+planner_fallback_llm = gemini_llm(max_tokens=PLANNER_MAX_TOKENS)
+
+# No Groq retries: a 429 goes straight to Gemini instead of waiting it out
 planner_llm = ChatGroq(
     api_key=settings.GROQ_API_KEY,
     model=PLANNER_MODEL,
     max_tokens=PLANNER_MAX_TOKENS,
-)
+    max_retries=0,
+).with_fallbacks([planner_fallback_llm])
 
 planner_prompt, planner_parser = planner_prompt_parser()
 
@@ -113,21 +118,27 @@ async def planner_node(
 
     groq_guard = get_groq_guard()
 
-    await groq_guard.acquire(
-        model=PLANNER_MODEL,
-        input_tokens=tokens_from_string(
-            "\n".join(str(message.content) for message in messages)
-        ),
-        max_output_tokens=PLANNER_MAX_TOKENS,
-    )
-
-    output = await planner_llm.ainvoke(messages)
-
-    generated_plan = to_plan(
-        planner_parser.parse(
-            output.content,  # type: ignore
+    llm = planner_llm
+    try:
+        await groq_guard.acquire(
+            model=PLANNER_MODEL,
+            input_tokens=tokens_from_string(
+                "\n".join(str(message.content) for message in messages)
+            ),
+            max_output_tokens=PLANNER_MAX_TOKENS,
         )
-    )
+    except GroqRateLimitExceeded as exc:
+        logger.warning(
+            "Groq limit hit, planning with Gemini",
+            model=exc.model,
+            retry_after_seconds=exc.retry_after_seconds,
+        )
+        llm = planner_fallback_llm
+
+    output = await llm.ainvoke(messages)
+
+    # .text flattens Gemini's list-of-blocks content into a string
+    generated_plan = to_plan(planner_parser.parse(output.text))
 
     # The LLM can skip the prompt rule, so a user's selection is enforced here
     add_missing_agents(generated_plan, required_agents, str(user_message.content))

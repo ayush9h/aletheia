@@ -4,6 +4,7 @@ from langchain_groq.chat_models import ChatGroq
 from langgraph.graph.state import END, START, StateGraph
 
 from app.services.agent_state import AgentState
+from app.services.gemini import gemini_llm
 from app.services.workflows.executor_node import executor_node
 from app.services.workflows.memory_retrieval import (memory_retrieve,
                                                      memory_store,
@@ -132,31 +133,31 @@ User Occupation:
         1,
     )
 
+    fallback_llm = gemini_llm(max_tokens=max_output_tokens, streaming=True)
+
     try:
         await groq_guard.acquire(
             model=model_name,
             input_tokens=input_tokens,
             max_output_tokens=max_output_tokens,
         )
+        # No Groq retries: a 429 goes straight to Gemini instead of waiting it out
+        llm = ChatGroq(
+            api_key=settings.GROQ_API_KEY,
+            model=model_name,
+            reasoning_effort=None,
+            streaming=True,
+            max_tokens=max_output_tokens,
+            max_retries=0,
+        ).with_fallbacks([fallback_llm])
 
     except GroqRateLimitExceeded as exc:
-        logger.error(
-            "Groq rate limit exceeded",
+        logger.warning(
+            "Groq limit hit, answering with Gemini",
             model=exc.model,
             retry_after_seconds=exc.retry_after_seconds,
         )
-
-        raise RuntimeError(
-            f"Rate limit hit for model {exc.model}. Retry in {exc.retry_after_seconds}s"
-        ) from exc
-
-    llm = ChatGroq(
-        api_key=settings.GROQ_API_KEY,
-        model=model_name,
-        reasoning_effort=None,
-        streaming=True,
-        max_tokens=max_output_tokens,
-    )
+        llm = fallback_llm
 
     final_message = await llm.ainvoke(full_messages)
 
@@ -165,12 +166,8 @@ User Occupation:
             f"Orchestrator final response is not a BaseMessage: {type(final_message)}"
         )
 
-    final_content = final_message.content
-
-    if isinstance(final_content, str):
-        response_content = final_content
-    else:
-        response_content = str(final_content)
+    # .text flattens Gemini's list-of-blocks content into a string
+    response_content = final_message.text
 
     usage_metadata = getattr(final_message, "usage_metadata", None) or {}
     total_tokens = usage_metadata.get("total_tokens", 0)

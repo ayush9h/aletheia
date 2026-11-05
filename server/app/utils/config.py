@@ -9,6 +9,11 @@ ENV_FILE = BASE_DIR / ".env"
 
 class Settings(BaseSettings):
     GROQ_API_KEY: SecretStr
+    GEMINI_API_KEY: SecretStr
+    # Gemini is the fallback when Groq rate-limits; defaults are free-tier caps
+    GEMINI_MODEL: str = "gemini-3.8-flash"
+    GEMINI_RPM: int = 10
+    GEMINI_RPD: int = 250
     DB_POSTGRES_URL: str
     PINECONE_API_KEY: str
     VOYAGE_API_KEY: str

@@ -1,5 +1,8 @@
 from langchain.agents import create_agent
+from langchain.agents.middleware import (ModelFallbackMiddleware,
+                                         ToolCallLimitMiddleware)
 
+from app.services.gemini import gemini_llm
 from app.services.agents.web_search.tools import (scrape_links, scrape_reports,
                                                   serpapi_web_search,
                                                   tavily_web_search)
@@ -13,6 +16,10 @@ def create_web_search_agent(llm):
             tavily_web_search,
             scrape_links,
             scrape_reports,
+        ],
+        middleware=[
+            ToolCallLimitMiddleware(run_limit=2),
+            ModelFallbackMiddleware(gemini_llm(max_tokens=2048)),
         ],
         system_prompt="""
 You are a web search specialist responsible for finding accurate,
@@ -36,17 +43,28 @@ relevant, and up-to-date information from the web.
   rather than relying on existing knowledge.
 - For complex requests, perform additional searches when needed.
 
-## Reading the links on a page
+## Link tools: scrape_links and scrape_reports
 
-- Use scrape_links when the user gives a specific page and asks for
-  its links or documents.
-- To find annual or quarterly reports, search for the company's official
-  investor relations page first, then use scrape_reports on that URL.
-- If scrape_reports finds nothing, try scrape_links on the same page, as
-  report links may use other words such as "results" or "filings".
-- Pick the relevant links from the result rather than listing them all.
-- If the result total is higher than the links returned, say the list
-  was cut short.
+These tools ONLY list the links on a page. They never return the page's
+text, so they cannot be used to read an article, news story or result page.
+
+Default: answer with a web search alone. A search result's snippets and
+content are enough for questions about facts, news, prices or financial
+results (for example "Q2 financials of company X"). Do not scrape after a
+search to "read more" or "verify".
+
+Use a link tool ONLY when one of these is true:
+- The user gives a specific URL and asks for the links or documents on it.
+- The user explicitly asks for report files or documents (for example
+  "find the annual report PDF"). Then search for the company's official
+  investor relations page and run scrape_reports on that URL. If it finds
+  nothing, try scrape_links on the same page, as report links may use
+  other words such as "results" or "filings".
+
+Never run a link tool on a news site, article, blog or search result URL.
+When you do use one, pick the relevant links rather than listing them all,
+and if the result total is higher than the links returned, say the list
+was cut short.
 
 ## Accuracy
 

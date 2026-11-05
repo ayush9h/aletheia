@@ -151,8 +151,7 @@ async def run_step(
                     raise RuntimeError("Agent returned no messages")
 
                 last = messages[-1]
-                content = last.content if isinstance(last, BaseMessage) else last
-                result = str(content)
+                result = last.text if isinstance(last, BaseMessage) else str(last)
 
             if result is None:
                 raise RuntimeError("No DB session available")
@@ -207,7 +206,8 @@ async def executor_node(state: AgentState, config: RunnableConfig) -> AgentState
         api_key=settings.GROQ_API_KEY,
         model="openai/gpt-oss-20b",
         max_tokens=2048,
-        max_retries=3,
+        # Agents fall back to Gemini on failure, so don't wait out 429s here
+        max_retries=0,
     )
 
     sem = asyncio.Semaphore(5)

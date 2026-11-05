@@ -66,9 +66,10 @@ AGENT_REGISTRY: dict[str, AgentSpec] = {
                 "otherwise use Tavily. "
                 "Call only one provider per query; do not call both SerpAPI "
                 "and Tavily at the same time. "
-                "Can also open a specific page and list its links or only its "
-                "report links, for example to find annual reports on a "
-                "company's investor relations page."
+                "Answers questions about facts, news, prices and financial "
+                "results from search results. Only lists a page's links or "
+                "report files when the user explicitly gives a URL or asks "
+                "for documents such as an annual report PDF."
             ),
             factory=lambda ctx: create_web_search_agent(llm=ctx.llm),
         ),

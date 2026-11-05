@@ -30,7 +30,10 @@ used in at least one step, and the other agents stay available.
 - Minimize the number of steps. Create only the steps required to fulfill
 the user's request, with a unique `step_id` and a clear `plan` each.
 - For an agent step, set `agent_name` to the agent and write in `task`
-what the agent must do.
+what the agent must do, staying close to the user's own words.
+- Do NOT add work the user did not ask for. For a web search, the task is
+to search and answer; never tell the agent to open, visit, scrape or read
+a page, or to find links or documents, unless the user asked for that.
 - For each step, set depends_on to the step_ids whose output it needs.
 If a step does not need another step's output, depends_on MUST be [].
 Independent steps run in parallel, so do not chain steps unnecessarily.

@@ -30,3 +30,6 @@ def test_create_web_search_agent(mock_create_agent: MagicMock) -> None:
     assert isinstance(kwargs["system_prompt"], str)
     assert "Use SerpAPI" in kwargs["system_prompt"]
     assert "Use Tavily" in kwargs["system_prompt"]
+    limit, fallback = kwargs["middleware"]
+    assert limit.run_limit == 2
+    assert type(fallback).__name__ == "ModelFallbackMiddleware"
