@@ -9,7 +9,7 @@ const PROVIDERS = [
   ["Groq", "Runs the AI models that write replies, plan tasks and title your chats", "Your messages, relevant memories and data fetched from connected apps"],
   ["Voyage AI and Pinecone", "Create and store long-term memory, when memory is on", "Notes derived from your conversations"],
   ["TinyFish", "Search the web when a reply needs current information", "Search queries"],
-  ["GitHub and Slack", "Connected apps you choose to authorise", "Requests made with the access you granted"],
+  ["GitHub, Slack and Gmail", "Connected apps you choose to authorise. Gmail emails are read only to answer your request and are sent only when you confirm a draft", "Requests made with the access you granted"],
   ["PostHog", "Product analytics, only after you allow it", "Pages viewed, interactions, browser and device details"],
   ["Langfuse and Papertrail", "Monitoring, debugging and error logs", "Request traces and logs, which can include message content"],
   ["Vercel, PostgreSQL and Redis", "Hosting, storage and rate limiting", "All data the service stores"],

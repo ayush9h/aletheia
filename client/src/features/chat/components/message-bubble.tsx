@@ -12,6 +12,7 @@ import {
 
 import ChartBlock, { parseChartSpec } from "@/features/chat/components/chart-block";
 import CodeBlock from "@/features/chat/components/code-block";
+import EmailDraftCard from "@/features/chat/components/email-draft-card";
 import PlanPanel from "@/features/chat/components/plan-panel";
 import { useReadAloud } from "@/features/voice/hooks/useReadAloud";
 import type { Message } from "@/types/user-message";
@@ -162,6 +163,11 @@ const MessageBubble = memo(function MessageBubble({
               )}
             </div>
           )}
+
+          {!isUser &&
+            message.emailDrafts?.map((draft, index) => (
+              <EmailDraftCard key={`${message.id}-draft-${index}`} draft={draft} />
+            ))}
 
           {overflows && (
             <button

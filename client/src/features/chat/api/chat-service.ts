@@ -1,4 +1,5 @@
 import { UserPrefProps } from "@/types/user-pref";
+import type { EmailDraft } from "@/types/user-message";
 
 type AgentEvent = {
   step_id: number;
@@ -12,6 +13,7 @@ type StreamHandlers = {
   onPlan?: (plan: unknown) => void;
   onToken?: (token: string) => void;
   onAgent?: (agent: AgentEvent) => void;
+  onEmailDraft?: (draft: EmailDraft) => void;
   onFinal?: (payload: {
     service_output: {
       reasoning_content: string;
@@ -114,6 +116,10 @@ export async function streamChatMessage(
           handlers.onAgent?.(
             parsed as AgentEvent
           );
+          break;
+
+        case "email_draft":
+          handlers.onEmailDraft?.(parsed as EmailDraft);
           break;
 
         case "token":

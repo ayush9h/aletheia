@@ -2,7 +2,7 @@ import { useCallback, useRef } from "react";
 import { streamChatMessage } from "@/features/chat/api/chat-service";
 import { ChatAction } from "@/features/chat/types/chat-action";
 import { UserPrefProps } from "@/types/user-pref";
-import { Plan, Session } from "@/types/user-message";
+import { EmailDraft, Plan, Session } from "@/types/user-message";
 
 type Params = {
   input: string;
@@ -81,6 +81,7 @@ export function useSendMessage(params: Params) {
     });
 
     let streamedText = "";
+    let emailDrafts: EmailDraft[] = [];
     let settled = false;
 
     const fail = (error: string) => {
@@ -120,6 +121,15 @@ export function useSendMessage(params: Params) {
             });
           },
 
+          onEmailDraft: (draft) => {
+            emailDrafts = [...emailDrafts, draft];
+
+            dispatch({
+              type: "UPDATE_ASSISTANT_MESSAGE",
+              payload: { id: assistantId, emailDrafts },
+            });
+          },
+
           onToken: (token) => {
             streamedText += token;
 
@@ -151,7 +161,7 @@ export function useSendMessage(params: Params) {
               type: "UPDATE_ASSISTANT_MESSAGE",
               payload: {
                 id: assistantId,
-                text: payload.service_output.response_content,
+                text: emailDrafts.length ? "" : payload.service_output.response_content,
                 duration: payload.service_output.duration,
                 tokens_consumed: payload.service_output.tokens_consumed,
                 isStreaming: false,

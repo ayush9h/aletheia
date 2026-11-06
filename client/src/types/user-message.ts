@@ -20,11 +20,18 @@ export type Plan = {
   steps: PlanStep[];
 };
 
+export type EmailDraft = {
+  to: string;
+  subject: string;
+  body: string;
+};
+
 export type Message = {
   id: string;
   role: "user" | "assistant";
   text: string;
   plan?: Plan;
+  emailDrafts?: EmailDraft[];
   duration: number;
   tokens_consumed: number;
   isStreaming?: boolean;

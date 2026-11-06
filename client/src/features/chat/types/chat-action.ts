@@ -1,6 +1,6 @@
 import { Session, Message } from "@/types/user-message";
 import { UserPrefProps } from "@/types/user-pref";
-import { Plan } from "@/types/user-message";
+import { EmailDraft, Plan } from "@/types/user-message";
 // Valid actions performed on the chat page
 export type ChatAction =
   // Updates current input buffer (controlled input state)
@@ -52,6 +52,7 @@ export type ChatAction =
       tokens_consumed: number;
       isStreaming: boolean;
       plan: Plan;
+      emailDrafts: EmailDraft[];
       error: string;
     }>;
   }
