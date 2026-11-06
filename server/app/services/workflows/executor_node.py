@@ -4,7 +4,7 @@ from collections.abc import Iterator
 
 import structlog
 from langchain_core.callbacks.manager import adispatch_custom_event
-from langchain_core.messages import BaseMessage
+from langchain_core.messages import AIMessage, BaseMessage, ToolMessage
 from langchain_core.runnables import RunnableConfig
 from langchain_groq import ChatGroq
 
@@ -152,6 +152,13 @@ async def run_step(
 
                 last = messages[-1]
                 result = last.text if isinstance(last, BaseMessage) else str(last)
+                email_drafts = [
+                    m.artifact
+                    for m in messages
+                    if isinstance(m, ToolMessage)
+                    and m.name == "gmail_draft_email"
+                    and m.artifact
+                ]
 
             if result is None:
                 raise RuntimeError("No DB session available")
@@ -173,6 +180,7 @@ async def run_step(
                 "agent_name": agent_name,
                 "status": "success",
                 "result": result,
+                "email_drafts": email_drafts,
             }
 
         except Exception as exc:
@@ -246,4 +254,13 @@ async def executor_node(state: AgentState, config: RunnableConfig) -> AgentState
 
     results.sort(key=lambda r: (r["step_id"] is None, r["step_id"] or 0))
     state["tool_results"] = results
+
+    drafts = [d for r in results for d in r.get("email_drafts", [])]
+    if drafts:
+        summary = "Drafted " + ", ".join(
+            f"an email to {d['to']} ({d['subject'] or 'no subject'})" for d in drafts
+        )
+        state["email_drafts"] = drafts
+        state["response_content"] = f"{summary} for your review."
+        state["user_input"] = [AIMessage(content=state["response_content"])]
     return state

@@ -187,6 +187,12 @@ User Occupation:
     }
 
 
+def route_after_executor(state: AgentState) -> str:
+    if state.get("email_drafts"):
+        return route_session_title(state)
+    return "consolidator"
+
+
 builder = StateGraph(AgentState)
 
 builder.add_node("memory_retriever", memory_retrieve)
@@ -212,9 +218,15 @@ builder.add_edge(
     "executor_node",
 )
 
-builder.add_edge(
+builder.add_conditional_edges(
     "executor_node",
-    "consolidator",
+    route_after_executor,
+    {
+        "consolidator": "consolidator",
+        "generate_session_title": "generate_session_title",
+        "memory_store": "memory_store",
+        "__end__": END,
+    },
 )
 
 builder.add_conditional_edges(

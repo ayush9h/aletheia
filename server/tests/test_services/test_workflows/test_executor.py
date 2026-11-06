@@ -329,6 +329,7 @@ async def test_run_step_success(
         "agent_name": "test_agent",
         "status": "success",
         "result": "agent result",
+        "email_drafts": [],
     }
 
     assert step.status == "success"

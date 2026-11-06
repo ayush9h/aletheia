@@ -22,4 +22,5 @@ class AgentState(TypedDict):
     plan: Plan
     use_memory: bool
     tool_results: list
+    email_drafts: list[dict]
     is_new_session: bool

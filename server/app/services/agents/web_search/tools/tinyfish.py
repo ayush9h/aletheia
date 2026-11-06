@@ -33,7 +33,6 @@ async def tinyfish_web_search(
 
     params = {
         "query": query,
-        # TinyFish has no finance vertical; finance queries go to plain web search
         "domain_type": "news" if topic == "news" else "web",
     }
     if domains:

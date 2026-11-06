@@ -217,7 +217,6 @@ async def chat_stream(
 
                         if kind == "on_chain_end" and node_name == "planner_node":
                             output = event["data"].get("output", {})
-                            # inner runnables (the LLM call) also end inside planner_node; only the node's dict output carries the plan
                             plan = output.get("plan") if isinstance(output, dict) else None
                             if plan is not None:
                                 plan_payload = (
@@ -267,6 +266,15 @@ async def chat_stream(
 
                             if not isinstance(output, dict):
                                 continue
+
+                            if event["name"] == "executor_node" and output.get(
+                                "email_drafts"
+                            ):
+                                for draft in output["email_drafts"]:
+                                    yield sse_event("email_draft", draft)
+                                final_state.update(
+                                    response_content=output["response_content"]
+                                )
 
                             if node_name in {
                                 "consolidator",

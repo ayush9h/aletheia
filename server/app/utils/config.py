@@ -26,7 +26,6 @@ class Settings(BaseSettings):
     GROQ_META_RPM: int
     GROQ_OPENAI_TPM: int
     GROQ_META_TPM: int
-    # TinyFish free tier allows 30 searches/min per account
     TINYFISH_SEARCH_RPM: int = 30
     PAPERTRAIL_ENDPOINT: str
     PAPERTRAIL_TOKEN: str
@@ -37,6 +36,8 @@ class Settings(BaseSettings):
     MONTHLY_TOKEN_CAP: int
     FINANCE_MCP_URL: str
     FINANCE_MCP_TOKEN: str
+    GOOGLE_CLIENT_ID: str
+    GOOGLE_CLIENT_SECRET: SecretStr
 
     model_config = SettingsConfigDict(
         env_file=ENV_FILE,

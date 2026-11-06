@@ -6,6 +6,7 @@ from langchain_core.language_models import BaseChatModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .github.agent import create_github_agent
+from .gmail.agent import create_gmail_agent
 from .slack.agent import create_slack_agent
 from .visualize.agent import create_visualize_agent
 from .web_search.agent import create_web_search_agent
@@ -53,6 +54,20 @@ AGENT_REGISTRY: dict[str, AgentSpec] = {
                 "Can list channels, read channel history, and search messages."
             ),
             factory=lambda ctx: create_slack_agent(
+                llm=ctx.llm, session=ctx.session, user_id=ctx.user_id
+            ),
+        ),
+        AgentSpec(
+            name="gmail_agent",
+            label="Gmail",
+            selectable=False,
+            description=(
+                "Interacts with the user's connected Gmail account. "
+                "Can search and read emails, and draft an email to a given "
+                "address for the user to review and send. It never sends "
+                "email by itself."
+            ),
+            factory=lambda ctx: create_gmail_agent(
                 llm=ctx.llm, session=ctx.session, user_id=ctx.user_id
             ),
         ),
