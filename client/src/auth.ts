@@ -1,3 +1,4 @@
+import DiscordProvider from "next-auth/providers/discord";
 import GithubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
 import NextAuth from "next-auth";
@@ -17,6 +18,12 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     }),
+    // Discord OAuth Provider
+    DiscordProvider({
+      clientId: process.env.DISCORD_CLIENT_ID,
+      clientSecret: process.env.DISCORD_CLIENT_SECRET,
+      issuer: "https://discord.com",
+    }),
   ],
   session: {
     strategy: "jwt",
@@ -25,7 +32,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     /* Normalize external provider identity into a stable internal `userId`.*/
     async jwt({ token, account, profile }) {
       if (account && profile) {
-        if (account?.provider === "github") {
+        if (account?.provider === "github" || account?.provider === "discord") {
           token.userId = profile.id;
         }
 

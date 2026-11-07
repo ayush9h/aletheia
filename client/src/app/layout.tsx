@@ -83,26 +83,32 @@ export default async function RootLayout({
       <body
         className="antialiased"
       >
-        <ConsentRoot state={resolveConsent()}>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          <TooltipProvider>
-            <SessionProvider session={session} basePath={`${BASE_PATH}/api/auth`}>
-              
-              <ThemeShortcuts />
-              
-              {children}
+          {/* Consent Banner Provider */}
+          <ConsentRoot state={resolveConsent()}>
+ 
+            {/* Theme provider */}
+            <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
 
-              <ConsentBanner legalLinks={["privacyPolicy", "termsOfService"]} />
-              <ConsentDialog legalLinks={["privacyPolicy", "termsOfService"]} />
-              
-              <Toaster position="bottom-right" />
+              {/* Tooltip provider  */}
+              <TooltipProvider>
+                {/* Session Provider */}
+                <SessionProvider session={session} basePath={`${BASE_PATH}/api/auth`}>
+                  
+                  {/* Light - dark theme shortcuts */}
+                  <ThemeShortcuts />
+                  
+                  {children}
 
-            </SessionProvider>
+                  <ConsentBanner legalLinks={["privacyPolicy", "termsOfService"]} />
+                  <ConsentDialog legalLinks={["privacyPolicy", "termsOfService"]} />
+                  
+                  <Toaster position="bottom-right" />
 
-          </TooltipProvider>
-        </ThemeProvider>
+                </SessionProvider>
 
-        </ConsentRoot>
+              </TooltipProvider>
+            </ThemeProvider>
+          </ConsentRoot>
       </body>
     </html>
   );

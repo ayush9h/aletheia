@@ -14,4 +14,10 @@ export const authProviders = [
     // Black mark disappears on the dark button
     invertOnDark: true,
   },
+  {
+    id: "discord",
+    label: "Continue with Discord",
+    icon: "https://www.svgrepo.com/show/353655/discord-icon.svg",
+    title: "Discord Logo",
+  },
 ];
