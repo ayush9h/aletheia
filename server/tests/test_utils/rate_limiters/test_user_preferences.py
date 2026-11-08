@@ -1,4 +1,3 @@
-from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
 import pytest
@@ -77,9 +76,7 @@ async def test_user_preferences_write_rate_limit_allows_request(
         mock_limit,
     )
 
-    payload = SimpleNamespace(userId="user-123")
-
-    await user_preferences_write_rate_limit(payload)
+    await user_preferences_write_rate_limit("user-123")
 
     mock_limit.assert_awaited_once_with(
         "user-preferences:write:user-123",
@@ -100,10 +97,8 @@ async def test_user_preferences_write_rate_limit_rejects_request(
         mock_limit,
     )
 
-    payload = SimpleNamespace(userId="user-123")
-
     with pytest.raises(HTTPException) as exc_info:
-        await user_preferences_write_rate_limit(payload)
+        await user_preferences_write_rate_limit("user-123")
 
     assert exc_info.value.status_code == status.HTTP_429_TOO_MANY_REQUESTS
     assert (

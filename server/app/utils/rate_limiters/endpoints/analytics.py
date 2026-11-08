@@ -1,6 +1,7 @@
-from fastapi import HTTPException, status
+from fastapi import Depends, HTTPException, status
 from throttled.asyncio import RateLimiterType, Throttled, store
 
+from app.utils.core.security import current_user_id
 from app.utils.config import settings
 
 ANALYTICS_RATE_LIMIT = "60/m"
@@ -18,7 +19,7 @@ analytics_throttle = Throttled(
 )
 
 
-async def analytics_rate_limit(user_id: str) -> None:
+async def analytics_rate_limit(user_id: str = Depends(current_user_id)) -> None:
     key = f"analytics:user:{user_id}"
 
     result = await analytics_throttle.limit(key)

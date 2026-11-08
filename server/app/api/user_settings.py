@@ -4,6 +4,7 @@ from sqlalchemy.exc import DatabaseError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
+from app.utils.core.security import current_user_id
 from app.db_service.db import get_session
 from app.db_service.models import UserPrefs
 from app.schemas.user_pref import UserPref
@@ -22,11 +23,12 @@ user_router = APIRouter(prefix="/v1/users")
 )
 async def store_user_pref(
     payload: UserPref,
+    user_id: str = Depends(current_user_id),
     _: None = Depends(user_preferences_write_rate_limit),
     session: AsyncSession = Depends(get_session),
 ):
     try:
-        stmt = select(UserPrefs).where(UserPrefs.user_id == payload.userId)
+        stmt = select(UserPrefs).where(UserPrefs.user_id == user_id)
 
         result = await session.execute(stmt)
         pref = result.scalar_one_or_none()
@@ -41,12 +43,12 @@ async def store_user_pref(
 
             logger.info(
                 "User preferences updated",
-                user_id=payload.userId,
+                user_id=user_id,
             )
 
         else:
             pref = UserPrefs(
-                user_id=payload.userId,
+                user_id=user_id,
                 nickname=payload.nickname,
                 assistant_behavior=payload.userCustomInstruction,
                 user_personal_description=payload.userHobbies,
@@ -59,7 +61,7 @@ async def store_user_pref(
 
             logger.info(
                 "New user preferences created",
-                user_id=payload.userId,
+                user_id=user_id,
             )
 
         await session.commit()
@@ -75,7 +77,7 @@ async def store_user_pref(
 
         logger.exception(
             "Failed to update user preferences",
-            user_id=payload.userId,
+            user_id=user_id,
         )
 
         return {
@@ -91,7 +93,7 @@ async def store_user_pref(
     description="Get user preferences by user ID",
 )
 async def get_user_pref(
-    user_id: str,
+    user_id: str = Depends(current_user_id),
     _: None = Depends(user_preferences_read_rate_limit),
     session: AsyncSession = Depends(get_session),
 ):

@@ -23,6 +23,7 @@ from app.utils.config import settings
 from app.utils.core.dependencies import get_rate_limiter
 from app.utils.rate_limiters.core import (RateLimitPolicy,
                                           RedisSlidingWindowLimiter)
+from app.utils.core.security import current_user_id
 
 chat_router = APIRouter(prefix="/v1")
 logger = structlog.get_logger(__name__)
@@ -50,8 +51,8 @@ async def chat_stream(
     payload: ChatRequest,
     session: AsyncSession = Depends(get_session),
     rate_limiter: RedisSlidingWindowLimiter = Depends(get_rate_limiter),
+    user_id: str = Depends(current_user_id),
 ):
-    user_id = str(payload.userId)
     langfuse = request.app.state.langfuse
 
     # Check for rate limit
@@ -135,14 +136,14 @@ async def chat_stream(
     if payload.selectedSessionId:
         stmt = select(UserSessions).where(
             UserSessions.session_id == payload.selectedSessionId,
-            UserSessions.user_id == payload.userId,
+            UserSessions.user_id == user_id,
         )
         result = await session.execute(stmt)
         chat_session = result.scalar_one()
         is_new_session = False
     else:
         chat_session = UserSessions(
-            user_id=payload.userId,
+            user_id=user_id,
             session_title="New Chat",
         )
         session.add(chat_session)
@@ -156,7 +157,7 @@ async def chat_stream(
         "user_input": [HumanMessage(content=payload.query)],
         "user_model": payload.model,
         "user_preference": payload.userPref,
-        "user_id": payload.userId,
+        "user_id": user_id,
         "session_id": chat_session.session_id,
         "tools": payload.tools,
         "use_memory": payload.userPref.memoryEnabled if payload.userPref else False,
@@ -354,12 +355,15 @@ async def chat_stream(
 )
 async def chats(
     session_id: int,
+    user_id: str = Depends(current_user_id),
     session: AsyncSession = Depends(get_session),
 ) -> list[dict]:
     try:
+        # Join on the owner so another user's session_id returns nothing
         stmt = (
             select(UserChats)
-            .where(UserChats.session_id == session_id)
+            .join(UserSessions, UserSessions.session_id == UserChats.session_id)
+            .where(UserChats.session_id == session_id, UserSessions.user_id == user_id)
             .order_by(UserChats.created_at.asc())  # type: ignore
         )
 

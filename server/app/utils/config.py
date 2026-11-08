@@ -38,6 +38,8 @@ class Settings(BaseSettings):
     FINANCE_MCP_TOKEN: str
     GOOGLE_CLIENT_ID: str
     GOOGLE_CLIENT_SECRET: SecretStr
+    JWT_SECRET: str
+    JWT_ALGORITHM: str
 
     model_config = SettingsConfigDict(
         env_file=ENV_FILE,
