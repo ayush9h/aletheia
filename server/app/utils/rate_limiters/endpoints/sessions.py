@@ -1,8 +1,9 @@
 # app/utils/rate_limiters/sessions.py
 
-from fastapi import HTTPException, status
+from fastapi import Depends, HTTPException, status
 from throttled.asyncio import RateLimiterType, Throttled, store
 
+from app.utils.core.security import current_user_id
 from app.utils.config import settings
 
 SESSION_RATE_LIMIT = "60/m"
@@ -20,7 +21,7 @@ session_throttle = Throttled(
 )
 
 
-async def session_rate_limit(user_id: str) -> None:
+async def session_rate_limit(user_id: str = Depends(current_user_id)) -> None:
     result = await session_throttle.limit(f"sessions:user:{user_id}")
 
     if result.limited:

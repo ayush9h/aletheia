@@ -1,3 +1,4 @@
+import { getBackendToken } from "@/lib/api/backend-token";
 import { UserPrefProps } from "@/types/user-pref";
 import type { EmailDraft } from "@/types/user-message";
 
@@ -47,6 +48,7 @@ export async function streamChatMessage(
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      Authorization: `Bearer ${await getBackendToken()}`,
     },
     body: JSON.stringify({
       model: selectedModel,

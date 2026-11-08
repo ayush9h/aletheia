@@ -5,14 +5,13 @@
 **A conversational AI platform with real-time streaming, persistent memory, personalization, and graph-based agent workflow.**
 
 [![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=nextdotjs)](https://nextjs.org/)
-[![React](https://img.shields.io/badge/React-19-20232a?logo=react)](https://react.dev/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.128-009688?logo=fastapi)](https://fastapi.tiangolo.com/)
 [![Python](https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Tests](https://github.com/ayush9h/aletheia/actions/workflows/tests.yml/badge.svg)](https://github.com/ayush9h/aletheia/actions/workflows/tests.yml)
 [![Coverage](https://codecov.io/gh/ayush9h/aletheia/branch/main/graph/badge.svg)](https://codecov.io/gh/ayush9h/aletheia)
 
-[Live Demo](https://aletheiagpt.vercel.app) ·
+[Live Demo](https://www.ayuar.dev/aletheia) ·
 [DeepWiki](https://deepwiki.com/ayush9h/aletheia) ·
 [Report an Issue](https://github.com/ayush9h/aletheia/issues)
 
@@ -28,7 +27,7 @@ The platform supports authenticated chat sessions, personalized assistant behavi
 ## Key Features
 
 - **Real-time response streaming** through Server-Sent Events.
-- **Multi-model chat** using Groq-hosted Llama and OpenAI-compatible models.
+- **Multi-model chat** using Groq-hosted OpenAI-compatible models.
 - **Agentic orchestration** with LangGraph and ReWOO-style planning.
 - **Persistent conversational memory** using Voyage AI embeddings and Pinecone.
 - **Web search tools** powered by TinyFish.
@@ -41,12 +40,20 @@ The platform supports authenticated chat sessions, personalized assistant behavi
 
 ## Product Interface
 
-### Home Page
+### Login & Home Page
 
 
 <p align="center">
   <img
-    src="https://github.com/user-attachments/assets/38ead980-f8aa-4d3a-b3a3-741026119586"
+    src="https://github.com/user-attachments/assets/00ef8398-e383-4993-be1c-7c42f37ccb8e"
+    alt="Aletheia home page"
+    width="900"
+  />
+</p>
+
+<p align="center">
+  <img
+    src="https://github.com/user-attachments/assets/0361ea73-3c47-4f2e-aa1c-aeb3351e7fd8"
     alt="Aletheia home page"
     width="900"
   />
@@ -57,7 +64,7 @@ The platform supports authenticated chat sessions, personalized assistant behavi
 
 <p align="center">
   <img
-    src="https://github.com/user-attachments/assets/fac3ce32-c37d-4f06-8d51-9a001eb1861c"
+    src="https://github.com/user-attachments/assets/1a814c14-765b-41db-861a-4cc29185d4b4"
     alt="Aletheia personalization settings"
     width="900"
   />
@@ -67,7 +74,7 @@ The platform supports authenticated chat sessions, personalized assistant behavi
 
 <p align="center">
   <img
-    src="https://github.com/user-attachments/assets/60ae79df-ae21-49b3-8c95-2a91264445fd"
+    src="https://github.com/user-attachments/assets/8df40a87-f163-43e7-9025-e7707743915c"
     alt="Aletheia connectors interface"
     width="900"
   />
@@ -134,19 +141,6 @@ The deployment workflow requires a repository secret named:
 ```text
 RENDER_DEPLOY_HOOK_URL
 ```
-
-## Known Platform Constraint
-
-### NeonDB Idle Suspension
-
-NeonDB free-tier databases may suspend after periods of inactivity. The first request after suspension can experience increased latency or a temporary connection failure.
-
-Aletheia mitigates this through:
-
-- A startup warm-up query
-- Client-side retry behavior
-
-For production workloads, use an appropriate NeonDB plan or another PostgreSQL deployment that matches the application's availability requirements.
 
 ## Contributing
 

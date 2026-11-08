@@ -35,6 +35,7 @@ async def test_store_user_pref_updates_existing_preferences():
 
     response = await store_user_pref(
         payload=make_payload(),
+        user_id="user-123",
         session=session,
     )
 
@@ -69,6 +70,7 @@ async def test_store_user_pref_creates_new_preferences():
 
     response = await store_user_pref(
         payload=make_payload(),
+        user_id="user-123",
         session=session,
     )
 
@@ -110,6 +112,7 @@ async def test_store_user_pref_handles_database_error():
 
     response = await store_user_pref(
         payload=make_payload(),
+        user_id="user-123",
         session=session,
     )
 

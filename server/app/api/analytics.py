@@ -7,6 +7,7 @@ from sqlalchemy.exc import DatabaseError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
+from app.utils.core.security import current_user_id
 from app.db_service.db import get_session
 from app.db_service.models import UserChats, UserSessions
 from app.services.token_usage import get_tokens_used
@@ -67,7 +68,7 @@ def build_weekly_tokens(chats, week_dates):
     description="Get analytics for a particular user",
 )
 async def get_user_analytics(
-    user_id: str,
+    user_id: str = Depends(current_user_id),
     _: None = Depends(analytics_rate_limit),
     session: AsyncSession = Depends(get_session),
 ):
@@ -166,7 +167,7 @@ async def get_user_analytics(
     description="Get the user's token usage for the current month",
 )
 async def get_user_usage(
-    user_id: str,
+    user_id: str = Depends(current_user_id),
     _: None = Depends(analytics_rate_limit),
     session: AsyncSession = Depends(get_session),
 ):

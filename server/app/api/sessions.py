@@ -6,6 +6,7 @@ from sqlalchemy.exc import DatabaseError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import delete, select
 
+from app.utils.core.security import current_user_id
 from app.db_service.db import get_session
 from app.db_service.models import UserChats, UserSessions
 from app.schemas.session_schema import RenameSessionRequest
@@ -22,7 +23,7 @@ session_router = APIRouter(prefix="/v1")
     description="Get all sessions for a given user_id",
 )
 async def users_session(
-    user_id: str,
+    user_id: str = Depends(current_user_id),
     _: None = Depends(session_rate_limit),
     session: AsyncSession = Depends(get_session),
 ) -> list[dict]:
@@ -69,7 +70,7 @@ async def users_session(
 )
 async def delete_session(
     session_id: int,
-    user_id: str,
+    user_id: str = Depends(current_user_id),
     _: None = Depends(session_rate_limit),
     session: AsyncSession = Depends(get_session),
 ):
@@ -123,7 +124,7 @@ async def delete_session(
 )
 async def pin_session(
     session_id: int,
-    user_id: str,
+    user_id: str = Depends(current_user_id),
     _: None = Depends(session_rate_limit),
     session: AsyncSession = Depends(get_session),
 ):
@@ -173,12 +174,12 @@ async def pin_session(
 
 
 @session_router.delete(
-    "/sessions/all-chats/{user_id}",
+    "/sessions/all-chats",
     tags=["user_delete_chats_all"],
     description="Delete all chats and sessions for a user",
 )
 async def all_chats(
-    user_id: str,
+    user_id: str = Depends(current_user_id),
     _: None = Depends(session_rate_limit),
     session: AsyncSession = Depends(get_session),
 ):
@@ -235,7 +236,7 @@ async def all_chats(
 async def rename_session(
     session_id: int,
     payload: RenameSessionRequest,
-    user_id: str,
+    user_id: str = Depends(current_user_id),
     _: None = Depends(session_rate_limit),
     session: AsyncSession = Depends(get_session),
 ):

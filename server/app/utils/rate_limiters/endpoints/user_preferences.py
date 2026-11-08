@@ -1,7 +1,7 @@
-from fastapi import HTTPException, status
+from fastapi import Depends, HTTPException, status
 from throttled.asyncio import RateLimiterType, Throttled, store
 
-from app.schemas.user_pref import UserPref
+from app.utils.core.security import current_user_id
 from app.utils.config import settings
 
 USER_PREFS_READ_RATE_LIMIT = "60/m"
@@ -33,7 +33,7 @@ user_prefs_write_throttle = Throttled(
 
 
 async def user_preferences_read_rate_limit(
-    user_id: str,
+    user_id: str = Depends(current_user_id),
 ) -> None:
     result = await user_prefs_read_throttle.limit(f"user-preferences:read:{user_id}")
 
@@ -45,11 +45,9 @@ async def user_preferences_read_rate_limit(
 
 
 async def user_preferences_write_rate_limit(
-    payload: UserPref,
+    user_id: str = Depends(current_user_id),
 ) -> None:
-    result = await user_prefs_write_throttle.limit(
-        f"user-preferences:write:{payload.userId}"
-    )
+    result = await user_prefs_write_throttle.limit(f"user-preferences:write:{user_id}")
 
     if result.limited:
         raise HTTPException(

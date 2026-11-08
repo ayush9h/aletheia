@@ -54,7 +54,7 @@ export async function deleteUserSession(sessionId: number, userId: string) {
 
 // Delete all chats across sessions for a user
 export async function deleteUserChatsAll(userId: string) {
-  return api.delete(`/sessions/all-chats/${userId}`);
+  return api.delete("/sessions/all-chats", { params: { user_id: userId } });
 }
 export interface AnalyticsResponse {
   total_conversations: number;

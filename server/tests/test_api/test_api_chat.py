@@ -24,7 +24,7 @@ async def test_chat_stream_rejects_when_monthly_cap_reached():
         patch("app.api.chats.settings.MONTHLY_TOKEN_CAP", 20_000),
     ):
         with pytest.raises(HTTPException) as exc:
-            await chat_stream(MagicMock(), payload, session, rate_limiter)
+            await chat_stream(MagicMock(), payload, session, rate_limiter, user_id="user-1")
 
     assert exc.value.status_code == 429
     assert exc.value.detail["token_limit"] == 20_000
