@@ -69,7 +69,7 @@ async def test_memory_retrieve(mock_get_memory_manager):
     memory_manager.search.assert_called_once_with(
         query="What do I like?",
         user_id="user-123",
-        session_id="session-123",
+        session_id=None,
         k=5,
     )
 

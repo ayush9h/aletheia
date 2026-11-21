@@ -252,7 +252,7 @@ class MemoryManager:
                                 memory_id = memory_ids[i]
                                 results = self.retriever.fetch(memory_id)
 
-                                meta = results["vectors"][0]["metadata"]
+                                meta = results["vectors"][memory_id]["metadata"]
 
                                 if i < len(new_tags_neighborhood):
                                     meta["tags"] = new_tags_neighborhood[i]

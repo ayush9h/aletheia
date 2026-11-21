@@ -405,3 +405,21 @@ async def test_process_memory_should_not_evolve(manager, monkeypatch):
     assert result is note
     manager.retriever.fetch.assert_not_called()
     manager.retriever.add_document.assert_not_called()
+
+
+def test_evolve_schema_accepts_llm_shape():
+    from app.schemas.mem.evolve_schema import EvolveSchema
+
+    parsed = EvolveSchema.model_validate(
+        {
+            "should_evolve": True,
+            "actions": ["strengthen", "update_neighbor"],
+            "suggested_connections": ["mem-1"],
+            "tags_to_update": ["python"],
+            "new_context_neighborhood": ["learning python"],
+            "new_tags_neighborhood": [["Programming", "Education"]],
+        }
+    )
+
+    assert parsed.actions == ["strengthen", "update_neighbor"]
+    assert parsed.new_tags_neighborhood == [["Programming", "Education"]]
