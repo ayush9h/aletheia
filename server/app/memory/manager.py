@@ -216,7 +216,7 @@ class MemoryManager:
                 content=note.content,
                 context=note.context,
                 keywords=note.keywords,
-                nearest_neighbors=neighbors_text,
+                nearest_neighbors_memories=neighbors_text,
                 neighbor_number=len(memory_ids),
             )
 
