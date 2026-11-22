@@ -15,6 +15,7 @@ import Image from "next/image";
 import type { inputProps as ChatInputProps } from "@/features/chat/types/chats.types";
 import { useSpeechToText } from "@/features/voice/hooks/useSpeechToText";
 import InputOptions from "@/features/chat/components/input-options";
+import { GhostNote } from "@/features/chat/components/ghost-mode";
 import { MODEL_GROUPS } from "@/features/chat/config/models";
 import {
   DropdownMenu,
@@ -137,14 +138,16 @@ export default function ChatInput(props: ChatInputProps) {
         <div className="flex min-w-0 items-center gap-2 px-2 pb-2 pt-1">
           {/* Tools */}
           <div className="flex min-w-0 flex-1 items-center gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            <div className="shrink-0">
-              <InputOptions
-                agents={props.agents}
-                tools={optionList}
-                setTools={setOptionList}
-                onAddFileClick={() => fileInputRef.current?.click()}
-              />
-            </div>
+            {!props.ghost && (
+              <div className="shrink-0">
+                <InputOptions
+                  agents={props.agents}
+                  tools={optionList}
+                  setTools={setOptionList}
+                  onAddFileClick={() => fileInputRef.current?.click()}
+                />
+              </div>
+            )}
 
             {optionList.map((item) => {
               const agent = props.agents.find((option) => option.name === item);
@@ -199,7 +202,12 @@ export default function ChatInput(props: ChatInputProps) {
               <DropdownMenuContent
                 align="end"
                 sideOffset={8}
-                className={`${MENU_CONTENT} w-60`}
+                // Portals escape the ghost surface, so re-skin this one by hand
+                className={`${MENU_CONTENT} w-60 ${
+                  props.ghost
+                    ? "ghost-surface dark border-stone-700/60 bg-stone-900"
+                    : ""
+                }`}
               >
                 {MODEL_GROUPS.map((group, index) => (
                   <Fragment key={group.provider}>
@@ -309,9 +317,13 @@ export default function ChatInput(props: ChatInputProps) {
       />
 
       {/* Disclaimer */}
-      <p className="font-paragraph mt-2 text-center text-[11px] leading-4 text-stone-500 dark:text-stone-400 sm:text-xs">
-        Aletheia can make mistakes. Check important information.
-      </p>
+      {props.ghost ? (
+        <GhostNote />
+      ) : (
+        <p className="font-paragraph mt-2 text-center text-[11px] leading-4 text-stone-500 dark:text-stone-400 sm:text-xs">
+          Aletheia can make mistakes. Check important information.
+        </p>
+      )}
 
       <StarterPrompts
         show={props.showStarterPrompts ?? false}

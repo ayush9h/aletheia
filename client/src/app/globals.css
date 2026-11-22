@@ -72,7 +72,9 @@ html:root:root.dark {
 }
 
 /* Dark mode swaps warm stone for cool neutral zinc; every dark:*-stone-* class follows */
-html.dark {
+/* .ghost-surface opts a subtree in, so a ghost chat stays dark in the light theme too */
+html.dark,
+.ghost-surface {
   --color-stone-50: var(--color-zinc-50);
   --color-stone-100: var(--color-zinc-100);
   --color-stone-200: var(--color-zinc-200);

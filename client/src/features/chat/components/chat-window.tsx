@@ -1,5 +1,6 @@
 import { motion } from "motion/react";
 
+import { GhostIntro } from "@/features/chat/components/ghost-mode";
 import MessageList from "@/features/chat/components/message-list";
 import GreetingWindow from "@/features/chat/components/greeting-window";
 import ChatInput from "@/features/chat/components/chat-input";
@@ -24,7 +25,11 @@ export default function ChatWindow(props: ChatWindowProps) {
       : "";
 
   return (
-    <div className="flex h-full min-h-0 flex-col overflow-hidden bg-stone-100/40 dark:bg-stone-800/60">
+    <div
+      className={`flex h-full min-h-0 flex-col overflow-hidden ${
+        props.ghost ? "bg-transparent" : "bg-stone-100/40 dark:bg-stone-800/60"
+      }`}
+    >
       <span role="status" aria-live="polite" className="sr-only">
         {announcement}
       </span>
@@ -67,12 +72,20 @@ export default function ChatWindow(props: ChatWindowProps) {
 
         {isEmpty && (
           <div className="mb-6 shrink-0 text-center">
-            <GreetingWindow userName={props.userName} />
+            {props.ghost ? (
+              <GhostIntro />
+            ) : (
+              <GreetingWindow userName={props.userName} />
+            )}
           </div>
         )}
 
         <motion.div layout="position" transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }} className={`flex w-full shrink-0 justify-center px-4 ${isEmpty ? "" : "pb-3"}`}>
-          <div className="w-full max-w-4xl transition-[max-width] duration-300 ease-in-out">
+          <div
+            className={`w-full transition-[max-width] duration-300 ease-in-out ${
+              props.ghost ? "max-w-3xl" : "max-w-4xl"
+            }`}
+          >
             <ChatInput
               value={props.input}
               onChange={(value) => props.dispatch({ type: "SET_INPUT", payload: value })}
@@ -83,8 +96,9 @@ export default function ChatWindow(props: ChatWindowProps) {
               isStreaming={props.isStreaming}
               setSelectedModel={(model) => props.dispatch({ type: "SET_MODEL", payload: model })}
               selectedModel={props.selectedModel}
-              showStarterPrompts={isEmpty}
+              showStarterPrompts={isEmpty && !props.ghost}
               usage={props.usage}
+              ghost={props.ghost}
             />
           </div>
         </motion.div>

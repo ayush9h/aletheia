@@ -19,10 +19,9 @@ type StreamHandlers = {
     service_output: {
       reasoning_content: string;
       response_content: string;
-      duration: number;
-      tokens_consumed: number;
     };
-    session: {
+    // A ghost turn is never saved, so the server sends no session
+    session?: {
       session_id: number;
       session_title: string;
       is_pinned: boolean;
@@ -39,6 +38,7 @@ export async function streamChatMessage(
   selectedSessionId: number | null,
   userId: string,
   tools: string[],
+  ghost: boolean,
   handlers: StreamHandlers,
   signal?: AbortSignal
 ) {
@@ -57,6 +57,7 @@ export async function streamChatMessage(
       selectedSessionId,
       userId,
       tools,
+      ghost,
     }),
     signal,
   });

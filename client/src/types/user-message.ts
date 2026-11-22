@@ -32,8 +32,6 @@ export type Message = {
   text: string;
   plan?: Plan;
   emailDrafts?: EmailDraft[];
-  duration: number;
-  tokens_consumed: number;
   isStreaming?: boolean;
   // Set when the answer failed; partial text is kept alongside it
   error?: string;

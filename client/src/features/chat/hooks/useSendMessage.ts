@@ -12,6 +12,7 @@ type Params = {
   sessions: Session[];
   userId?: string;
   tools: string[];
+  ghost: boolean;
   dispatch: React.Dispatch<ChatAction>;
 };
 
@@ -35,6 +36,7 @@ export function useSendMessage(params: Params) {
     sessions,
     userId,
     tools,
+    ghost,
     dispatch,
   } = params;
 
@@ -57,8 +59,6 @@ export function useSendMessage(params: Params) {
         id: `${messageId}-user`,
         role: "user",
         text: trimmed,
-        duration: 0,
-        tokens_consumed: 0,
       },
     });
 
@@ -73,8 +73,6 @@ export function useSendMessage(params: Params) {
         id: assistantId,
         role: "assistant",
         text: "",
-        duration: 0,
-        tokens_consumed: 0,
         isStreaming: true,
         prompt: trimmed,
       },
@@ -100,6 +98,7 @@ export function useSendMessage(params: Params) {
         selectedSessionId,
         userId,
         tools,
+        ghost,
         {
           onPlan: (plan) => {
             dispatch({
@@ -162,8 +161,6 @@ export function useSendMessage(params: Params) {
               payload: {
                 id: assistantId,
                 text: emailDrafts.length ? "" : payload.service_output.response_content,
-                duration: payload.service_output.duration,
-                tokens_consumed: payload.service_output.tokens_consumed,
                 isStreaming: false,
               },
             });
@@ -186,6 +183,7 @@ export function useSendMessage(params: Params) {
     sessions,
     userId,
     tools,
+    ghost,
     dispatch,
   ]);
 

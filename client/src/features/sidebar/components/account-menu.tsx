@@ -6,7 +6,7 @@ import { useState, type Dispatch } from "react";
 import { signOut, useSession } from "next-auth/react";
 import { BASE_PATH } from "@/lib/site";
 import { CaretSortIcon } from "@radix-ui/react-icons";
-import { ChartNoAxesCombinedIcon, LogOut, Settings } from "lucide-react";
+import { Gauge, LogOut, Settings } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,9 +28,13 @@ import { ChatAction } from "@/features/chat/types/chat-action";
 
 // Dialogs load on demand, keeping recharts and settings out of the initial bundle
 const SettingsDialog = dynamic(() =>
-  import("@/features/settings/components/settings-dialog").then((m) => m.SettingsDialog),
+  import("@/features/settings/components/settings-dialog").then(
+    (m) => m.SettingsDialog
+  )
 );
-const AnalyticsDialog = dynamic(() => import("@/features/analytics/components/analytics-dialog"));
+const AnalyticsDialog = dynamic(
+  () => import("@/features/analytics/components/analytics-dialog")
+);
 
 type AccountMenuProps = {
   open: boolean;
@@ -99,14 +103,19 @@ export default function AccountMenu({
       <button
         type="button"
         aria-label={`Open account menu for ${displayName}`}
-        className="flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2 py-1.5 text-left transition-colors duration-150 hover:bg-stone-200/60 data-[state=open]:bg-stone-200/60 dark:hover:bg-stone-800 dark:data-[state=open]:bg-stone-800"
+        className="data-[state=open]:bg-stone-200/60 dark:data-[state=open]:bg-stone-800 flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2 py-1.5 text-left transition-colors duration-150 hover:bg-stone-200/60 dark:hover:bg-stone-800"
       >
         {avatar("size-6")}
 
         {open && (
           <>
-            <span className="animate-sidebar-in min-w-0 flex-1 truncate">{displayName}</span>
-            <CaretSortIcon aria-hidden="true" className="animate-sidebar-in size-4 shrink-0 text-stone-500" />
+            <span className="animate-sidebar-in min-w-0 flex-1 truncate">
+              {displayName}
+            </span>
+            <CaretSortIcon
+              aria-hidden="true"
+              className="animate-sidebar-in size-4 shrink-0 text-stone-500"
+            />
           </>
         )}
       </button>
@@ -117,7 +126,13 @@ export default function AccountMenu({
     // Portaled menu and dialog clicks bubble through React; keep them from expanding the collapsed sidebar
     <div onClick={(event) => event.stopPropagation()}>
       <DropdownMenu>
-        {open ? trigger : <AppTooltip label="Account" side="right">{trigger}</AppTooltip>}
+        {open ? (
+          trigger
+        ) : (
+          <AppTooltip label="Account" side="right">
+            {trigger}
+          </AppTooltip>
+        )}
 
         <DropdownMenuContent
           side="top"
@@ -145,15 +160,21 @@ export default function AccountMenu({
           <DropdownMenuSeparator className={MENU_SEPARATOR} />
 
           {/* Settings */}
-          <DropdownMenuItem className={MENU_ITEM} onSelect={() => setSettingsOpen(true)}>
+          <DropdownMenuItem
+            className={MENU_ITEM}
+            onSelect={() => setSettingsOpen(true)}
+          >
             <Settings aria-hidden="true" className="size-4" />
             Settings
           </DropdownMenuItem>
 
           {/* Analytics */}
-          <DropdownMenuItem className={MENU_ITEM} onSelect={() => setAnalyticsOpen(true)}>
-            <ChartNoAxesCombinedIcon aria-hidden="true" className="size-4" />
-            Analytics
+          <DropdownMenuItem
+            className={MENU_ITEM}
+            onSelect={() => setAnalyticsOpen(true)}
+          >
+            <Gauge aria-hidden="true" className="size-4" />
+            Usage
           </DropdownMenuItem>
 
           <DropdownMenuSeparator className={MENU_SEPARATOR} />
@@ -183,10 +204,7 @@ export default function AccountMenu({
       />
 
       {/* Analytics dialog */}
-      <AnalyticsDialog
-        open={analyticsOpen}
-        onOpenChange={setAnalyticsOpen}
-      />
+      <AnalyticsDialog open={analyticsOpen} onOpenChange={setAnalyticsOpen} />
     </div>
   );
 }

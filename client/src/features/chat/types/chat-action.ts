@@ -12,6 +12,9 @@ export type ChatAction =
   // Switches active LLM model
   | { type: "SET_MODEL"; payload: string }
 
+  // Enters or leaves ghost mode, clearing whatever was on screen either way
+  | { type: "SET_GHOST"; payload: boolean }
+
   // Appends a single message to current session timeline
   | { type: "ADD_MESSAGE"; payload: Message }
 
@@ -48,8 +51,6 @@ export type ChatAction =
     payload: { id: string } & Partial<{
       text: string;
       reasoning: string;
-      duration: number;
-      tokens_consumed: number;
       isStreaming: boolean;
       plan: Plan;
       emailDrafts: EmailDraft[];

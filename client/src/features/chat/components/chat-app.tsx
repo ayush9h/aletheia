@@ -1,11 +1,14 @@
 "use client";
 
-import { useCallback, useReducer, useState } from "react";
+import { useCallback, useEffect, useReducer, useState } from "react";
 import { useSession } from "next-auth/react";
 
 import { HamburgerMenuIcon } from "@radix-ui/react-icons";
+import { Ghost } from "lucide-react";
 
+import AppTooltip from "@/components/ui/app-tooltip";
 import ChatWindow from "@/features/chat/components/chat-window";
+import { GhostTitleBar } from "@/features/chat/components/ghost-mode";
 import { useAgents } from "@/features/chat/hooks/useAgents";
 import { useInitLoad } from "@/features/chat/hooks/useInitLoad";
 import { useSendMessage } from "@/features/chat/hooks/useSendMessage";
@@ -26,7 +29,9 @@ export default function ChatApp() {
 
   const [state, dispatch] = useReducer(ChatReducer, InitialState);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sessionStatus, setSessionStatus] = useState<"idle" | "loading" | "failed">("idle");
+  const [sessionStatus, setSessionStatus] = useState<
+    "idle" | "loading" | "failed"
+  >("idle");
 
   useConnectorToast();
   useInitLoad(userId as string, dispatch);
@@ -42,6 +47,7 @@ export default function ChatApp() {
     selectedSessionId: state.selectedSessionId,
     sessions: state.sessions,
     tools: state.selectedTools,
+    ghost: state.ghost,
     userId,
     dispatch,
   });
@@ -53,7 +59,7 @@ export default function ChatApp() {
       await send(text);
       refreshUsage();
     },
-    [send, refreshUsage],
+    [send, refreshUsage]
   );
 
   // Selects a session and hydrates its messages
@@ -73,44 +79,93 @@ export default function ChatApp() {
   }, []);
 
   const setUserPref = useCallback(
-    (value: UserPrefProps) => dispatch({ type: "SET_USER_PREF", payload: value }),
-    [],
+    (value: UserPrefProps) =>
+      dispatch({ type: "SET_USER_PREF", payload: value }),
+    []
   );
 
   const openSidebar = useCallback(() => setSidebarOpen(true), []);
 
+  const exitGhost = useCallback(
+    () => dispatch({ type: "SET_GHOST", payload: false }),
+    []
+  );
+
+  // Ctrl/Cmd+Shift+G toggles ghost mode; the sidebar owns the other chat shortcuts
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!event.metaKey && !event.ctrlKey) return;
+      if (!event.shiftKey || event.key.toLowerCase() !== "g") return;
+
+      event.preventDefault();
+      dispatch({ type: "SET_GHOST", payload: !state.ghost });
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [state.ghost]);
+
   return (
     <div
-      className={`relative grid h-dvh w-full overflow-hidden ${
-        sidebarOpen ? "grid-cols-[16rem_minmax(0,1fr)]" : "grid-cols-[4rem_minmax(0,1fr)]"
+      className={`h-dvh relative grid w-full overflow-hidden ${
+        state.ghost
+          ? "dark:bg-stone-950 grid-cols-1 bg-stone-100"
+          : sidebarOpen
+          ? "grid-cols-[16rem_minmax(0,1fr)]"
+          : "grid-cols-[4rem_minmax(0,1fr)]"
       } max-md:grid-cols-1`}
     >
-      <Sidebar
-        open={sidebarOpen}
-        onToggle={setSidebarOpen}
-        sessions={state.sessions}
-        selectedSessionId={state.selectedSessionId}
-        onSelectSession={handleSessionSelect}
-        dispatch={dispatch}
-        userId={userId}
-        userPref={state.userPref}
-        setUserPref={setUserPref}
-      />
+      {/* Ghost mode takes the whole window, so the saved-chat shell goes away */}
+      {!state.ghost && (
+        <Sidebar
+          open={sidebarOpen}
+          onToggle={setSidebarOpen}
+          sessions={state.sessions}
+          selectedSessionId={state.selectedSessionId}
+          onSelectSession={handleSessionSelect}
+          dispatch={dispatch}
+          userId={userId}
+          userPref={state.userPref}
+          setUserPref={setUserPref}
+        />
+      )}
 
       <div className="flex min-h-0 min-w-0 flex-col overflow-hidden">
-        {/* Mobile only: the sidebar is off-canvas, so keep a way to open it */}
-        <div className="shrink-0 bg-stone-100/40 px-3 py-2 dark:bg-stone-800/60 md:hidden">
-          <button
-            type="button"
-            aria-label="Open sidebar"
-            onClick={openSidebar}
-            className="flex size-9 cursor-pointer items-center justify-center rounded-md text-stone-600 transition-colors hover:bg-stone-200 dark:text-stone-300 dark:hover:bg-stone-800"
-          >
-            <HamburgerMenuIcon className="size-4" />
-          </button>
-        </div>
+        {state.ghost ? (
+          <GhostTitleBar onExit={exitGhost} />
+        ) : (
+          <div className="flex shrink-0 items-center gap-2 bg-stone-100/40 px-3 py-2 dark:bg-stone-800/60">
+            <button
+              type="button"
+              aria-label="Open sidebar"
+              onClick={openSidebar}
+              className="size-9 flex shrink-0 cursor-pointer items-center justify-center rounded-md text-stone-600 transition-colors hover:bg-stone-200 dark:text-stone-300 dark:hover:bg-stone-800 md:hidden"
+            >
+              <HamburgerMenuIcon className="size-4" />
+            </button>
 
-        <main className="min-h-0 flex-1 overflow-hidden">
+            <AppTooltip label="Aoratos chat (Ctrl Shift G)">
+              <button
+                type="button"
+                aria-label="Start a ghost chat"
+                aria-pressed={false}
+                onClick={() => dispatch({ type: "SET_GHOST", payload: true })}
+                className="size-9 ml-auto flex shrink-0 cursor-pointer items-center justify-center rounded-lg text-stone-500 transition-colors hover:bg-stone-200 hover:text-stone-700 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-200"
+              >
+                <Ghost className="size-[18px]" />
+              </button>
+            </AppTooltip>
+          </div>
+        )}
+
+        {/* Ghost chat sits in an inset dark panel, framed by the window around it */}
+        <main
+          className={`min-h-0 flex-1 overflow-hidden ${
+            state.ghost
+              ? "ghost-surface dark mx-3 mb-3 rounded-2xl bg-stone-900 ring-1 ring-stone-800/80"
+              : ""
+          }`}
+        >
           <ChatWindow
             messages={state.messages}
             input={state.input}
@@ -120,11 +175,15 @@ export default function ChatApp() {
             onSend={handleSend}
             isStreaming={isStreaming}
             sessionStatus={sessionStatus}
-            onRetryLoad={() => state.selectedSessionId && handleSessionSelect(state.selectedSessionId)}
+            onRetryLoad={() =>
+              state.selectedSessionId &&
+              handleSessionSelect(state.selectedSessionId)
+            }
             userName={session?.user?.name ?? ""}
             agents={agents}
             tools={state.selectedTools}
             usage={usage}
+            ghost={state.ghost}
           />
         </main>
       </div>

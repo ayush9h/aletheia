@@ -17,6 +17,17 @@ export const ChatReducer = (state: ChatState, action: ChatAction) => {
         input: "",
       };
 
+    // Entering and leaving ghost mode both start from a clean pane
+    case "SET_GHOST":
+      return {
+        ...state,
+        ghost: action.payload,
+        messages: [],
+        selectedSessionId: null,
+        selectedTools: [],
+        input: "",
+      };
+
     // Set the model to the current user selection
     case "SET_MODEL":
       return {
@@ -51,10 +62,12 @@ export const ChatReducer = (state: ChatState, action: ChatAction) => {
       };
 
     // Switch to user selected session
+    // Opening any saved session leaves ghost mode, so ghost text can't mix in
     case "SET_SELECTED_SESSION":
       return {
         ...state,
         selectedSessionId: action.payload,
+        ghost: false,
       };
 
     // Delete a particular session

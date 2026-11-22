@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import {
   CalendarClock,
-  ChartNoAxesCombinedIcon,
+  Gauge,
   CircleAlert,
   CircleCheck,
   Clock3,
@@ -54,7 +54,7 @@ const emptyAnalytics: AnalyticsResponse = {
 };
 
 function normalizeAnalytics(
-  data: Partial<AnalyticsResponse> | null | undefined,
+  data: Partial<AnalyticsResponse> | null | undefined
 ): AnalyticsResponse {
   return {
     total_conversations: data?.total_conversations ?? 0,
@@ -96,11 +96,17 @@ function MonthlyUsageCard({ usage }: { usage: UsageResponse }) {
   const ratio = usage.tokens_used / usage.token_limit;
   const remaining = Math.max(usage.token_limit - usage.tokens_used, 0);
   const status =
-    ratio >= 1 ? usageStatus.reached : ratio >= 0.8 ? usageStatus.warning : usageStatus.ok;
+    ratio >= 1
+      ? usageStatus.reached
+      : ratio >= 0.8
+      ? usageStatus.warning
+      : usageStatus.ok;
   const StatusIcon = status.icon;
 
   const resetDate = getMonthlyResetDate();
-  const daysToReset = Math.ceil((resetDate.getTime() - Date.now()) / 86_400_000);
+  const daysToReset = Math.ceil(
+    (resetDate.getTime() - Date.now()) / 86_400_000
+  );
   const resetLabel = resetDate.toLocaleDateString(undefined, {
     month: "short",
     day: "numeric",
@@ -115,7 +121,7 @@ function MonthlyUsageCard({ usage }: { usage: UsageResponse }) {
             Monthly tokens
           </p>
 
-          <p className="mt-1.5 text-3xl font-medium tracking-[-0.04em] text-stone-950 dark:text-white">
+          <p className="text-stone-950 mt-1.5 text-3xl font-medium tracking-[-0.04em] dark:text-white">
             {formatNumber(usage.tokens_used)}
             <span className="ml-1.5 text-sm font-normal tracking-normal text-stone-500 dark:text-stone-400">
               / {formatNumber(usage.token_limit)}
@@ -126,7 +132,7 @@ function MonthlyUsageCard({ usage }: { usage: UsageResponse }) {
         <span
           className={cn(
             "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium",
-            status.pill,
+            status.pill
           )}
         >
           <StatusIcon className="size-3.5" aria-hidden />
@@ -143,7 +149,10 @@ function MonthlyUsageCard({ usage }: { usage: UsageResponse }) {
         className="mt-4 h-2 overflow-hidden rounded-full bg-stone-200 dark:bg-stone-700/60"
       >
         <div
-          className={cn("h-full rounded-full transition-[width] duration-500", status.bar)}
+          className={cn(
+            "h-full rounded-full transition-[width] duration-500",
+            status.bar
+          )}
           style={{ width: `${Math.min(ratio, 1) * 100}%` }}
         />
       </div>
@@ -152,12 +161,15 @@ function MonthlyUsageCard({ usage }: { usage: UsageResponse }) {
         <span>
           {ratio >= 1
             ? "You can send new messages once your limit resets."
-            : `${formatNumber(remaining)} tokens left · ${Math.floor(ratio * 100)}% used`}
+            : `${formatNumber(remaining)} tokens left · ${Math.floor(
+                ratio * 100
+              )}% used`}
         </span>
 
         <span className="inline-flex items-center gap-1.5">
           <CalendarClock className="size-3.5" aria-hidden />
-          Resets {resetLabel} ({daysToReset} {daysToReset === 1 ? "day" : "days"})
+          Resets {resetLabel} ({daysToReset}{" "}
+          {daysToReset === 1 ? "day" : "days"})
         </span>
       </div>
     </div>
@@ -173,7 +185,7 @@ interface MetricCardProps {
 function MetricCard({ icon: Icon, label, value }: MetricCardProps) {
   return (
     <div className="flex items-center gap-3 rounded-xl border border-stone-200 bg-white p-4 dark:border-stone-700/50 dark:bg-stone-800/30">
-      <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-500 dark:bg-brand-950/50 dark:text-brand-400">
+      <div className="size-9 bg-brand-50 text-brand-500 dark:bg-brand-950/50 dark:text-brand-400 flex shrink-0 items-center justify-center rounded-xl">
         <Icon className="size-4" aria-hidden />
       </div>
 
@@ -182,7 +194,7 @@ function MetricCard({ icon: Icon, label, value }: MetricCardProps) {
           {label}
         </p>
 
-        <p className="text-xl font-medium tracking-[-0.03em] text-stone-950 dark:text-white">
+        <p className="text-stone-950 text-xl font-medium tracking-[-0.03em] dark:text-white">
           {value}
         </p>
       </div>
@@ -210,7 +222,10 @@ function LoadingSkeleton() {
       <div className="h-36 rounded-xl bg-stone-100 dark:bg-stone-800/50" />
       <div className="grid gap-3 sm:grid-cols-3">
         {[0, 1, 2].map((i) => (
-          <div key={i} className="h-[70px] rounded-xl bg-stone-100 dark:bg-stone-800/50" />
+          <div
+            key={i}
+            className="h-[70px] rounded-xl bg-stone-100 dark:bg-stone-800/50"
+          />
         ))}
       </div>
       <div className="h-64 rounded-xl bg-stone-100 dark:bg-stone-800/50" />
@@ -225,8 +240,7 @@ export default function AnalyticsDialog({
   const { data: session } = useSession();
   const userId = session?.user?.id;
 
-  const [analytics, setAnalytics] =
-    useState<AnalyticsResponse>(emptyAnalytics);
+  const [analytics, setAnalytics] = useState<AnalyticsResponse>(emptyAnalytics);
 
   const [usage, setUsage] = useState<UsageResponse | null>(null);
 
@@ -272,21 +286,24 @@ export default function AnalyticsDialog({
     };
   }, [open, userId]);
 
-  const weekTotal = analytics.weekly_tokens.reduce((sum, d) => sum + d.tokens, 0);
+  const weekTotal = analytics.weekly_tokens.reduce(
+    (sum, d) => sum + d.tokens,
+    0
+  );
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="font-paragraph max-h-[88dvh] w-[calc(100%-1rem)] max-w-2xl overflow-hidden rounded-2xl border-stone-200 bg-white p-0 text-stone-900 shadow-2xl shadow-stone-900/10 dark:border-stone-700/50 dark:bg-stone-900 dark:text-stone-100 dark:shadow-black/50 sm:w-[calc(100%-2rem)]">
         <div className="flex max-h-[88dvh] min-h-0 flex-col">
-          <DialogHeader className="shrink-0 space-y-0 border-b border-stone-200 bg-stone-50 px-5 py-5 pr-14 dark:border-stone-700/50 dark:bg-stone-950 sm:px-7">
+          <DialogHeader className="dark:bg-stone-950 shrink-0 space-y-0 border-b border-stone-200 bg-stone-50 px-5 py-5 pr-14 dark:border-stone-700/50 sm:px-7">
             <div className="flex items-center gap-3.5">
-              <span className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-stone-200 bg-stone-100 text-stone-700 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-200">
-                <ChartNoAxesCombinedIcon className="size-5" aria-hidden />
+              <span className="size-10 flex shrink-0 items-center justify-center rounded-xl border border-stone-200 bg-stone-100 text-stone-700 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-200">
+                <Gauge className="size-5" aria-hidden />
               </span>
 
               <div className="min-w-0 text-left">
                 <DialogTitle className="text-base font-semibold">
-                  Analytics
+                  Usage
                 </DialogTitle>
 
                 <DialogDescription className="mt-1 text-xs leading-5 text-stone-500 dark:text-stone-400">
@@ -356,7 +373,8 @@ export default function AnalyticsDialog({
                   </div>
 
                   <p className="mt-3 text-xs text-stone-500 dark:text-stone-400">
-                    {formatNumber(analytics.tokens_consumed)} tokens used all time
+                    {formatNumber(analytics.tokens_consumed)} tokens used all
+                    time
                   </p>
                 </section>
               </div>

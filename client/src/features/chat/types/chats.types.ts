@@ -16,6 +16,7 @@ export interface inputProps {
   showStarterPrompts?: boolean;
   onFilesSelected?: (files: File[]) => void;
   usage?: UsageResponse | null;
+  ghost: boolean;
 }
 
 /* Chat Window Props */
@@ -34,4 +35,5 @@ export interface ChatWindowProps {
   agents: AgentResponse[];
   tools: string[];
   usage?: UsageResponse | null;
+  ghost: boolean;
 }

@@ -3,9 +3,7 @@ import ReactMarkdown, { type Components, type ExtraProps } from "react-markdown"
 import remarkGfm from "remark-gfm";
 import {
   CheckIcon,
-  ClockIcon,
   CopyIcon,
-  LightningBoltIcon,
   SpeakerLoudIcon,
   StopIcon,
 } from "@radix-ui/react-icons";
@@ -226,18 +224,6 @@ const MessageBubble = memo(function MessageBubble({
             >
               {isReading ? <StopIcon className="h-4 w-4" /> : <SpeakerLoudIcon className="h-4 w-4" />}
             </button>
-          </div>
-
-          <div className="font-paragraph flex items-center gap-3 text-xs">
-            <div title="Time taken" className="flex items-center gap-1">
-              <ClockIcon className="h-3.5 w-3.5" />
-              <span>{message.duration}s</span>
-            </div>
-
-            <div title="Tokens consumed" className="flex items-center gap-1">
-              <LightningBoltIcon className="h-3.5 w-3.5" />
-              <span>{message.tokens_consumed.toLocaleString()} tokens</span>
-            </div>
           </div>
         </div>
       )}

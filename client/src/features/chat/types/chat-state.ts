@@ -9,6 +9,7 @@ export type ChatState = {
   selectedSessionId: number | null;
   userPref: UserPrefProps;
   selectedTools: string[];
+  ghost: boolean;
 };
 
 // Initial new state of the application for a new user
@@ -43,4 +44,7 @@ export const InitialState: ChatState = {
 
   // Selected Tools
   selectedTools: [] as string[],
+
+  // Ephemeral chat: nothing is saved, and it never reaches the session list
+  ghost: false,
 };
