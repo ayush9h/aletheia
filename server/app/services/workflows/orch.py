@@ -205,7 +205,11 @@ builder.add_node("memory_store", memory_store)
 builder.add_conditional_edges(
     START,
     route_memory_retrieve,
-    {"memory_retriever": "memory_retriever", "planner_node": "planner_node"},
+    {
+        "memory_retriever": "memory_retriever",
+        "planner_node": "planner_node",
+        "consolidator": "consolidator",
+    },
 )
 
 builder.add_edge(

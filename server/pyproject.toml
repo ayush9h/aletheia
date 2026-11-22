@@ -74,6 +74,7 @@ dependencies = [
     "pygments==2.19.2",
     "pyjwt==2.12.1",
     "pytest==9.0.3",
+    "pytest-asyncio>=1.0.0",
     "pytest-cov==7.0.0",
     "pytest-metadata==3.1.1",
     "python-dateutil==2.9.0.post0",

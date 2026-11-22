@@ -57,6 +57,9 @@ async def memory_retrieve(state: AgentState) -> AgentState:
 def route_memory_retrieve(
     state: AgentState,
 ) -> str:
+    if state.get("ghost", False):
+        return "consolidator"
+
     if state.get("use_memory", False):
         return "memory_retriever"
 

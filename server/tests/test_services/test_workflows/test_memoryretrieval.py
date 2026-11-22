@@ -85,6 +85,13 @@ def test_route_memory_retrieve(use_memory, expected):
     assert route_memory_retrieve({"use_memory": use_memory}) == expected
 
 
+@pytest.mark.parametrize("use_memory", [True, False])
+def test_route_memory_retrieve_ghost_skips_planner_and_memory(use_memory):
+    state = {"ghost": True, "use_memory": use_memory}
+
+    assert route_memory_retrieve(state) == "consolidator"
+
+
 @pytest.mark.parametrize(
     ("use_memory", "expected"),
     [

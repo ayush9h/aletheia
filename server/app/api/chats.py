@@ -133,7 +133,11 @@ async def chat_stream(
             },
         )
 
-    if payload.selectedSessionId:
+    if payload.ghost:
+        chat_session = None
+        is_new_session = False
+        logger.info("Ghost chat turn", user_id=user_id, model=str(payload.model))
+    elif payload.selectedSessionId:
         stmt = select(UserSessions).where(
             UserSessions.session_id == payload.selectedSessionId,
             UserSessions.user_id == user_id,
@@ -158,11 +162,27 @@ async def chat_stream(
         "user_model": payload.model,
         "user_preference": payload.userPref,
         "user_id": user_id,
-        "session_id": chat_session.session_id,
-        "tools": payload.tools,
-        "use_memory": payload.userPref.memoryEnabled if payload.userPref else False,
+        "session_id": chat_session.session_id if chat_session else None,
+        "tools": None if payload.ghost else payload.tools,
+        "use_memory": bool(
+            not payload.ghost and payload.userPref and payload.userPref.memoryEnabled
+        ),
         "is_new_session": is_new_session,
+        "ghost": payload.ghost,
     }
+
+    span_input = (
+        {"model": str(payload.model), "ghost": True}
+        if payload.ghost
+        else {
+            "query": payload.query,
+            "model": str(payload.model),
+            "session_id": str(chat_session.session_id),
+        }
+    )
+    trace_session_id = (
+        f"ghost:{user_id}" if payload.ghost else str(chat_session.session_id)
+    )
 
     async def event_generator() -> AsyncGenerator[str, None]:
         final_state: dict = {}
@@ -179,16 +199,12 @@ async def chat_stream(
             with langfuse.start_as_current_observation(
                 as_type="span",
                 name="chat-flow",
-                input={
-                    "query": payload.query,
-                    "model": str(payload.model),
-                    "session_id": str(chat_session.session_id),
-                },
+                input=span_input,
             ) as r_span:
                 with propagate_attributes(
                     trace_name="chat-flow",
                     user_id=user_id,
-                    session_id=str(chat_session.session_id),
+                    session_id=trace_session_id,
                     tags=[
                         "chat",
                         "sse",
@@ -198,15 +214,16 @@ async def chat_stream(
                         "route": "/chat/stream",
                         "model": str(payload.model),
                         "newSession": str(is_new_session),
+                        "ghost": str(payload.ghost),
                     },
                 ):
-                    langfuse_handler = CallbackHandler()
+                    callbacks = [] if payload.ghost else [CallbackHandler()]
 
                     async for event in instrumented_graph.astream_events(
                         input_state,
                         version="v2",
                         config={
-                            "callbacks": [langfuse_handler],
+                            "callbacks": callbacks,
                             "run_name": "chat-stream-graph",
                         },
                     ):
@@ -285,24 +302,34 @@ async def chat_stream(
                                 final_state.update(output)
 
                     final_state["duration"] = duration
-                    if is_new_session:
-                        chat_session.session_title = final_state.get(
-                            "session_title", ""
-                        )
-                        await session.commit()
 
-                    chat = UserChats(
-                        session_id=chat_session.session_id,
-                        user_query=payload.query,
-                        assistant_response=final_state.get("response_content", ""),
-                        assistant_reasoning=serialize_plan(final_state.get("plan")),
-                        tokens_consumed=final_state.get("tokens_consumed", 0),
-                        duration=round(final_state.get("duration", 0.0), 2),
+                    if chat_session:
+                        if is_new_session:
+                            chat_session.session_title = final_state.get(
+                                "session_title", ""
+                            )
+                            await session.commit()
+
+                        session.add(
+                            UserChats(
+                                session_id=chat_session.session_id,
+                                user_query=payload.query,
+                                assistant_response=final_state.get(
+                                    "response_content", ""
+                                ),
+                                assistant_reasoning=serialize_plan(
+                                    final_state.get("plan")
+                                ),
+                                tokens_consumed=final_state.get("tokens_consumed", 0),
+                                duration=round(final_state.get("duration", 0.0), 2),
+                            )
+                        )
+
+                    await add_tokens_used(
+                        session, user_id, final_state.get("tokens_consumed", 0)
                     )
-                    session.add(chat)
-                    await add_tokens_used(session, user_id, chat.tokens_consumed)
                     await session.commit()
-                    logger.info("Stored the details in DB")
+                    logger.info("Stored the details in DB", ghost=payload.ghost)
 
                     final_payload = {
                         "service_output": {
@@ -310,21 +337,15 @@ async def chat_stream(
                                 "response_content",
                                 "",
                             ),
-                            "duration": round(
-                                final_state.get("duration", 0.0),
-                                2,
-                            ),
-                            "tokens_consumed": final_state.get(
-                                "tokens_consumed",
-                                0,
-                            ),
-                        },
-                        "session": {
-                            "session_id": chat_session.session_id,
-                            "session_title": chat_session.session_title,
                         },
                     }
-                    r_span.update(output=final_payload)
+
+                    if chat_session:
+                        final_payload["session"] = {
+                            "session_id": chat_session.session_id,
+                            "session_title": chat_session.session_title,
+                        }
+                        r_span.update(output=final_payload)
 
                     yield sse_event("final", final_payload)
 

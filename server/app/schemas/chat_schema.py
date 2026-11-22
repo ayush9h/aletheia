@@ -33,3 +33,7 @@ class ChatRequest(BaseModel):
     tools: list[str] | None = Field(
         None, description="Names of the agents the user requires for this message"
     )
+    ghost: bool = Field(
+        False,
+        description="Ephemeral turn: nothing is persisted and no memory is used",
+    )

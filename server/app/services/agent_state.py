@@ -24,3 +24,4 @@ class AgentState(TypedDict):
     tool_results: list
     email_drafts: list[dict]
     is_new_session: bool
+    ghost: bool
