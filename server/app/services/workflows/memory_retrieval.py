@@ -41,7 +41,7 @@ async def memory_retrieve(state: AgentState) -> AgentState:
     memories = get_memory_manager().search(
         query=str(query),
         user_id=state["user_id"],
-        session_id=None,
+        session_id=state["session_id"],
         k=5,
     )
 
